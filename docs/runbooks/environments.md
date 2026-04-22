@@ -7,12 +7,15 @@
 
 ## Platform mapping
 - Hosting: Vercel projects for Web and API
-- Database: Supabase project per environment tier
+- Initial database: Excel file in Drive-synced storage
+- Future migration target: Supabase project per environment tier
 
 ## Required variables
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `DB_PROVIDER`
+- `EXCEL_DB_PATH` (for `DB_PROVIDER=excel`)
+- `SUPABASE_URL` (for `DB_PROVIDER=supabase`)
+- `SUPABASE_ANON_KEY` (for `DB_PROVIDER=supabase`)
+- `SUPABASE_SERVICE_ROLE_KEY` (for `DB_PROVIDER=supabase`)
 - `GOOGLE_OAUTH_CLIENT_ID`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
 - `SESSION_TTL_HOURS`

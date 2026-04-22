@@ -1,53 +1,39 @@
-﻿# API Stage 2 Contracts
+﻿# API Stage 3 Contracts
 
 ## Infrastructure baseline
-- Database: Supabase Postgres
+- Database provider: `excel` (default), path in Drive via `EXCEL_DB_PATH`
+- Optional provider: `supabase`
 - Hosting: Vercel (Serverless API)
 
 ## Required environment variables
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_ANON_KEY` (reserved for web clients)
+- `DB_PROVIDER` (`excel` or `supabase`)
+- `EXCEL_DB_PATH` (when `DB_PROVIDER=excel`)
+- `SUPABASE_URL` (when `DB_PROVIDER=supabase`)
+- `SUPABASE_SERVICE_ROLE_KEY` (when `DB_PROVIDER=supabase`)
 - `GOOGLE_OAUTH_CLIENT_ID`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
 - `SESSION_TTL_HOURS`
 
-## Health
-`GET /health`
+## Core APIs
+- `GET /health`
+- `POST /auth/google/callback`
+- `POST /auth/logout`
+- `GET /auth/me`
+- `GET /audit-log`
 
-Response:
-```json
-{
-  "status": "ok",
-  "stage": 2,
-  "infra": { "database": "supabase", "hosting": "vercel" }
-}
-```
+## Daily operations APIs
+- `GET /daily-metrics?date=YYYY-MM-DD`
+- `PUT /daily-metrics/:date/:serviceType` (`serviceType`=`pickup|dropoff`)
+- `GET /incidents?date=&serviceType=`
+- `POST /incidents`
+- `PUT /incidents/:id`
+- `POST /incidents/recalculate`
+- `PUT /day-types/:date`
 
-## Google callback
-`POST /auth/google/callback`
+## Validation rules
+- Quantitative fields must be integers >= 0.
+- `affectedPassengers <= registeredPassengers`
+- `issuesCount <= ridesCount`
+- `delayMinutes` is mandatory when `issueType=delay`.
 
-Body:
-```json
-{ "idToken": "<google_id_token>" }
-```
-
-Response:
-```json
-{
-  "user": { "id": "...", "email": "...", "fullName": "..." },
-  "session": { "token": "...", "expiresAt": "..." }
-}
-```
-
-## Current user
-`GET /auth/me`
-Header: `Authorization: Bearer <sessionToken>`
-
-## Logout
-`POST /auth/logout`
-Header: `Authorization: Bearer <sessionToken>`
-
-## Audit log
-`GET /audit-log?actorUserId=&entityType=&action=&dateFrom=&dateTo=&limit=`
-Header: `Authorization: Bearer <sessionToken>`
+All non-health endpoints require `Authorization: Bearer <sessionToken>`.

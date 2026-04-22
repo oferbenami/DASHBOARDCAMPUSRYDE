@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@dashboardryde/api",
   "version": "0.1.0",
   "private": true,
@@ -6,5 +6,8 @@
     "dev": "node src/server.js",
     "test": "node src/core/run-tests.js",
     "migrations:list": "node src/core/list-migrations.js"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
   }
 }

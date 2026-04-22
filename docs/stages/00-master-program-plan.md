@@ -12,7 +12,8 @@ Coordinate all delivery stages with explicit gates and parallel team ownership.
 
 ## Infrastructure lock
 - Hosting/Distribution: Vercel
-- Database: Supabase PostgreSQL
+- Initial DB: Excel in Drive
+- Future DB target: Supabase PostgreSQL
 
 ## Integration cadence
 - Weekly integration cut on Thursdays.
@@ -21,4 +22,4 @@ Coordinate all delivery stages with explicit gates and parallel team ownership.
 ## Global acceptance
 - Functional scope delivered per approved phase docs.
 - Auditability and performance targets tracked from stage 2 onward.
-- Integration, security, and UAT validations run on Vercel + Supabase stack only.
+- Integration, security, and UAT validations run on Vercel stack.

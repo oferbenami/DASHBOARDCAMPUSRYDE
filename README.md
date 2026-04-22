@@ -2,9 +2,10 @@
 
 This repository contains the staged implementation for the campus transport dashboard platform.
 
-## Infrastructure lock
-- Database: Supabase (PostgreSQL)
+## Infrastructure lock (current)
+- Initial database: Excel file in Drive-synced path
 - Deployment: Vercel (Web + API)
+- Future database target: Supabase (PostgreSQL)
 
 ## Workspace layout
 - `apps/web`: Web UI shell (React + TypeScript placeholder)

@@ -1,32 +1,31 @@
-﻿# Connection Setup (Supabase + Vercel)
+﻿# Connection Setup (Excel Drive + Vercel)
 
 ## 1) Fill environment values
 Create `.env.local` from `.env.example` and set:
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `DB_PROVIDER=excel`
+- `EXCEL_DB_PATH` to your Drive synced file path
+  - Example: `C:\Users\oferi\My Drive\dashboardcampus\operations-store.xlsx`
 - `GOOGLE_OAUTH_CLIENT_ID`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
 
-## 2) Run migrations on Supabase
-Execute SQL files in this order via Supabase SQL Editor:
-1. `apps/api/db/migrations/001_init_identity.sql`
-2. `apps/api/db/migrations/002_indexes_identity.sql`
-
-## 3) Link and configure Vercel project
+## 2) Validate local connectivity
 ```bash
-vercel link
-vercel env add SUPABASE_URL
-vercel env add SUPABASE_ANON_KEY
-vercel env add SUPABASE_SERVICE_ROLE_KEY
-vercel env add GOOGLE_OAUTH_CLIENT_ID
-vercel env add GOOGLE_OAUTH_CLIENT_SECRET
+npm run check:connections
 ```
 
-## 4) Validate locally
+## 3) Run API + Web locally
 ```bash
 npm --workspace @dashboardryde/api run dev
-node scripts/check-connections.mjs
+```
+Open `apps/web/src/index.html` in browser (or host statically) and set API base URL + session token.
+
+## 4) Configure Vercel env vars
+```bash
+vercel link
+vercel env add DB_PROVIDER
+vercel env add EXCEL_DB_PATH
+vercel env add GOOGLE_OAUTH_CLIENT_ID
+vercel env add GOOGLE_OAUTH_CLIENT_SECRET
 ```
 
 ## 5) Deploy
@@ -36,6 +35,7 @@ vercel --prod
 
 ## 6) Smoke tests
 - `GET /api/health`
-- `POST /api/auth/google/callback`
-- `GET /api/auth/me`
+- `PUT /api/daily-metrics/{date}/pickup`
+- `POST /api/incidents`
+- `POST /api/incidents/recalculate`
 - `GET /api/audit-log`

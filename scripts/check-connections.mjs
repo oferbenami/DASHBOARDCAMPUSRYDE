@@ -1,22 +1,22 @@
-﻿import { createServer } from "node:http";
+﻿import fs from "node:fs";
+import path from "node:path";
 
-const required = [
-  "SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "GOOGLE_OAUTH_CLIENT_ID"
-];
+const provider = (process.env.DB_PROVIDER || "excel").toLowerCase();
 
-const missing = required.filter((k) => !process.env[k]);
-if (missing.length > 0) {
-  console.error("Missing required env vars:");
-  for (const key of missing) console.error(`- ${key}`);
+if (!process.env.GOOGLE_OAUTH_CLIENT_ID) {
+  console.error("Missing required env var: GOOGLE_OAUTH_CLIENT_ID");
   process.exit(1);
 }
 
 async function checkSupabase() {
-  const url = process.env.SUPABASE_URL.replace(/\/$/, "");
+  const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const res = await fetch(`${url}/rest/v1/users?select=id&limit=1`, {
+
+  if (!url || !key) {
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required when DB_PROVIDER=supabase");
+  }
+
+  const res = await fetch(`${url.replace(/\/$/, "")}/rest/v1/users?select=id&limit=1`, {
     headers: {
       apikey: key,
       authorization: `Bearer ${key}`
@@ -29,28 +29,26 @@ async function checkSupabase() {
   }
 }
 
-async function checkHealth() {
-  const host = process.env.API_HOST || "127.0.0.1";
-  const port = Number(process.env.API_PORT || 4000);
-
-  await new Promise((resolve, reject) => {
-    const server = createServer(() => {}).listen(0, "127.0.0.1", () => {
-      server.close(resolve);
-    }).on("error", reject);
-  });
-
-  const res = await fetch(`http://${host}:${port}/health`).catch(() => null);
-  if (!res) {
-    console.log("API health skipped: local server not running.");
-    return;
+function checkExcel() {
+  const excelPath = process.env.EXCEL_DB_PATH || path.join(process.cwd(), "apps", "api", ".data", "operations-store.xlsx");
+  const folder = path.dirname(excelPath);
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder, { recursive: true });
   }
-  if (!res.ok) {
-    throw new Error(`API health failed with ${res.status}`);
+  if (!fs.existsSync(excelPath)) {
+    console.log(`Excel DB will be created on first write: ${excelPath}`);
+  } else {
+    console.log(`Excel DB detected: ${excelPath}`);
   }
 }
 
 (async () => {
-  await checkSupabase();
-  await checkHealth();
-  console.log("Connectivity checks passed (Supabase + API health).\n");
+  if (provider === "supabase") {
+    await checkSupabase();
+    console.log("Connectivity checks passed (Supabase).\n");
+    return;
+  }
+
+  checkExcel();
+  console.log("Connectivity checks passed (Excel provider).\n");
 })();

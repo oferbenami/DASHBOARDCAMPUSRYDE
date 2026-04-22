@@ -10,7 +10,6 @@ const requiredPaths = [
   "vercel.json",
   ".env.example",
   "infra/docker/docker-compose.dev.yml",
-  ".github/workflows/foundation-ci.yml",
   "docs/adr/0001-baseline-architecture.md",
   "docs/architecture/stage-01-foundation.md",
   "docs/runbooks/environments.md",

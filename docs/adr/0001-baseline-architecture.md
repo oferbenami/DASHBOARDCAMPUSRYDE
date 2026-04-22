@@ -9,14 +9,16 @@ Adopt a monorepo with three deployable surfaces:
 2. API service (REST-first), deployed on Vercel Serverless
 3. Hybrid mobile shell (Capacitor over web app)
 
-Database platform is locked to Supabase PostgreSQL.
+Data persistence strategy:
+- Initial phase: Excel workbook in Drive-synced path
+- Next phase: Supabase PostgreSQL
 
 ## Rationale
 - Shared domain logic and UI assets between web and mobile wrappers.
 - Fast team parallelization via workspace isolation.
-- Vercel + Supabase provides managed runtime and managed Postgres with low ops overhead.
+- Excel-first onboarding reduces setup friction at project start.
 
 ## Consequences
 - Stage 1 provides contracts and scaffolding only.
 - Domain modules (metrics, incidents, targets) are explicitly deferred to later stages.
-- All persistence contracts must be implementable on Supabase.
+- Persistence layer remains provider-based to enable controlled migration to Supabase.

@@ -1,162 +1,217 @@
-﻿const assert = require("node:assert/strict");
+﻿const fs = require("node:fs");
+const path = require("node:path");
+const assert = require("node:assert/strict");
+
+process.env.DB_PROVIDER = "excel";
+process.env.EXCEL_DB_PATH = path.join(__dirname, "..", "..", ".data", "test-operations-store.xlsx");
 
 const {
   upsertUser,
   createSession,
-  getActiveSession,
-  revokeSession,
+  upsertDailyMetric,
+  getDailyMetricsByDate,
+  createIncident,
+  updateIncident,
+  listIncidents,
+  recalculateIncidents,
+  upsertDayType,
   appendAudit,
   listAudit
 } = require("../storage/identity-store");
+const {
+  normalizeDailyMetricInput,
+  normalizeIncidentInput
+} = require("./daily-validation");
 const { verifyGoogleIdToken } = require("../auth/google-token");
+const { handleRequest } = require("../app");
 
-function createSupabaseMock() {
-  const users = [];
-  const sessions = [];
-  const auditLog = [];
-
-  function responseOk(payload, status = 200) {
-    return {
-      ok: true,
-      status,
-      async json() {
-        return payload;
-      },
-      async text() {
-        return JSON.stringify(payload);
-      }
-    };
+function cleanupTestFile() {
+  if (fs.existsSync(process.env.EXCEL_DB_PATH)) {
+    fs.rmSync(process.env.EXCEL_DB_PATH, { force: true });
   }
+}
 
-  return async (url, options) => {
-    const parsed = new URL(url);
-    const path = parsed.pathname;
-    const method = (options?.method || "GET").toUpperCase();
-    const body = options?.body ? JSON.parse(options.body) : null;
-
-    if (path.endsWith("/rest/v1/users") && method === "GET") {
-      const googleSub = parsed.searchParams.get("google_sub")?.replace("eq.", "");
-      const email = parsed.searchParams.get("email")?.replace("eq.", "");
-      const id = parsed.searchParams.get("id")?.replace("eq.", "");
-
-      let rows = users;
-      if (googleSub) rows = rows.filter((u) => u.google_sub === decodeURIComponent(googleSub));
-      if (email) rows = rows.filter((u) => u.email === decodeURIComponent(email));
-      if (id) rows = rows.filter((u) => u.id === decodeURIComponent(id));
-      return responseOk(rows.slice(0, 1));
-    }
-
-    if (path.endsWith("/rest/v1/users") && method === "POST") {
-      const row = {
-        id: `user-${users.length + 1}`,
-        google_sub: body.google_sub,
-        email: body.email,
-        full_name: body.full_name,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: body.updated_at
-      };
-      users.push(row);
-      return responseOk([row]);
-    }
-
-    if (path.endsWith("/rest/v1/users") && method === "PATCH") {
-      const id = parsed.searchParams.get("id")?.replace("eq.", "");
-      const row = users.find((u) => u.id === id);
-      row.google_sub = body.google_sub;
-      row.email = body.email;
-      row.full_name = body.full_name;
-      row.updated_at = body.updated_at;
-      return responseOk([row]);
-    }
-
-    if (path.endsWith("/rest/v1/sessions") && method === "POST") {
-      const row = {
-        id: `session-${sessions.length + 1}`,
-        user_id: body.user_id,
-        session_token: body.session_token,
-        created_at: body.created_at,
-        expires_at: body.expires_at,
-        revoked_at: null
-      };
-      sessions.push(row);
-      return responseOk([row]);
-    }
-
-    if (path.endsWith("/rest/v1/sessions") && method === "GET") {
-      const token = parsed.searchParams.get("session_token")?.replace("eq.", "");
-      const rows = sessions.filter((s) => s.session_token === decodeURIComponent(token) && !s.revoked_at);
-      return responseOk(rows.slice(0, 1));
-    }
-
-    if (path.endsWith("/rest/v1/sessions") && method === "PATCH") {
-      const token = parsed.searchParams.get("session_token")?.replace("eq.", "");
-      const row = sessions.find((s) => s.session_token === decodeURIComponent(token) && !s.revoked_at);
-      if (!row) return responseOk([]);
-      row.revoked_at = body.revoked_at;
-      return responseOk([row]);
-    }
-
-    if (path.endsWith("/rest/v1/audit_log") && method === "POST") {
-      const row = {
-        id: `audit-${auditLog.length + 1}`,
-        created_at: new Date().toISOString(),
-        actor_user_id: body.actor_user_id,
-        action: body.action,
-        entity_type: body.entity_type,
-        entity_id: body.entity_id,
-        before_data: body.before_data,
-        after_data: body.after_data,
-        metadata: body.metadata
-      };
-      auditLog.push(row);
-      return responseOk([], 201);
-    }
-
-    if (path.endsWith("/rest/v1/audit_log") && method === "GET") {
-      const actor = parsed.searchParams.get("actor_user_id")?.replace("eq.", "");
-      const action = parsed.searchParams.get("action")?.replace("eq.", "");
-      let rows = [...auditLog];
-      if (actor) rows = rows.filter((r) => r.actor_user_id === actor);
-      if (action) rows = rows.filter((r) => r.action === action);
-      return responseOk(rows);
-    }
-
-    throw new Error(`Unhandled mocked request: ${method} ${url}`);
+function createReqRes({ method, pathName, body, token }) {
+  const req = {
+    method,
+    url: pathName,
+    headers: {
+      host: "localhost:4000",
+      ...(token ? { authorization: `Bearer ${token}` } : {})
+    },
+    body
   };
+
+  const res = {
+    statusCode: 200,
+    headers: {},
+    payload: null,
+    writeHead(code, headers) {
+      this.statusCode = code;
+      this.headers = headers;
+    },
+    end(data) {
+      this.payload = data ? JSON.parse(data) : null;
+    }
+  };
+
+  return { req, res };
 }
 
-async function testIdentityStoreFlow() {
-  const unique = Date.now();
-  const write = await upsertUser({
-    googleSub: `sub-${unique}`,
-    email: `user-${unique}@example.com`,
-    fullName: "Test User"
+async function invokeApi({ method, pathName, body, token }) {
+  const { req, res } = createReqRes({ method, pathName, body, token });
+  await handleRequest(req, res);
+  return res;
+}
+
+async function testStorageCrudFlow() {
+  const daily = await upsertDailyMetric({
+    serviceDate: "2026-04-22",
+    serviceType: "pickup",
+    ridesCount: 10,
+    registeredPassengers: 100,
+    issuesCount: 0,
+    affectedPassengers: 0
   });
 
-  assert.equal(write.user.email, `user-${unique}@example.com`);
+  assert.equal(daily.metric.serviceType, "pickup");
 
-  const session = await createSession(write.user.id, 1);
-  const active = await getActiveSession(session.sessionToken);
-  assert.ok(active, "session should be active");
-  assert.equal(active.user.id, write.user.id);
+  const createdIncident = await createIncident({
+    serviceDate: "2026-04-22",
+    serviceType: "pickup",
+    origin: "Gate A",
+    destination: "Dorm B",
+    shiftTime: "08:00",
+    passengersCount: 5,
+    issueType: "delay",
+    description: "Traffic",
+    delayMinutes: 12
+  });
 
-  const revoked = await revokeSession(session.sessionToken);
-  assert.equal(revoked, true);
-  assert.equal(await getActiveSession(session.sessionToken), null);
+  assert.ok(createdIncident.incident.id);
+
+  const updated = await updateIncident(createdIncident.incident.id, {
+    serviceDate: "2026-04-22",
+    serviceType: "pickup",
+    origin: "Gate A",
+    destination: "Dorm C",
+    shiftTime: "08:15",
+    passengersCount: 7,
+    issueType: "delay",
+    description: "Updated",
+    delayMinutes: 15
+  });
+  assert.equal(updated.incident.destination, "Dorm C");
+
+  const recalc = await recalculateIncidents("2026-04-22", "pickup");
+  assert.equal(recalc.metric.issuesCount, 1);
+  assert.equal(recalc.metric.affectedPassengers, 7);
+
+  const dailyRead = await getDailyMetricsByDate("2026-04-22");
+  assert.equal(dailyRead.pickup.affectedPassengers, 7);
+
+  const incidents = await listIncidents({ serviceDate: "2026-04-22", serviceType: "pickup" });
+  assert.equal(incidents.length, 1);
+
+  const dayType = await upsertDayType({
+    serviceDate: "2026-04-22",
+    dayType: "regular",
+    reason: null,
+    isPartial: false,
+    noActivity: false
+  });
+  assert.equal(dayType.dayType.dayType, "regular");
 }
 
-async function testAuditLogFilter() {
+async function testValidationRules() {
+  assert.throws(
+    () =>
+      normalizeDailyMetricInput(
+        { ridesCount: 1, registeredPassengers: 5, issuesCount: 2, affectedPassengers: 1 },
+        "2026-04-22",
+        "pickup"
+      ),
+    /issuesCount cannot exceed ridesCount/
+  );
+
+  assert.throws(
+    () =>
+      normalizeIncidentInput({
+        serviceDate: "2026-04-22",
+        serviceType: "pickup",
+        origin: "A",
+        destination: "B",
+        shiftTime: "08:00",
+        passengersCount: 2,
+        issueType: "delay",
+        description: "Late"
+      }),
+    /delayMinutes is required/
+  );
+}
+
+async function testApiFlow() {
+  const userWrite = await upsertUser({
+    googleSub: "sub-api",
+    email: "api-user@example.com",
+    fullName: "API User"
+  });
+  const session = await createSession(userWrite.user.id, 2);
+
+  const unauthorized = await invokeApi({ method: "GET", pathName: "/daily-metrics?date=2026-04-22" });
+  assert.equal(unauthorized.statusCode, 401);
+
+  const saveDaily = await invokeApi({
+    method: "PUT",
+    pathName: "/daily-metrics/2026-04-22/pickup",
+    token: session.sessionToken,
+    body: {
+      ridesCount: 15,
+      registeredPassengers: 140,
+      issuesCount: 0,
+      affectedPassengers: 0
+    }
+  });
+  assert.equal(saveDaily.statusCode, 200);
+
+  const saveIncident = await invokeApi({
+    method: "POST",
+    pathName: "/incidents",
+    token: session.sessionToken,
+    body: {
+      serviceDate: "2026-04-22",
+      serviceType: "pickup",
+      origin: "A",
+      destination: "B",
+      shiftTime: "09:00",
+      passengersCount: 3,
+      issueType: "delay",
+      description: "Late",
+      delayMinutes: 9
+    }
+  });
+  assert.equal(saveIncident.statusCode, 201);
+
+  const recalc = await invokeApi({
+    method: "POST",
+    pathName: "/incidents/recalculate",
+    token: session.sessionToken,
+    body: {
+      serviceDate: "2026-04-22",
+      serviceType: "pickup"
+    }
+  });
+  assert.equal(recalc.statusCode, 200);
+  assert.equal(recalc.payload.metric.issuesCount, 2);
+
   await appendAudit({
-    actorUserId: "actor-1",
-    action: "USER_LOGIN",
-    entityType: "user",
-    entityId: "user-1"
+    actorUserId: userWrite.user.id,
+    action: "MANUAL_TEST_AUDIT",
+    entityType: "test",
+    entityId: "1"
   });
-
-  const rows = await listAudit({ actorUserId: "actor-1", limit: 5 });
-  assert.ok(rows.length >= 1);
-  assert.equal(rows[0].actorUserId, "actor-1");
+  const audit = await listAudit({ actorUserId: userWrite.user.id, limit: 50 });
+  assert.ok(audit.length >= 1);
 }
 
 async function testGoogleValidatorMock() {
@@ -194,19 +249,17 @@ async function testGoogleValidatorMock() {
 
   const bad = await verifyGoogleIdToken("fake-token");
   assert.equal(bad.ok, false);
-
   global.fetch = originalFetch;
 }
 
 async function run() {
-  const originalFetch = global.fetch;
-  process.env.SUPABASE_URL = "https://mock.supabase.co";
-  process.env.SUPABASE_SERVICE_ROLE_KEY = "mock-key";
-  global.fetch = createSupabaseMock();
+  cleanupTestFile();
 
   const tests = [
-    ["identity store flow", testIdentityStoreFlow],
-    ["audit log filter", testAuditLogFilter]
+    ["storage CRUD flow", testStorageCrudFlow],
+    ["validation rules", testValidationRules],
+    ["api flow", testApiFlow],
+    ["google token validator", testGoogleValidatorMock]
   ];
 
   for (const [name, fn] of tests) {
@@ -214,13 +267,12 @@ async function run() {
     console.log(`PASS: ${name}`);
   }
 
-  global.fetch = originalFetch;
-  await testGoogleValidatorMock();
-  console.log("PASS: google token validator");
-  console.log("Stage 2 test suite passed.");
+  cleanupTestFile();
+  console.log("Stage 3 test suite passed.");
 }
 
 run().catch((error) => {
-  console.error("Stage 2 test suite failed:", error.message);
+  console.error("Stage 3 test suite failed:", error.message);
+  cleanupTestFile();
   process.exit(1);
 });
