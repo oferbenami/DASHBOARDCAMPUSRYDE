@@ -272,5 +272,11 @@ module.exports = {
   },
   upsertDayType: async () => {
     throw new Error("Stage 3 day types are not implemented for supabase provider yet");
+  },
+  getKpiSummary: async () => {
+    throw new Error("Stage 4 KPI engine is not implemented for supabase provider yet");
+  },
+  getKpiTrends: async () => {
+    throw new Error("Stage 4 KPI engine is not implemented for supabase provider yet");
   }
 };

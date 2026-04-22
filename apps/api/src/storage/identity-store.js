@@ -23,5 +23,7 @@ module.exports = {
   createIncident: (...args) => backend().createIncident(...args),
   updateIncident: (...args) => backend().updateIncident(...args),
   recalculateIncidents: (...args) => backend().recalculateIncidents(...args),
-  upsertDayType: (...args) => backend().upsertDayType(...args)
+  upsertDayType: (...args) => backend().upsertDayType(...args),
+  getKpiSummary: (...args) => backend().getKpiSummary(...args),
+  getKpiTrends: (...args) => backend().getKpiTrends(...args)
 };

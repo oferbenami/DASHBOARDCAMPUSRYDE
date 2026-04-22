@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DashboardRyde - Daily Operations</title>
+    <title>DashboardRyde - Stage 4 Dashboard</title>
     <style>
       :root {
         --bg: #f4f6fb;
@@ -13,7 +13,6 @@
         --accent: #0866c6;
         --good: #13795b;
       }
-
       * { box-sizing: border-box; }
       body {
         margin: 0;
@@ -21,34 +20,27 @@
         background: linear-gradient(180deg, #f4f6fb, #eef3fb);
         color: var(--text);
       }
-
       .wrap {
-        max-width: 1120px;
+        max-width: 1200px;
         margin: 0 auto;
         padding: 16px;
         display: grid;
         gap: 14px;
       }
-
       .card {
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: 12px;
         padding: 14px;
       }
-
-      h1, h2 { margin: 0 0 12px; }
+      h1, h2, h3 { margin: 0 0 10px; }
       h1 { font-size: 1.2rem; }
       h2 { font-size: 1rem; }
-
-      .grid {
-        display: grid;
-        gap: 10px;
-      }
-
+      h3 { font-size: 0.95rem; }
+      .grid { display: grid; gap: 10px; }
       .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+      .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
       .grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-
       label { font-size: 0.83rem; display: block; margin-bottom: 4px; }
       input, select, textarea, button {
         width: 100%;
@@ -57,7 +49,6 @@
         border: 1px solid #c8d2e2;
         font: inherit;
       }
-
       textarea { min-height: 70px; resize: vertical; }
       button {
         background: var(--accent);
@@ -67,7 +58,14 @@
       }
       button.secondary { background: #49566a; }
       button.good { background: var(--good); }
-
+      .kpi {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fbfdff;
+      }
+      .kpi .name { font-size: 0.8rem; color: #4a5a73; }
+      .kpi .val { font-size: 1.1rem; font-weight: 600; }
       table { width: 100%; border-collapse: collapse; }
       th, td {
         border-bottom: 1px solid var(--line);
@@ -75,23 +73,20 @@
         padding: 8px;
         font-size: 0.9rem;
       }
-
       .status {
         font-size: 0.9rem;
         padding: 8px;
         background: #ecf5ff;
         border-radius: 8px;
       }
-
-      @media (max-width: 600px) {
-        .wrap { padding: 10px; }
-      }
+      #trendTable td, #trendTable th { font-size: 0.82rem; }
+      @media (max-width: 600px) { .wrap { padding: 10px; } }
     </style>
   </head>
   <body>
     <div class="wrap">
       <section class="card">
-        <h1>DashboardRyde - הזנה יומית (שלב 3)</h1>
+        <h1>DashboardRyde - Dashboard + Daily Operations (Stage 4)</h1>
         <div class="grid cols-2">
           <div>
             <label>API Base URL</label>
@@ -102,6 +97,32 @@
             <input id="sessionToken" placeholder="Paste Bearer token" />
           </div>
         </div>
+      </section>
+
+      <section class="card">
+        <h2>Dashboard KPI</h2>
+        <div class="grid cols-3">
+          <div><label>Date From</label><input id="kpiFrom" type="date" /></div>
+          <div><label>Date To</label><input id="kpiTo" type="date" /></div>
+          <div style="display:flex;align-items:flex-end"><button id="loadDashboard">טען Dashboard</button></div>
+        </div>
+        <div class="grid cols-3" style="margin-top:10px">
+          <div class="kpi"><div class="name">נוסעים כולל</div><div class="val" id="kpiPassengers">0</div></div>
+          <div class="kpi"><div class="name">נסיעות כולל</div><div class="val" id="kpiRides">0</div></div>
+          <div class="kpi"><div class="name">יעילות ממוצעת</div><div class="val" id="kpiEfficiency">0</div></div>
+          <div class="kpi"><div class="name">מספר תקלות</div><div class="val" id="kpiIssues">0</div></div>
+          <div class="kpi"><div class="name">% נסיעות עם תקלה</div><div class="val" id="kpiIssuesRate">0%</div></div>
+          <div class="kpi"><div class="name">איכות שירות</div><div class="val" id="kpiQuality">0%</div></div>
+        </div>
+        <h3 style="margin-top:12px">מגמה יומית</h3>
+        <table id="trendTable">
+          <thead>
+            <tr>
+              <th>תאריך</th><th>נוסעים</th><th>נסיעות</th><th>תקלות</th><th>% תקלות</th><th>איכות</th>
+            </tr>
+          </thead>
+          <tbody id="trendRows"></tbody>
+        </table>
       </section>
 
       <section class="card">
@@ -135,13 +156,7 @@
         <h2>פאנל תקלות</h2>
         <div class="grid cols-4">
           <div><label>תאריך שירות</label><input id="incident_date" type="date" /></div>
-          <div>
-            <label>סוג שירות</label>
-            <select id="incident_type">
-              <option value="pickup">pickup</option>
-              <option value="dropoff">dropoff</option>
-            </select>
-          </div>
+          <div><label>סוג שירות</label><select id="incident_type"><option value="pickup">pickup</option><option value="dropoff">dropoff</option></select></div>
           <div><label>מוצא</label><input id="incident_origin" /></div>
           <div><label>יעד</label><input id="incident_destination" /></div>
           <div><label>שעת משמרת</label><input id="incident_shift" placeholder="08:00" /></div>
@@ -149,55 +164,23 @@
           <div>
             <label>סוג תקלה</label>
             <select id="incident_issue_type">
-              <option value="delay">delay</option>
-              <option value="no_show">no_show</option>
-              <option value="vehicle_failure">vehicle_failure</option>
-              <option value="over_capacity">over_capacity</option>
-              <option value="route_change">route_change</option>
-              <option value="dispatch_error">dispatch_error</option>
-              <option value="driver_service">driver_service</option>
-              <option value="other">other</option>
+              <option value="delay">delay</option><option value="no_show">no_show</option><option value="vehicle_failure">vehicle_failure</option><option value="over_capacity">over_capacity</option><option value="route_change">route_change</option><option value="dispatch_error">dispatch_error</option><option value="driver_service">driver_service</option><option value="other">other</option>
             </select>
           </div>
           <div><label>דקות איחור</label><input id="incident_delay_minutes" type="number" min="0" /></div>
         </div>
-        <div style="margin-top: 10px">
-          <label>תיאור</label>
-          <textarea id="incident_description"></textarea>
-        </div>
-        <div class="grid cols-2" style="margin-top: 10px">
-          <button id="saveIncident">שמור תקלה</button>
-          <button id="recalcIncident" class="good">עדכן אוטומטית לטבלה הראשית</button>
-        </div>
+        <div style="margin-top: 10px"><label>תיאור</label><textarea id="incident_description"></textarea></div>
+        <div class="grid cols-2" style="margin-top:10px"><button id="saveIncident">שמור תקלה</button><button id="recalcIncident" class="good">עדכן אוטומטית לטבלה הראשית</button></div>
       </section>
 
       <section class="card">
         <h2>רשימת תקלות</h2>
         <div class="grid cols-2">
           <div><label>תאריך סינון</label><input id="filter_date" type="date" /></div>
-          <div>
-            <label>סוג שירות</label>
-            <select id="filter_type">
-              <option value="pickup">pickup</option>
-              <option value="dropoff">dropoff</option>
-            </select>
-          </div>
+          <div><label>סוג שירות</label><select id="filter_type"><option value="pickup">pickup</option><option value="dropoff">dropoff</option></select></div>
         </div>
-        <button id="loadIncidents" class="secondary" style="margin-top: 10px">טען תקלות</button>
-        <table style="margin-top: 12px">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>תאריך</th>
-              <th>סוג</th>
-              <th>מוצא</th>
-              <th>יעד</th>
-              <th>נוסעים</th>
-              <th>תקלה</th>
-            </tr>
-          </thead>
-          <tbody id="incidentRows"></tbody>
-        </table>
+        <button id="loadIncidents" class="secondary" style="margin-top:10px">טען תקלות</button>
+        <table style="margin-top:12px"><thead><tr><th>ID</th><th>תאריך</th><th>סוג</th><th>מוצא</th><th>יעד</th><th>נוסעים</th><th>תקלה</th></tr></thead><tbody id="incidentRows"></tbody></table>
       </section>
 
       <section class="status" id="statusBox">Ready.</section>
@@ -211,8 +194,8 @@
       };
 
       const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
+      const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+      const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 6);
 
       function toDateInputValue(d) {
         const y = d.getFullYear();
@@ -223,6 +206,8 @@
 
       const pickupDate = toDateInputValue(today);
       const dropoffDate = toDateInputValue(yesterday);
+      document.getElementById("kpiFrom").value = toDateInputValue(weekAgo);
+      document.getElementById("kpiTo").value = pickupDate;
       document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
       document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
       document.getElementById("incident_date").value = pickupDate;
@@ -231,23 +216,16 @@
       async function api(method, path, body) {
         const res = await fetch(`${ui.apiBase.value}${path}`, {
           method,
-          headers: {
-            "content-type": "application/json",
-            authorization: `Bearer ${ui.token.value}`
-          },
+          headers: { "content-type": "application/json", authorization: `Bearer ${ui.token.value}` },
           body: body ? JSON.stringify(body) : undefined
         });
-
         const payload = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(payload.error || `HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
         return payload;
       }
 
-      function setStatus(msg) {
-        ui.status.textContent = msg;
-      }
+      function setStatus(msg) { ui.status.textContent = msg; }
+      function fmt(n, digits = 2) { return Number(n || 0).toFixed(digits); }
 
       function sectionBody(prefix) {
         return {
@@ -261,38 +239,51 @@
       async function loadDailySection(date, type, prefix) {
         const data = await api("GET", `/daily-metrics?date=${date}`);
         const row = data[type];
-        if (!row) {
-          return;
-        }
+        if (!row) return;
         document.getElementById(`${prefix}_rides`).value = row.ridesCount;
         document.getElementById(`${prefix}_registered`).value = row.registeredPassengers;
         document.getElementById(`${prefix}_issues`).value = row.issuesCount;
         document.getElementById(`${prefix}_affected`).value = row.affectedPassengers;
       }
 
-      document.getElementById("savePickup").onclick = async () => {
-        try {
-          await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup"));
-          setStatus("Saved pickup daily metrics");
-        } catch (error) {
-          setStatus(error.message);
+      async function loadDashboard() {
+        const from = document.getElementById("kpiFrom").value;
+        const to = document.getElementById("kpiTo").value;
+
+        const summary = await api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`);
+        const trends = await api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`);
+
+        document.getElementById("kpiPassengers").textContent = fmt(summary.total.passengers, 0);
+        document.getElementById("kpiRides").textContent = fmt(summary.total.rides, 0);
+        document.getElementById("kpiEfficiency").textContent = fmt(summary.total.efficiency);
+        document.getElementById("kpiIssues").textContent = fmt(summary.total.issues, 0);
+        document.getElementById("kpiIssuesRate").textContent = `${fmt(summary.total.issuesRate)}%`;
+        document.getElementById("kpiQuality").textContent = `${fmt(summary.total.serviceQuality)}%`;
+
+        const tbody = document.getElementById("trendRows");
+        tbody.innerHTML = "";
+        for (const p of trends.points) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(p.total.passengers,0)}</td><td>${fmt(p.total.rides,0)}</td><td>${fmt(p.total.issues,0)}</td><td>${fmt(p.total.issuesRate)}%</td><td>${fmt(p.total.serviceQuality)}%</td>`;
+          tbody.appendChild(tr);
         }
+      }
+
+      document.getElementById("loadDashboard").onclick = async () => {
+        try { await loadDashboard(); setStatus("Dashboard loaded"); } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("savePickup").onclick = async () => {
+        try { await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup")); await loadDashboard(); setStatus("Saved pickup daily metrics"); } catch (e) { setStatus(e.message); }
       };
 
       document.getElementById("saveDropoff").onclick = async () => {
-        try {
-          await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff"));
-          setStatus("Saved dropoff daily metrics");
-        } catch (error) {
-          setStatus(error.message);
-        }
+        try { await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff")); await loadDashboard(); setStatus("Saved dropoff daily metrics"); } catch (e) { setStatus(e.message); }
       };
 
       document.getElementById("saveIncident").onclick = async () => {
         try {
-          const issueType = document.getElementById("incident_issue_type").value;
           const delayRaw = document.getElementById("incident_delay_minutes").value;
-
           await api("POST", "/incidents", {
             serviceDate: document.getElementById("incident_date").value,
             serviceType: document.getElementById("incident_type").value,
@@ -300,26 +291,19 @@
             destination: document.getElementById("incident_destination").value,
             shiftTime: document.getElementById("incident_shift").value,
             passengersCount: Number(document.getElementById("incident_passengers").value || 0),
-            issueType,
+            issueType: document.getElementById("incident_issue_type").value,
             description: document.getElementById("incident_description").value,
             delayMinutes: delayRaw === "" ? null : Number(delayRaw)
           });
-
           setStatus("Incident saved");
-        } catch (error) {
-          setStatus(error.message);
-        }
+        } catch (e) { setStatus(e.message); }
       };
 
       document.getElementById("recalcIncident").onclick = async () => {
         try {
           const date = document.getElementById("incident_date").value;
           const type = document.getElementById("incident_type").value;
-          const result = await api("POST", "/incidents/recalculate", {
-            serviceDate: date,
-            serviceType: type
-          });
-
+          const result = await api("POST", "/incidents/recalculate", { serviceDate: date, serviceType: type });
           if (date === pickupDate && type === "pickup") {
             document.getElementById("pickup_issues").value = result.metric.issuesCount;
             document.getElementById("pickup_affected").value = result.metric.affectedPassengers;
@@ -328,11 +312,9 @@
             document.getElementById("dropoff_issues").value = result.metric.issuesCount;
             document.getElementById("dropoff_affected").value = result.metric.affectedPassengers;
           }
-
+          await loadDashboard();
           setStatus("Recalculation completed");
-        } catch (error) {
-          setStatus(error.message);
-        }
+        } catch (e) { setStatus(e.message); }
       };
 
       document.getElementById("loadIncidents").onclick = async () => {
@@ -348,20 +330,25 @@
             tbody.appendChild(tr);
           }
           setStatus(`Loaded ${data.incidents.length} incidents`);
-        } catch (error) {
-          setStatus(error.message);
-        }
+        } catch (e) { setStatus(e.message); }
       };
 
       async function bootstrap() {
         try {
           await loadDailySection(pickupDate, "pickup", "pickup");
           await loadDailySection(dropoffDate, "dropoff", "dropoff");
-          setStatus("Loaded daily sections");
+          await loadDashboard();
+          setStatus("Loaded dashboard and daily sections");
         } catch {
           setStatus("Set API base URL and session token, then continue.");
         }
       }
+
+      setInterval(() => {
+        if (ui.token.value.trim()) {
+          loadDashboard().catch(() => {});
+        }
+      }, 10000);
 
       bootstrap();
     </script>

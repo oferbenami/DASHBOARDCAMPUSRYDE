@@ -16,7 +16,9 @@ const {
   createIncident,
   updateIncident,
   recalculateIncidents,
-  upsertDayType
+  upsertDayType,
+  getKpiSummary,
+  getKpiTrends
 } = require("./storage/identity-store");
 const {
   isDateString,
@@ -358,6 +360,90 @@ async function handleUpsertDayType(req, res, serviceDate) {
   sendJson(res, 200, { dayType: saved.dayType });
 }
 
+function resolveRange(parsedUrl) {
+  const dateFrom = parsedUrl.searchParams.get("dateFrom") || null;
+  const dateTo = parsedUrl.searchParams.get("dateTo") || null;
+  if (dateFrom && !isDateString(dateFrom)) {
+    throw new Error("dateFrom must be in YYYY-MM-DD format");
+  }
+  if (dateTo && !isDateString(dateTo)) {
+    throw new Error("dateTo must be in YYYY-MM-DD format");
+  }
+  return { dateFrom, dateTo };
+}
+
+async function handleKpiSummary(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const summary = await getKpiSummary(range);
+  sendJson(res, 200, summary);
+}
+
+async function handleKpiTrends(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const trends = await getKpiTrends(range);
+  sendJson(res, 200, trends);
+}
+
+async function handleKpiStream(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive"
+  });
+
+  const emit = async () => {
+    const summary = await getKpiSummary(range);
+    res.write(`event: kpi_summary\n`);
+    res.write(`data: ${JSON.stringify(summary)}\n\n`);
+  };
+
+  await emit();
+  const timer = setInterval(() => {
+    emit().catch(() => {});
+  }, 10000);
+
+  req.on("close", () => {
+    clearInterval(timer);
+  });
+}
+
 async function handleRequest(req, res) {
   const host = req.headers.host || "localhost";
   const parsedUrl = new URL(req.url, `http://${host}`);
@@ -431,6 +517,21 @@ async function handleRequest(req, res) {
     const dayTypeMatch = pathname.match(/^\/day-types\/(\d{4}-\d{2}-\d{2})$/);
     if (req.method === "PUT" && dayTypeMatch) {
       await handleUpsertDayType(req, res, dayTypeMatch[1]);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/kpi/summary") {
+      await handleKpiSummary(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/kpi/trends") {
+      await handleKpiTrends(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/kpi/stream") {
+      await handleKpiStream(req, res, parsedUrl);
       return;
     }
 

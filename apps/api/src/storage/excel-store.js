@@ -464,6 +464,111 @@ async function upsertDayType(input) {
   };
 }
 
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function safePercent(numerator, denominator) {
+  if (!denominator) {
+    return 0;
+  }
+  return (numerator / denominator) * 100;
+}
+
+function qualityScore(issuesRate, affectedRate) {
+  return 100 - 0.5 * issuesRate - 0.5 * affectedRate;
+}
+
+function aggregateRows(rows) {
+  const totals = rows.reduce(
+    (acc, row) => {
+      acc.passengers += toNumber(row.registeredPassengers);
+      acc.rides += toNumber(row.ridesCount);
+      acc.issues += toNumber(row.issuesCount);
+      acc.affected += toNumber(row.affectedPassengers);
+      return acc;
+    },
+    { passengers: 0, rides: 0, issues: 0, affected: 0 }
+  );
+
+  const efficiency = totals.rides ? totals.passengers / totals.rides : 0;
+  const issuesRate = safePercent(totals.issues, totals.rides);
+  const affectedRate = safePercent(totals.affected, totals.passengers);
+
+  return {
+    passengers: totals.passengers,
+    rides: totals.rides,
+    efficiency,
+    issues: totals.issues,
+    issuesRate,
+    affectedRate,
+    serviceQuality: qualityScore(issuesRate, affectedRate)
+  };
+}
+
+function filterByDateRange(rows, dateFrom, dateTo) {
+  return rows.filter((row) => {
+    if (dateFrom && row.serviceDate < dateFrom) {
+      return false;
+    }
+    if (dateTo && row.serviceDate > dateTo) {
+      return false;
+    }
+    return true;
+  });
+}
+
+async function getKpiSummary(filters) {
+  const state = loadWorkbookState();
+  const dateFrom = filters.dateFrom || null;
+  const dateTo = filters.dateTo || null;
+  const scoped = filterByDateRange(state.dailyMetrics, dateFrom, dateTo);
+
+  const pickupRows = scoped.filter((row) => row.serviceType === "pickup");
+  const dropoffRows = scoped.filter((row) => row.serviceType === "dropoff");
+
+  return {
+    range: { dateFrom, dateTo },
+    pickup: aggregateRows(pickupRows),
+    dropoff: aggregateRows(dropoffRows),
+    total: aggregateRows(scoped)
+  };
+}
+
+async function getKpiTrends(filters) {
+  const state = loadWorkbookState();
+  const dateFrom = filters.dateFrom || null;
+  const dateTo = filters.dateTo || null;
+  const scoped = filterByDateRange(state.dailyMetrics, dateFrom, dateTo);
+
+  const grouped = new Map();
+  for (const row of scoped) {
+    if (!grouped.has(row.serviceDate)) {
+      grouped.set(row.serviceDate, []);
+    }
+    grouped.get(row.serviceDate).push(row);
+  }
+
+  const points = [...grouped.entries()]
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+    .map(([serviceDate, rows]) => {
+      const pickupRows = rows.filter((row) => row.serviceType === "pickup");
+      const dropoffRows = rows.filter((row) => row.serviceType === "dropoff");
+      return {
+        serviceDate,
+        pickup: aggregateRows(pickupRows),
+        dropoff: aggregateRows(dropoffRows),
+        total: aggregateRows(rows)
+      };
+    });
+
+  return {
+    range: { dateFrom, dateTo },
+    points
+  };
+}
+
 module.exports = {
   upsertUser,
   createSession,
@@ -477,5 +582,7 @@ module.exports = {
   createIncident,
   updateIncident,
   recalculateIncidents,
-  upsertDayType
+  upsertDayType,
+  getKpiSummary,
+  getKpiTrends
 };

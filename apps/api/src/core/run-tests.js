@@ -204,6 +204,24 @@ async function testApiFlow() {
   assert.equal(recalc.statusCode, 200);
   assert.equal(recalc.payload.metric.issuesCount, 2);
 
+  const summary = await invokeApi({
+    method: "GET",
+    pathName: "/kpi/summary?dateFrom=2026-04-22&dateTo=2026-04-22",
+    token: session.sessionToken
+  });
+  assert.equal(summary.statusCode, 200);
+  assert.ok(summary.payload.total.rides >= 15);
+  assert.ok(summary.payload.total.issues >= 2);
+
+  const trends = await invokeApi({
+    method: "GET",
+    pathName: "/kpi/trends?dateFrom=2026-04-22&dateTo=2026-04-22",
+    token: session.sessionToken
+  });
+  assert.equal(trends.statusCode, 200);
+  assert.ok(Array.isArray(trends.payload.points));
+  assert.equal(trends.payload.points.length, 1);
+
   await appendAudit({
     actorUserId: userWrite.user.id,
     action: "MANUAL_TEST_AUDIT",

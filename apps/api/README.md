@@ -1,4 +1,4 @@
-﻿# API Stage 3 Contracts
+﻿# API Stage 4 Contracts
 
 ## Infrastructure baseline
 - Database provider: `excel` (default), path in Drive via `EXCEL_DB_PATH`
@@ -29,6 +29,11 @@
 - `PUT /incidents/:id`
 - `POST /incidents/recalculate`
 - `PUT /day-types/:date`
+
+## KPI APIs
+- `GET /kpi/summary?dateFrom=&dateTo=`
+- `GET /kpi/trends?dateFrom=&dateTo=`
+- `GET /kpi/stream?dateFrom=&dateTo=` (SSE)
 
 ## Validation rules
 - Quantitative fields must be integers >= 0.
