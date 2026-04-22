@@ -1,0 +1,8 @@
+﻿{
+  "appId": "com.dashboardryde.app",
+  "appName": "DashboardRyde",
+  "webDir": "../web/src",
+  "server": {
+    "androidScheme": "https"
+  }
+}

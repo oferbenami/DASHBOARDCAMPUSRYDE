@@ -1,0 +1,22 @@
+﻿version: "3.9"
+services:
+  api:
+    image: node:24-alpine
+    working_dir: /workspace
+    command: ["node", "apps/api/src/server.js"]
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: 4000
+      SUPABASE_URL: ${SUPABASE_URL:-https://example.supabase.co}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-replace-me}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ../..:/workspace
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ../../apps/web/src:/usr/share/nginx/html:ro

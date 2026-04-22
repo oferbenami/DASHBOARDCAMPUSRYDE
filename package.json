@@ -1,0 +1,19 @@
+﻿{
+  "name": "dashboardryde",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Campus transport operations platform - stage 1 foundation",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "validate:foundation": "node scripts/validate-foundation.mjs",
+    "check": "npm run validate:foundation",
+    "check:connections": "node scripts/check-connections.mjs"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
+  }
+}

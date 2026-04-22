@@ -1,0 +1,11 @@
+﻿{
+  "name": "@dashboardryde/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo Web app scaffold ready",
+    "build": "echo Web build pipeline placeholder",
+    "test": "echo No tests yet for stage 1"
+  }
+}

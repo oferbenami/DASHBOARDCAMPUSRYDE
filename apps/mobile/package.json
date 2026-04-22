@@ -1,0 +1,10 @@
+﻿{
+  "name": "@dashboardryde/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "sync": "echo Capacitor sync placeholder",
+    "open:android": "echo Android shell placeholder",
+    "open:ios": "echo iOS shell placeholder"
+  }
+}
