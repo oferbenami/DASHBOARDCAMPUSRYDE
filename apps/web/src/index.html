@@ -1,9 +1,10 @@
-﻿<!doctype html>
-<html lang="he" dir="ltr">
+<!doctype html>
+<html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DashboardRyde - Stage 4 Dashboard</title>
+    <title>DashboardRyde</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
       :root {
         --bg: #f4f6fb;
@@ -11,7 +12,12 @@
         --line: #d8dfea;
         --text: #142033;
         --accent: #0866c6;
+        --accent-hover: #0655a4;
         --good: #13795b;
+        --warn: #b45309;
+        --danger: #b91c1c;
+        --header-h: 56px;
+        --bottom-nav-h: 64px;
       }
       * { box-sizing: border-box; }
       body {
@@ -20,6 +26,182 @@
         background: linear-gradient(180deg, #f4f6fb, #eef3fb);
         color: var(--text);
       }
+
+      /* ═══════════════════════════════
+         LOGIN SCREEN
+      ═══════════════════════════════ */
+      #loginScreen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+      }
+      .login-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 48px 40px 40px;
+        max-width: 420px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 4px 24px rgba(8,102,198,0.08);
+      }
+      .login-logo {
+        font-size: 2.4rem;
+        margin-bottom: 4px;
+      }
+      .login-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin: 0 0 6px;
+      }
+      .login-subtitle {
+        font-size: 0.9rem;
+        color: #6b7a99;
+        margin: 0 0 32px;
+        line-height: 1.5;
+      }
+      .login-badge {
+        display: inline-block;
+        background: #e8f0fe;
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-bottom: 28px;
+      }
+      .btn-google {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 13px 20px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.18s;
+      }
+      .btn-google:hover { background: var(--accent-hover); }
+      .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+      .login-footer {
+        margin-top: 20px;
+        font-size: 0.78rem;
+        color: #9aa5bb;
+      }
+      #loginError {
+        display: none;
+        margin-top: 14px;
+        padding: 10px 14px;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        color: var(--danger);
+        font-size: 0.85rem;
+      }
+
+      /* ═══════════════════════════════
+         APP SCREEN
+      ═══════════════════════════════ */
+      #appScreen { display: none; }
+
+      /* ═══════════════════════════════
+         HEADER
+      ═══════════════════════════════ */
+      #appHeader {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        height: var(--header-h);
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        gap: 16px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      }
+      .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--accent);
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      .header-brand-icon { font-size: 1.4rem; }
+      .header-tabs {
+        display: flex;
+        gap: 4px;
+        flex: 1;
+        justify-content: center;
+      }
+      .tab-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 16px;
+        border: none;
+        background: none;
+        color: #6b7a99;
+        font-size: 0.88rem;
+        font-weight: 500;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+        white-space: nowrap;
+        width: auto;
+      }
+      .tab-btn:hover { background: #f0f4fd; color: var(--accent); }
+      .tab-btn.active {
+        background: #e8f0fe;
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .tab-btn .tab-icon { font-size: 1rem; }
+      .header-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-right: auto; /* pushes to left in RTL */
+      }
+      .user-name {
+        font-size: 0.85rem;
+        color: var(--text);
+        font-weight: 500;
+      }
+      .user-email {
+        font-size: 0.75rem;
+        color: #6b7a99;
+      }
+      .btn-logout {
+        padding: 6px 14px;
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font-size: 0.8rem;
+        color: #6b7a99;
+        cursor: pointer;
+        width: auto;
+        transition: background 0.15s, color 0.15s;
+      }
+      .btn-logout:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
+
+      /* ═══════════════════════════════
+         TAB PANELS
+      ═══════════════════════════════ */
+      .tab-panel { display: none; }
+      .tab-panel.active { display: block; }
       .wrap {
         max-width: 1200px;
         margin: 0 auto;
@@ -27,27 +209,45 @@
         display: grid;
         gap: 14px;
       }
+
+      /* ═══════════════════════════════
+         CARDS & LAYOUT
+      ═══════════════════════════════ */
       .card {
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: 12px;
-        padding: 14px;
+        padding: 16px;
       }
-      h1, h2, h3 { margin: 0 0 10px; }
-      h1 { font-size: 1.2rem; }
+      h1, h2, h3 { margin: 0 0 12px; }
+      h1 { font-size: 1.15rem; }
       h2 { font-size: 1rem; }
-      h3 { font-size: 0.95rem; }
+      h3 { font-size: 0.92rem; }
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .section-icon { font-size: 1.1rem; }
       .grid { display: grid; gap: 10px; }
       .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
       .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
       .grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-      label { font-size: 0.83rem; display: block; margin-bottom: 4px; }
+      label { font-size: 0.82rem; display: block; margin-bottom: 4px; color: #4a5a73; font-weight: 500; }
       input, select, textarea, button {
         width: 100%;
-        padding: 8px;
+        padding: 8px 10px;
         border-radius: 8px;
         border: 1px solid #c8d2e2;
         font: inherit;
+        font-size: 0.9rem;
+        direction: rtl;
+      }
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(8,102,198,0.1);
       }
       textarea { min-height: 70px; resize: vertical; }
       button {
@@ -55,241 +255,546 @@
         color: #fff;
         border: none;
         cursor: pointer;
+        font-weight: 600;
+        transition: background 0.15s, opacity 0.15s;
+        direction: rtl;
       }
+      button:hover:not(:disabled) { background: var(--accent-hover); }
+      button:disabled { opacity: 0.55; cursor: default; }
       button.secondary { background: #49566a; }
+      button.secondary:hover:not(:disabled) { background: #3a4557; }
       button.good { background: var(--good); }
+      button.good:hover:not(:disabled) { background: #0e5e46; }
+      button.danger { background: var(--danger); }
+
+      /* ═══════════════════════════════
+         KPI CARDS
+      ═══════════════════════════════ */
       .kpi {
         border: 1px solid var(--line);
         border-radius: 10px;
-        padding: 10px;
+        padding: 14px;
         background: #fbfdff;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.2s;
       }
-      .kpi .name { font-size: 0.8rem; color: #4a5a73; }
-      .kpi .val { font-size: 1.1rem; font-weight: 600; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td {
+      .kpi.kpi-green { border-color: #86efac; background: #f0fdf4; }
+      .kpi.kpi-yellow { border-color: #fde68a; background: #fffbeb; }
+      .kpi.kpi-red { border-color: #fca5a5; background: #fef2f2; }
+      .kpi .name { font-size: 0.78rem; color: #4a5a73; margin-bottom: 6px; }
+      .kpi .val { font-size: 1.3rem; font-weight: 700; }
+      .kpi.kpi-green .val { color: #15803d; }
+      .kpi.kpi-yellow .val { color: #92400e; }
+      .kpi.kpi-red .val { color: var(--danger); }
+      .kpi .loading-val { color: #a0aec0; font-size: 0.9rem; font-weight: 400; }
+
+      /* ═══════════════════════════════
+         TABLES
+      ═══════════════════════════════ */
+      .table-wrap { overflow-x: auto; margin-top: 12px; }
+      table { width: 100%; border-collapse: collapse; min-width: 400px; }
+      th {
+        border-bottom: 2px solid var(--line);
+        text-align: right;
+        padding: 10px 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #4a5a73;
+        background: #f8fafc;
+      }
+      td {
         border-bottom: 1px solid var(--line);
-        text-align: left;
-        padding: 8px;
-        font-size: 0.9rem;
+        text-align: right;
+        padding: 9px 8px;
+        font-size: 0.85rem;
       }
-      .status {
-        font-size: 0.9rem;
-        padding: 8px;
-        background: #ecf5ff;
-        border-radius: 8px;
+      tr:last-child td { border-bottom: none; }
+      tr:hover td { background: #f8fafc; }
+      #trendTable td, #trendTable th { font-size: 0.82rem; }
+
+      /* ═══════════════════════════════
+         TOASTS
+      ═══════════════════════════════ */
+      #toastContainer {
+        position: fixed;
+        bottom: 80px;
+        left: 16px;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
       }
-      .mobile-note {
-        padding: 10px;
+      .toast {
+        background: #1e293b;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        max-width: 320px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        animation: toastIn 0.25s ease, toastOut 0.3s ease 2.7s forwards;
+        pointer-events: auto;
+      }
+      .toast.toast-error { background: #7f1d1d; }
+      .toast.toast-success { background: #14532d; }
+      @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(4px); } }
+
+      /* ═══════════════════════════════
+         BOTTOM NAV (MOBILE)
+      ═══════════════════════════════ */
+      #bottomNav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        height: var(--bottom-nav-h);
+        background: var(--card);
+        border-top: 1px solid var(--line);
+        z-index: 100;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+      }
+      .bottom-nav-inner {
+        display: flex;
+        height: 100%;
+        align-items: stretch;
+      }
+      .bottom-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        border: none;
+        background: none;
+        color: #6b7a99;
+        font-size: 0.7rem;
+        cursor: pointer;
+        padding: 6px 4px;
+        transition: color 0.15s, background 0.15s;
+        border-radius: 0;
+        width: auto;
+      }
+      .bottom-tab .bt-icon { font-size: 1.4rem; line-height: 1; }
+      .bottom-tab.active { color: var(--accent); background: #f0f4fd; }
+      .bottom-tab:hover:not(.active) { background: #f8fafc; }
+
+      /* ═══════════════════════════════
+         MISC
+      ═══════════════════════════════ */
+      .info-box {
+        padding: 10px 14px;
         border: 1px dashed #b6c3da;
         border-radius: 8px;
         background: #f8fbff;
         font-size: 0.85rem;
+        color: #4a5a73;
       }
-      #trendTable td, #trendTable th { font-size: 0.82rem; }
-      @media (max-width: 600px) { .wrap { padding: 10px; } }
+      .row-actions { display: flex; gap: 8px; }
+      .row-actions button { width: auto; padding: 7px 14px; }
+      .divider { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
+
+      /* ═══════════════════════════════
+         RESPONSIVE
+      ═══════════════════════════════ */
+      @media (max-width: 768px) {
+        body { padding-bottom: var(--bottom-nav-h); }
+        #bottomNav { display: block; }
+        .header-tabs { display: none; }
+        #toastContainer { bottom: calc(var(--bottom-nav-h) + 12px); }
+        .user-email { display: none; }
+        .header-brand-icon { display: none; }
+      }
+      @media (max-width: 600px) {
+        .wrap { padding: 10px; }
+        .login-card { padding: 32px 20px 28px; }
+        .row-actions { flex-direction: column; }
+      }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <section class="card">
-        <h1>DashboardRyde - Dashboard + Daily Operations (Stage 4)</h1>
-        <div class="grid cols-2">
-          <div>
-            <label>API Base URL</label>
-            <input id="apiBase" value="http://localhost:4000" />
-          </div>
-          <div>
-            <label>Session Token</label>
-            <input id="sessionToken" placeholder="Paste Bearer token" />
-          </div>
-        </div>
-      </section>
 
-      <section class="card">
-        <h2>Dashboard KPI</h2>
-        <div class="grid cols-3">
-          <div><label>Date From</label><input id="kpiFrom" type="date" /></div>
-          <div><label>Date To</label><input id="kpiTo" type="date" /></div>
-          <div style="display:flex;align-items:flex-end"><button id="loadDashboard">טען Dashboard</button></div>
-        </div>
-        <div class="grid cols-2" style="margin-top:10px">
-          <button id="exportExcel" class="secondary">Export Excel</button>
-          <button id="exportPdf" class="secondary">Export PDF</button>
-        </div>
-        <div class="grid cols-3" style="margin-top:10px">
-          <div class="kpi"><div class="name">נוסעים כולל</div><div class="val" id="kpiPassengers">0</div></div>
-          <div class="kpi"><div class="name">נסיעות כולל</div><div class="val" id="kpiRides">0</div></div>
-          <div class="kpi"><div class="name">יעילות ממוצעת</div><div class="val" id="kpiEfficiency">0</div></div>
-          <div class="kpi"><div class="name">מספר תקלות</div><div class="val" id="kpiIssues">0</div></div>
-          <div class="kpi"><div class="name">% נסיעות עם תקלה</div><div class="val" id="kpiIssuesRate">0%</div></div>
-          <div class="kpi"><div class="name">איכות שירות</div><div class="val" id="kpiQuality">0%</div></div>
-        </div>
-        <h3 style="margin-top:12px">מגמה יומית</h3>
-        <table id="trendTable">
-          <thead>
-            <tr>
-              <th>תאריך</th><th>נוסעים</th><th>נסיעות</th><th>תקלות</th><th>% תקלות</th><th>איכות</th>
-            </tr>
-          </thead>
-          <tbody id="trendRows"></tbody>
-        </table>
-      </section>
-
-      <section class="card">
-        <h2>הזנה אוטומטית: פיזור אתמול + איסוף היום</h2>
-        <div class="grid cols-2">
-          <div class="card">
-            <h2 id="dropoffTitle">פיזור</h2>
-            <div class="grid cols-4">
-              <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
-              <div><label>נוסעים רשומים</label><input id="dropoff_registered" type="number" min="0" /></div>
-              <div><label>תקלות</label><input id="dropoff_issues" type="number" min="0" /></div>
-              <div><label>נוסעים מושפעים</label><input id="dropoff_affected" type="number" min="0" /></div>
-            </div>
-            <button id="saveDropoff">שמור פיזור</button>
-          </div>
-
-          <div class="card">
-            <h2 id="pickupTitle">איסוף</h2>
-            <div class="grid cols-4">
-              <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
-              <div><label>נוסעים רשומים</label><input id="pickup_registered" type="number" min="0" /></div>
-              <div><label>תקלות</label><input id="pickup_issues" type="number" min="0" /></div>
-              <div><label>נוסעים מושפעים</label><input id="pickup_affected" type="number" min="0" /></div>
-            </div>
-            <button id="savePickup">שמור איסוף</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>פאנל תקלות</h2>
-        <div class="grid cols-4">
-          <div><label>תאריך שירות</label><input id="incident_date" type="date" /></div>
-          <div><label>סוג שירות</label><select id="incident_type"><option value="pickup">pickup</option><option value="dropoff">dropoff</option></select></div>
-          <div><label>מוצא</label><input id="incident_origin" /></div>
-          <div><label>יעד</label><input id="incident_destination" /></div>
-          <div><label>שעת משמרת</label><input id="incident_shift" placeholder="08:00" /></div>
-          <div><label>נוסעים</label><input id="incident_passengers" type="number" min="0" /></div>
-          <div>
-            <label>סוג תקלה</label>
-            <select id="incident_issue_type">
-              <option value="delay">delay</option><option value="no_show">no_show</option><option value="vehicle_failure">vehicle_failure</option><option value="over_capacity">over_capacity</option><option value="route_change">route_change</option><option value="dispatch_error">dispatch_error</option><option value="driver_service">driver_service</option><option value="other">other</option>
-            </select>
-          </div>
-          <div><label>דקות איחור</label><input id="incident_delay_minutes" type="number" min="0" /></div>
-        </div>
-        <div style="margin-top: 10px"><label>תיאור</label><textarea id="incident_description"></textarea></div>
-        <div class="grid cols-2" style="margin-top:10px"><button id="saveIncident">שמור תקלה</button><button id="recalcIncident" class="good">עדכן אוטומטית לטבלה הראשית</button></div>
-      </section>
-
-      <section class="card">
-        <h2>רשימת תקלות</h2>
-        <div class="grid cols-2">
-          <div><label>תאריך סינון</label><input id="filter_date" type="date" /></div>
-          <div><label>סוג שירות</label><select id="filter_type"><option value="pickup">pickup</option><option value="dropoff">dropoff</option></select></div>
-        </div>
-        <button id="loadIncidents" class="secondary" style="margin-top:10px">טען תקלות</button>
-        <table style="margin-top:12px"><thead><tr><th>ID</th><th>תאריך</th><th>סוג</th><th>מוצא</th><th>יעד</th><th>נוסעים</th><th>תקלה</th></tr></thead><tbody id="incidentRows"></tbody></table>
-      </section>
-
-      <section class="card">
-        <h2>Drilldown</h2>
-        <div class="grid cols-4">
-          <div><label>Date From</label><input id="drillFrom" type="date" /></div>
-          <div><label>Date To</label><input id="drillTo" type="date" /></div>
-          <div><label>Service Type</label><select id="drillServiceType"><option value="">all</option><option value="pickup">pickup</option><option value="dropoff">dropoff</option></select></div>
-          <div><label>Metric Key</label><input id="drillMetricKey" placeholder="serviceQuality" /></div>
-        </div>
-        <button id="loadDrilldown" class="secondary" style="margin-top:10px">טען Drilldown</button>
-        <div class="grid cols-2" style="margin-top:10px">
-          <div class="kpi"><div class="name">Rows</div><div class="val" id="drillRowsCount">0</div></div>
-          <div class="kpi"><div class="name">Incidents</div><div class="val" id="drillIncidentsCount">0</div></div>
-        </div>
-      </section>
-
-      <section class="card" id="managementSection">
-        <h2>Management</h2>
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>Target</h3>
-            <div class="grid cols-2">
-              <div><label>Metric</label><input id="targetMetricKey" value="serviceQuality" /></div>
-              <div><label>Scope</label><input id="targetScopeKey" value="total" /></div>
-              <div><label>Direction</label><select id="targetDirection"><option value="at_least">at_least</option><option value="at_most">at_most</option></select></div>
-              <div><label>Value</label><input id="targetValue" type="number" value="98" /></div>
-              <div><label>Effective From</label><input id="targetFrom" type="date" /></div>
-              <div><label>Effective To</label><input id="targetTo" type="date" /></div>
-            </div>
-            <button id="saveTarget">שמור יעד</button>
-            <button id="loadTargets" class="secondary" style="margin-top:8px">טען יעדים</button>
-            <div id="targetsCount" style="margin-top:8px;font-size:0.85rem">Targets: 0</div>
-          </div>
-          <div class="card">
-            <h3>Threshold</h3>
-            <div class="grid cols-2">
-              <div><label>Metric</label><input id="thresholdMetricKey" value="serviceQuality" /></div>
-              <div><label>Green Min</label><input id="thGreenMin" type="number" value="95" /></div>
-              <div><label>Green Max</label><input id="thGreenMax" type="number" value="100" /></div>
-              <div><label>Yellow Min</label><input id="thYellowMin" type="number" value="90" /></div>
-              <div><label>Yellow Max</label><input id="thYellowMax" type="number" value="95" /></div>
-              <div><label>Red Min</label><input id="thRedMin" type="number" value="0" /></div>
-              <div><label>Red Max</label><input id="thRedMax" type="number" value="90" /></div>
-            </div>
-            <button id="saveThreshold">שמור סף</button>
-            <button id="loadThresholds" class="secondary" style="margin-top:8px">טען ספים</button>
-            <div id="thresholdsCount" style="margin-top:8px;font-size:0.85rem">Thresholds: 0</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="card mobile-note" id="mobileManagementNote" style="display:none">
-        במובייל: ניהול יעדים וספי צבעים מוסתר בשלב זה. שאר היכולות זמינות.
-      </section>
-
-      <section class="status" id="statusBox">Ready.</section>
+    <!-- ═══════════════════════════════
+         LOGIN SCREEN
+    ═══════════════════════════════ -->
+    <div id="loginScreen">
+      <div class="login-card">
+        <div class="login-logo">🚌</div>
+        <h1 class="login-title">DashboardRyde</h1>
+        <p class="login-subtitle">מערכת ניהול נסיעות קמפוס — ניטור KPI, תקלות ופעילות יומית</p>
+        <div class="login-badge">Stage 8 · Go-Live</div>
+        <button class="btn-google" id="btnGoogleLogin">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          התחבר עם Google
+        </button>
+        <div id="loginError"></div>
+        <p class="login-footer">גישה מורשית בלבד · DashboardRyde Campus</p>
+      </div>
     </div>
 
+    <!-- ═══════════════════════════════
+         APP SCREEN
+    ═══════════════════════════════ -->
+    <div id="appScreen">
+
+      <!-- HEADER -->
+      <header id="appHeader">
+        <a class="header-brand" href="#" onclick="return false;">
+          <span class="header-brand-icon">🚌</span>
+          DashboardRyde
+        </a>
+
+        <!-- Desktop tabs in header -->
+        <nav class="header-tabs" id="desktopTabs">
+          <button class="tab-btn active" data-tab="dashboard" onclick="showTab('dashboard')">
+            <span class="tab-icon">📊</span> לוח בקרה
+          </button>
+          <button class="tab-btn" data-tab="operations" onclick="showTab('operations')">
+            <span class="tab-icon">🚌</span> פעילות יומית
+          </button>
+          <button class="tab-btn" data-tab="incidents" onclick="showTab('incidents')">
+            <span class="tab-icon">⚠️</span> תקלות
+          </button>
+          <button class="tab-btn" id="desktopMgmtTab" data-tab="management" onclick="showTab('management')">
+            <span class="tab-icon">⚙️</span> ניהול
+          </button>
+        </nav>
+
+        <!-- User info -->
+        <div class="header-user">
+          <div style="text-align:right">
+            <div class="user-name" id="headerUserName">...</div>
+            <div class="user-email" id="headerUserEmail"></div>
+          </div>
+          <button class="btn-logout" id="btnLogout">יציאה</button>
+        </div>
+      </header>
+
+      <!-- ─── TAB: לוח בקרה ─── -->
+      <div class="tab-panel active" id="panel-dashboard">
+        <div class="wrap">
+          <div class="card">
+            <div class="section-header">
+              <span class="section-icon">📊</span>
+              <h2 style="margin:0">לוח בקרה — KPI</h2>
+            </div>
+            <div class="grid cols-3">
+              <div><label>מתאריך</label><input id="kpiFrom" type="date" /></div>
+              <div><label>עד תאריך</label><input id="kpiTo" type="date" /></div>
+              <div style="display:flex;align-items:flex-end">
+                <button id="loadDashboard">טען נתונים</button>
+              </div>
+            </div>
+            <div class="row-actions" style="margin-top:10px">
+              <button id="exportExcel" class="secondary">⬇️ ייצוא Excel</button>
+              <button id="exportPdf" class="secondary">⬇️ ייצוא PDF</button>
+            </div>
+
+            <div class="grid cols-3" style="margin-top:14px">
+              <div class="kpi" id="kpiCard-passengers">
+                <div class="name">נוסעים כולל</div>
+                <div class="val loading-val" id="kpiPassengers">טוען...</div>
+              </div>
+              <div class="kpi" id="kpiCard-rides">
+                <div class="name">נסיעות כולל</div>
+                <div class="val loading-val" id="kpiRides">טוען...</div>
+              </div>
+              <div class="kpi" id="kpiCard-efficiency">
+                <div class="name">יעילות ממוצעת</div>
+                <div class="val loading-val" id="kpiEfficiency">טוען...</div>
+              </div>
+              <div class="kpi" id="kpiCard-issues">
+                <div class="name">מספר תקלות</div>
+                <div class="val loading-val" id="kpiIssues">טוען...</div>
+              </div>
+              <div class="kpi" id="kpiCard-issuesRate">
+                <div class="name">% נסיעות עם תקלה</div>
+                <div class="val loading-val" id="kpiIssuesRate">טוען...</div>
+              </div>
+              <div class="kpi" id="kpiCard-quality">
+                <div class="name">איכות שירות</div>
+                <div class="val loading-val" id="kpiQuality">טוען...</div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3>מגמה יומית</h3>
+            <div class="table-wrap">
+              <table id="trendTable">
+                <thead>
+                  <tr>
+                    <th>תאריך</th><th>נוסעים</th><th>נסיעות</th><th>תקלות</th><th>% תקלות</th><th>איכות</th>
+                  </tr>
+                </thead>
+                <tbody id="trendRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB: פעילות יומית ─── -->
+      <div class="tab-panel" id="panel-operations">
+        <div class="wrap">
+          <div class="card">
+            <div class="section-header">
+              <span class="section-icon">🚌</span>
+              <h2 style="margin:0">פעילות יומית — הזנת נתונים</h2>
+            </div>
+            <div class="grid cols-2">
+              <div class="card">
+                <h2 id="dropoffTitle">פיזור</h2>
+                <div class="grid cols-2">
+                  <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
+                  <div><label>נוסעים רשומים</label><input id="dropoff_registered" type="number" min="0" /></div>
+                  <div><label>תקלות</label><input id="dropoff_issues" type="number" min="0" /></div>
+                  <div><label>נוסעים מושפעים</label><input id="dropoff_affected" type="number" min="0" /></div>
+                </div>
+                <button id="saveDropoff" style="margin-top:10px">שמור פיזור</button>
+              </div>
+
+              <div class="card">
+                <h2 id="pickupTitle">איסוף</h2>
+                <div class="grid cols-2">
+                  <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
+                  <div><label>נוסעים רשומים</label><input id="pickup_registered" type="number" min="0" /></div>
+                  <div><label>תקלות</label><input id="pickup_issues" type="number" min="0" /></div>
+                  <div><label>נוסעים מושפעים</label><input id="pickup_affected" type="number" min="0" /></div>
+                </div>
+                <button id="savePickup" style="margin-top:10px">שמור איסוף</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB: תקלות ─── -->
+      <div class="tab-panel" id="panel-incidents">
+        <div class="wrap">
+          <!-- הזנת תקלה -->
+          <div class="card">
+            <div class="section-header">
+              <span class="section-icon">⚠️</span>
+              <h2 style="margin:0">הזנת תקלה חדשה</h2>
+            </div>
+            <div class="grid cols-4">
+              <div><label>תאריך שירות</label><input id="incident_date" type="date" /></div>
+              <div>
+                <label>סוג שירות</label>
+                <select id="incident_type">
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
+                </select>
+              </div>
+              <div><label>מוצא</label><input id="incident_origin" /></div>
+              <div><label>יעד</label><input id="incident_destination" /></div>
+              <div><label>שעת משמרת</label><input id="incident_shift" placeholder="08:00" /></div>
+              <div><label>מספר נוסעים</label><input id="incident_passengers" type="number" min="0" /></div>
+              <div>
+                <label>סוג תקלה</label>
+                <select id="incident_issue_type">
+                  <option value="delay">עיכוב</option>
+                  <option value="no_show">אי הגעה</option>
+                  <option value="vehicle_failure">תקלת רכב</option>
+                  <option value="over_capacity">עומס יתר</option>
+                  <option value="route_change">שינוי מסלול</option>
+                  <option value="dispatch_error">שגיאת שיגור</option>
+                  <option value="driver_service">שירות נהג</option>
+                  <option value="other">אחר</option>
+                </select>
+              </div>
+              <div><label>דקות איחור</label><input id="incident_delay_minutes" type="number" min="0" /></div>
+            </div>
+            <div style="margin-top:10px"><label>תיאור</label><textarea id="incident_description"></textarea></div>
+            <div class="row-actions" style="margin-top:12px">
+              <button id="saveIncident">💾 שמור תקלה</button>
+              <button id="recalcIncident" class="good">🔄 עדכן לטבלה הראשית</button>
+            </div>
+          </div>
+
+          <!-- רשימת תקלות -->
+          <div class="card">
+            <div class="section-header">
+              <span class="section-icon">📋</span>
+              <h2 style="margin:0">רשימת תקלות</h2>
+            </div>
+            <div class="grid cols-2">
+              <div><label>תאריך סינון</label><input id="filter_date" type="date" /></div>
+              <div>
+                <label>סוג שירות</label>
+                <select id="filter_type">
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
+                </select>
+              </div>
+            </div>
+            <button id="loadIncidents" class="secondary" style="margin-top:10px">טען תקלות</button>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>מזהה</th><th>תאריך</th><th>סוג</th><th>מוצא</th><th>יעד</th><th>נוסעים</th><th>תקלה</th></tr>
+                </thead>
+                <tbody id="incidentRows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- פירוט (Drilldown) -->
+          <div class="card">
+            <div class="section-header">
+              <span class="section-icon">🔍</span>
+              <h2 style="margin:0">פירוט מדד</h2>
+            </div>
+            <div class="grid cols-4">
+              <div><label>מתאריך</label><input id="drillFrom" type="date" /></div>
+              <div><label>עד תאריך</label><input id="drillTo" type="date" /></div>
+              <div>
+                <label>סוג שירות</label>
+                <select id="drillServiceType">
+                  <option value="">הכל</option>
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
+                </select>
+              </div>
+              <div><label>מפתח מדד</label><input id="drillMetricKey" placeholder="serviceQuality" /></div>
+            </div>
+            <button id="loadDrilldown" class="secondary" style="margin-top:10px">טען פירוט</button>
+            <div class="grid cols-2" style="margin-top:12px">
+              <div class="kpi"><div class="name">שורות נתונים</div><div class="val" id="drillRowsCount">—</div></div>
+              <div class="kpi"><div class="name">תקלות</div><div class="val" id="drillIncidentsCount">—</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB: ניהול ─── -->
+      <div class="tab-panel" id="panel-management">
+        <div class="wrap">
+          <div class="info-box" id="mobileManagementNote" style="display:none">
+            ניהול יעדים וספי צבעים זמין בגישה ממחשב בלבד.
+          </div>
+          <div class="grid cols-2" id="managementContent">
+            <div class="card">
+              <h3>🎯 יעד ביצוע</h3>
+              <div class="grid cols-2">
+                <div><label>מפתח מדד</label><input id="targetMetricKey" value="serviceQuality" /></div>
+                <div><label>היקף</label><input id="targetScopeKey" value="total" /></div>
+                <div>
+                  <label>כיוון</label>
+                  <select id="targetDirection">
+                    <option value="at_least">לפחות</option>
+                    <option value="at_most">לכל היותר</option>
+                  </select>
+                </div>
+                <div><label>ערך יעד</label><input id="targetValue" type="number" value="98" /></div>
+                <div><label>בתוקף מ-</label><input id="targetFrom" type="date" /></div>
+                <div><label>בתוקף עד</label><input id="targetTo" type="date" /></div>
+              </div>
+              <div class="row-actions" style="margin-top:12px">
+                <button id="saveTarget">💾 שמור יעד</button>
+                <button id="loadTargets" class="secondary">טען יעדים</button>
+              </div>
+              <div id="targetsCount" style="margin-top:10px;font-size:0.82rem;color:#4a5a73">יעדים: 0</div>
+            </div>
+
+            <div class="card">
+              <h3>🎨 ספי צבע</h3>
+              <div class="grid cols-2">
+                <div><label>מפתח מדד</label><input id="thresholdMetricKey" value="serviceQuality" /></div>
+                <div style="grid-column:span 1"></div>
+                <div><label>ירוק מ-</label><input id="thGreenMin" type="number" value="95" /></div>
+                <div><label>ירוק עד</label><input id="thGreenMax" type="number" value="100" /></div>
+                <div><label>צהוב מ-</label><input id="thYellowMin" type="number" value="90" /></div>
+                <div><label>צהוב עד</label><input id="thYellowMax" type="number" value="95" /></div>
+                <div><label>אדום מ-</label><input id="thRedMin" type="number" value="0" /></div>
+                <div><label>אדום עד</label><input id="thRedMax" type="number" value="90" /></div>
+              </div>
+              <div class="row-actions" style="margin-top:12px">
+                <button id="saveThreshold">💾 שמור ספים</button>
+                <button id="loadThresholds" class="secondary">טען ספים</button>
+              </div>
+              <div id="thresholdsCount" style="margin-top:10px;font-size:0.82rem;color:#4a5a73">ספים: 0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Bottom Navigation -->
+      <nav id="bottomNav">
+        <div class="bottom-nav-inner">
+          <button class="bottom-tab active" data-tab="dashboard" onclick="showTab('dashboard')">
+            <span class="bt-icon">📊</span>
+            <span>לוח בקרה</span>
+          </button>
+          <button class="bottom-tab" data-tab="operations" onclick="showTab('operations')">
+            <span class="bt-icon">🚌</span>
+            <span>פעילות</span>
+          </button>
+          <button class="bottom-tab" data-tab="incidents" onclick="showTab('incidents')">
+            <span class="bt-icon">⚠️</span>
+            <span>תקלות</span>
+          </button>
+        </div>
+      </nav>
+    </div><!-- /appScreen -->
+
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+
     <script>
-      const ui = {
-        apiBase: document.getElementById("apiBase"),
-        token: document.getElementById("sessionToken"),
-        status: document.getElementById("statusBox")
-      };
+      // ═══════════════════════════════
+      // CONFIG
+      // ═══════════════════════════════
+      const API_BASE_KEY = "dr_api_base";
+      const TOKEN_KEY = "dr_session_token";
+      let GOOGLE_CLIENT_ID = "";
 
-      const today = new Date();
-      const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
-      const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 6);
-
-      function toDateInputValue(d) {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
+      function getApiBase() {
+        return localStorage.getItem(API_BASE_KEY) || location.origin;
+      }
+      function getToken() {
+        return localStorage.getItem(TOKEN_KEY) || "";
       }
 
-      const pickupDate = toDateInputValue(today);
-      const dropoffDate = toDateInputValue(yesterday);
-      document.getElementById("kpiFrom").value = toDateInputValue(weekAgo);
-      document.getElementById("kpiTo").value = pickupDate;
-      document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
-      document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
-      document.getElementById("incident_date").value = pickupDate;
-      document.getElementById("filter_date").value = pickupDate;
-      document.getElementById("drillFrom").value = toDateInputValue(weekAgo);
-      document.getElementById("drillTo").value = pickupDate;
-      document.getElementById("targetFrom").value = pickupDate;
-      const isMobileView = window.matchMedia("(max-width: 768px)").matches;
-      if (isMobileView) {
-        document.getElementById("managementSection").style.display = "none";
-        document.getElementById("mobileManagementNote").style.display = "block";
+      async function fetchConfig() {
+        try {
+          const res = await fetch(`${getApiBase()}/auth/config`);
+          if (res.ok) {
+            const data = await res.json();
+            GOOGLE_CLIENT_ID = data.googleClientId || "";
+          }
+        } catch {}
       }
 
+      // ═══════════════════════════════
+      // TOAST
+      // ═══════════════════════════════
+      function toast(msg, type = "") {
+        const el = document.createElement("div");
+        el.className = "toast" + (type ? " toast-" + type : "");
+        el.textContent = msg;
+        document.getElementById("toastContainer").appendChild(el);
+        setTimeout(() => el.remove(), 3100);
+      }
+      function toastOk(msg) { toast(msg, "success"); }
+      function toastErr(msg) { toast(msg, "error"); }
+
+      // ═══════════════════════════════
+      // API
+      // ═══════════════════════════════
       async function api(method, path, body) {
-        const res = await fetch(`${ui.apiBase.value}${path}`, {
+        const res = await fetch(`${getApiBase()}${path}`, {
           method,
-          headers: { "content-type": "application/json", authorization: `Bearer ${ui.token.value}` },
+          headers: { "content-type": "application/json", authorization: `Bearer ${getToken()}` },
           body: body ? JSON.stringify(body) : undefined
         });
         const payload = await res.json().catch(() => ({}));
@@ -297,9 +802,393 @@
         return payload;
       }
 
-      function setStatus(msg) { ui.status.textContent = msg; }
+      // ═══════════════════════════════
+      // AUTH FLOW
+      // ═══════════════════════════════
+      function showLoginError(msg) {
+        const el = document.getElementById("loginError");
+        el.textContent = msg;
+        el.style.display = "block";
+      }
+
+      async function handleGoogleCredential(response) {
+        try {
+          const data = await fetch(`${getApiBase()}/auth/google/callback`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ idToken: response.credential })
+          }).then(r => r.json());
+
+          if (!data.session || !data.session.token) {
+            showLoginError(data.error || "התחברות נכשלה. בדוק שאתה מורשה להיכנס למערכת.");
+            return;
+          }
+
+          localStorage.setItem(TOKEN_KEY, data.session.token);
+          enterApp(data.user);
+        } catch (e) {
+          showLoginError("שגיאת רשת: " + e.message);
+        }
+      }
+
+      function initGoogleLogin() {
+        if (!GOOGLE_CLIENT_ID) {
+          // Fallback: manual token input for dev/testing
+          document.getElementById("btnGoogleLogin").addEventListener("click", () => {
+            const token = prompt("הכנס Session Token (מצב פיתוח):");
+            if (token && token.trim()) {
+              localStorage.setItem(TOKEN_KEY, token.trim());
+              enterApp(null);
+            }
+          });
+          return;
+        }
+
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          auto_select: false
+        });
+
+        document.getElementById("btnGoogleLogin").addEventListener("click", () => {
+          google.accounts.id.prompt();
+        });
+      }
+
+      async function enterApp(userFromLogin) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("appScreen").style.display = "block";
+
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        if (isMobile) {
+          document.getElementById("managementContent").style.display = "none";
+          document.getElementById("mobileManagementNote").style.display = "block";
+          document.getElementById("desktopMgmtTab").style.display = "none";
+        }
+
+        await loadUser(userFromLogin);
+        bootstrap();
+      }
+
+      async function loadUser(fallback) {
+        try {
+          const data = await api("GET", "/auth/me");
+          const user = data.user || data;
+          document.getElementById("headerUserName").textContent = user.fullName || user.email || "משתמש";
+          document.getElementById("headerUserEmail").textContent = user.email || "";
+        } catch {
+          if (fallback) {
+            document.getElementById("headerUserName").textContent = fallback.fullName || fallback.email || "משתמש";
+            document.getElementById("headerUserEmail").textContent = fallback.email || "";
+          }
+        }
+      }
+
+      document.getElementById("btnLogout").addEventListener("click", async () => {
+        try { await api("POST", "/auth/logout"); } catch {}
+        localStorage.removeItem(TOKEN_KEY);
+        document.getElementById("appScreen").style.display = "none";
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("headerUserName").textContent = "...";
+        document.getElementById("headerUserEmail").textContent = "";
+        document.getElementById("loginError").style.display = "none";
+      });
+
+      // ═══════════════════════════════
+      // TAB NAVIGATION
+      // ═══════════════════════════════
+      let currentTab = "dashboard";
+
+      function showTab(id) {
+        currentTab = id;
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
+        document.querySelectorAll(".bottom-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
+        const panel = document.getElementById("panel-" + id);
+        if (panel) panel.classList.add("active");
+      }
+
+      // ═══════════════════════════════
+      // DATE HELPERS
+      // ═══════════════════════════════
+      const today = new Date();
+      const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+      const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 6);
+
+      function toDateVal(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+      }
+
+      const pickupDate = toDateVal(today);
+      const dropoffDate = toDateVal(yesterday);
+
+      function initDates() {
+        document.getElementById("kpiFrom").value = toDateVal(weekAgo);
+        document.getElementById("kpiTo").value = pickupDate;
+        document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
+        document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
+        document.getElementById("incident_date").value = pickupDate;
+        document.getElementById("filter_date").value = pickupDate;
+        document.getElementById("drillFrom").value = toDateVal(weekAgo);
+        document.getElementById("drillTo").value = pickupDate;
+        document.getElementById("targetFrom").value = pickupDate;
+      }
+
+      // ═══════════════════════════════
+      // KPI COLOR CODING
+      // ═══════════════════════════════
+      let currentThresholds = {};
+
+      async function loadThresholdsForKPI() {
+        try {
+          const data = await api("GET", "/management/thresholds");
+          currentThresholds = {};
+          for (const t of (data.thresholds || [])) {
+            currentThresholds[t.metricKey] = t;
+          }
+        } catch {}
+      }
+
+      function colorKpiCard(cardId, value, metricKey) {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+        card.classList.remove("kpi-green", "kpi-yellow", "kpi-red");
+        const t = currentThresholds[metricKey];
+        if (!t) return;
+        const v = Number(value);
+        if (v >= t.greenMin && v <= t.greenMax) card.classList.add("kpi-green");
+        else if (v >= t.yellowMin && v <= t.yellowMax) card.classList.add("kpi-yellow");
+        else if (v >= t.redMin && v <= t.redMax) card.classList.add("kpi-red");
+      }
+
       function fmt(n, digits = 2) { return Number(n || 0).toFixed(digits); }
 
+      function setKpiLoading(loading) {
+        const ids = ["kpiPassengers","kpiRides","kpiEfficiency","kpiIssues","kpiIssuesRate","kpiQuality"];
+        for (const id of ids) {
+          const el = document.getElementById(id);
+          if (loading) { el.textContent = "טוען..."; el.classList.add("loading-val"); }
+          else { el.classList.remove("loading-val"); }
+        }
+        ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality"]
+          .forEach(id => {
+            const c = document.getElementById(id);
+            if (loading) c.classList.remove("kpi-green","kpi-yellow","kpi-red");
+          });
+      }
+
+      // ═══════════════════════════════
+      // DASHBOARD
+      // ═══════════════════════════════
+      async function loadDashboard() {
+        const from = document.getElementById("kpiFrom").value;
+        const to = document.getElementById("kpiTo").value;
+        setKpiLoading(true);
+
+        const [summary, trends] = await Promise.all([
+          api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
+          api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
+        ]);
+
+        document.getElementById("kpiPassengers").textContent = fmt(summary.total.passengers, 0);
+        document.getElementById("kpiRides").textContent = fmt(summary.total.rides, 0);
+        document.getElementById("kpiEfficiency").textContent = fmt(summary.total.efficiency);
+        document.getElementById("kpiIssues").textContent = fmt(summary.total.issues, 0);
+        document.getElementById("kpiIssuesRate").textContent = `${fmt(summary.total.issuesRate)}%`;
+        document.getElementById("kpiQuality").textContent = `${fmt(summary.total.serviceQuality)}%`;
+        setKpiLoading(false);
+
+        colorKpiCard("kpiCard-quality", summary.total.serviceQuality, "serviceQuality");
+        colorKpiCard("kpiCard-issuesRate", summary.total.issuesRate, "issuesRate");
+
+        const tbody = document.getElementById("trendRows");
+        tbody.innerHTML = "";
+        for (const p of trends.points) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(p.total.passengers,0)}</td><td>${fmt(p.total.rides,0)}</td><td>${fmt(p.total.issues,0)}</td><td>${fmt(p.total.issuesRate)}%</td><td>${fmt(p.total.serviceQuality)}%</td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
+      // ═══════════════════════════════
+      // BUTTON HELPERS
+      // ═══════════════════════════════
+      function withLoading(btn, fn) {
+        return async () => {
+          btn.disabled = true;
+          const orig = btn.textContent;
+          btn.textContent = "...";
+          try { await fn(); }
+          finally { btn.disabled = false; btn.textContent = orig; }
+        };
+      }
+
+      // ═══════════════════════════════
+      // WIRE UP BUTTONS
+      // ═══════════════════════════════
+      function wireButtons() {
+        document.getElementById("loadDashboard").onclick = withLoading(
+          document.getElementById("loadDashboard"),
+          async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
+        );
+
+        document.getElementById("exportExcel").onclick = withLoading(
+          document.getElementById("exportExcel"),
+          async () => { await downloadExport("excel"); toastOk("קובץ Excel הורד"); }
+        );
+
+        document.getElementById("exportPdf").onclick = withLoading(
+          document.getElementById("exportPdf"),
+          async () => { await downloadExport("pdf"); toastOk("קובץ PDF הורד"); }
+        );
+
+        document.getElementById("savePickup").onclick = withLoading(
+          document.getElementById("savePickup"),
+          async () => {
+            await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup"));
+            await loadDashboard();
+            toastOk("נתוני איסוף נשמרו");
+          }
+        );
+
+        document.getElementById("saveDropoff").onclick = withLoading(
+          document.getElementById("saveDropoff"),
+          async () => {
+            await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff"));
+            await loadDashboard();
+            toastOk("נתוני פיזור נשמרו");
+          }
+        );
+
+        document.getElementById("saveIncident").onclick = withLoading(
+          document.getElementById("saveIncident"),
+          async () => {
+            const delayRaw = document.getElementById("incident_delay_minutes").value;
+            await api("POST", "/incidents", {
+              serviceDate: document.getElementById("incident_date").value,
+              serviceType: document.getElementById("incident_type").value,
+              origin: document.getElementById("incident_origin").value,
+              destination: document.getElementById("incident_destination").value,
+              shiftTime: document.getElementById("incident_shift").value,
+              passengersCount: Number(document.getElementById("incident_passengers").value || 0),
+              issueType: document.getElementById("incident_issue_type").value,
+              description: document.getElementById("incident_description").value,
+              delayMinutes: delayRaw === "" ? null : Number(delayRaw)
+            });
+            toastOk("תקלה נשמרה");
+          }
+        );
+
+        document.getElementById("recalcIncident").onclick = withLoading(
+          document.getElementById("recalcIncident"),
+          async () => {
+            const date = document.getElementById("incident_date").value;
+            const type = document.getElementById("incident_type").value;
+            const result = await api("POST", "/incidents/recalculate", { serviceDate: date, serviceType: type });
+            if (date === pickupDate && type === "pickup") {
+              document.getElementById("pickup_issues").value = result.metric.issuesCount;
+              document.getElementById("pickup_affected").value = result.metric.affectedPassengers;
+            }
+            if (date === dropoffDate && type === "dropoff") {
+              document.getElementById("dropoff_issues").value = result.metric.issuesCount;
+              document.getElementById("dropoff_affected").value = result.metric.affectedPassengers;
+            }
+            await loadDashboard();
+            toastOk("חישוב מחדש הושלם");
+          }
+        );
+
+        document.getElementById("loadIncidents").onclick = withLoading(
+          document.getElementById("loadIncidents"),
+          async () => {
+            const date = document.getElementById("filter_date").value;
+            const type = document.getElementById("filter_type").value;
+            const data = await api("GET", `/incidents?date=${date}&serviceType=${type}`);
+            const tbody = document.getElementById("incidentRows");
+            tbody.innerHTML = "";
+            const typeLabel = { pickup: "איסוף", dropoff: "פיזור" };
+            const issueLabel = { delay:"עיכוב", no_show:"אי הגעה", vehicle_failure:"תקלת רכב", over_capacity:"עומס יתר", route_change:"שינוי מסלול", dispatch_error:"שגיאת שיגור", driver_service:"שירות נהג", other:"אחר" };
+            for (const row of data.incidents) {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `<td>${row.id}</td><td>${row.serviceDate}</td><td>${typeLabel[row.serviceType]||row.serviceType}</td><td>${row.origin}</td><td>${row.destination}</td><td>${row.passengersCount}</td><td>${issueLabel[row.issueType]||row.issueType}</td>`;
+              tbody.appendChild(tr);
+            }
+            toastOk(`נטענו ${data.incidents.length} תקלות`);
+          }
+        );
+
+        document.getElementById("loadDrilldown").onclick = withLoading(
+          document.getElementById("loadDrilldown"),
+          async () => {
+            const from = document.getElementById("drillFrom").value;
+            const to = document.getElementById("drillTo").value;
+            const serviceType = document.getElementById("drillServiceType").value;
+            const metricKey = document.getElementById("drillMetricKey").value;
+            const q = new URLSearchParams({ dateFrom: from, dateTo: to });
+            if (serviceType) q.set("serviceType", serviceType);
+            if (metricKey) q.set("metricKey", metricKey);
+            const data = await api("GET", `/kpi/drilldown?${q.toString()}`);
+            document.getElementById("drillRowsCount").textContent = String(data.dailyRows.length);
+            document.getElementById("drillIncidentsCount").textContent = String(data.incidents.length);
+            toastOk("פירוט נטען");
+          }
+        );
+
+        document.getElementById("saveTarget").onclick = withLoading(
+          document.getElementById("saveTarget"),
+          async () => {
+            await api("POST", "/management/targets", {
+              metricKey: document.getElementById("targetMetricKey").value,
+              scopeKey: document.getElementById("targetScopeKey").value,
+              direction: document.getElementById("targetDirection").value,
+              targetValue: Number(document.getElementById("targetValue").value || 0),
+              effectiveFrom: document.getElementById("targetFrom").value,
+              effectiveTo: document.getElementById("targetTo").value || null
+            });
+            toastOk("יעד נשמר");
+          }
+        );
+
+        document.getElementById("loadTargets").onclick = withLoading(
+          document.getElementById("loadTargets"),
+          async () => {
+            const metricKey = document.getElementById("targetMetricKey").value;
+            const data = await api("GET", `/management/targets?metricKey=${encodeURIComponent(metricKey)}`);
+            document.getElementById("targetsCount").textContent = `יעדים: ${data.targets.length}`;
+            toastOk("יעדים נטענו");
+          }
+        );
+
+        document.getElementById("saveThreshold").onclick = withLoading(
+          document.getElementById("saveThreshold"),
+          async () => {
+            const metricKey = document.getElementById("thresholdMetricKey").value;
+            await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, {
+              greenMin: Number(document.getElementById("thGreenMin").value || 0),
+              greenMax: Number(document.getElementById("thGreenMax").value || 0),
+              yellowMin: Number(document.getElementById("thYellowMin").value || 0),
+              yellowMax: Number(document.getElementById("thYellowMax").value || 0),
+              redMin: Number(document.getElementById("thRedMin").value || 0),
+              redMax: Number(document.getElementById("thRedMax").value || 0)
+            });
+            await loadThresholdsForKPI();
+            toastOk("ספי צבע נשמרו");
+          }
+        );
+
+        document.getElementById("loadThresholds").onclick = withLoading(
+          document.getElementById("loadThresholds"),
+          async () => {
+            await loadThresholdsForKPI();
+            document.getElementById("thresholdsCount").textContent = `ספים: ${Object.keys(currentThresholds).length}`;
+            toastOk("ספים נטענו");
+          }
+        );
+      }
+
+      // ═══════════════════════════════
+      // SECTION DATA
+      // ═══════════════════════════════
       function sectionBody(prefix) {
         return {
           ridesCount: Number(document.getElementById(`${prefix}_rides`).value || 0),
@@ -319,44 +1208,19 @@
         document.getElementById(`${prefix}_affected`).value = row.affectedPassengers;
       }
 
-      async function loadDashboard() {
-        const from = document.getElementById("kpiFrom").value;
-        const to = document.getElementById("kpiTo").value;
-
-        const summary = await api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`);
-        const trends = await api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`);
-
-        document.getElementById("kpiPassengers").textContent = fmt(summary.total.passengers, 0);
-        document.getElementById("kpiRides").textContent = fmt(summary.total.rides, 0);
-        document.getElementById("kpiEfficiency").textContent = fmt(summary.total.efficiency);
-        document.getElementById("kpiIssues").textContent = fmt(summary.total.issues, 0);
-        document.getElementById("kpiIssuesRate").textContent = `${fmt(summary.total.issuesRate)}%`;
-        document.getElementById("kpiQuality").textContent = `${fmt(summary.total.serviceQuality)}%`;
-
-        const tbody = document.getElementById("trendRows");
-        tbody.innerHTML = "";
-        for (const p of trends.points) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(p.total.passengers,0)}</td><td>${fmt(p.total.rides,0)}</td><td>${fmt(p.total.issues,0)}</td><td>${fmt(p.total.issuesRate)}%</td><td>${fmt(p.total.serviceQuality)}%</td>`;
-          tbody.appendChild(tr);
-        }
-      }
-
-      document.getElementById("loadDashboard").onclick = async () => {
-        try { await loadDashboard(); setStatus("Dashboard loaded"); } catch (e) { setStatus(e.message); }
-      };
-
+      // ═══════════════════════════════
+      // EXPORT
+      // ═══════════════════════════════
       async function downloadExport(type) {
         const from = document.getElementById("kpiFrom").value;
         const to = document.getElementById("kpiTo").value;
-        const path = type === "excel" ? `/export/excel?dateFrom=${from}&dateTo=${to}` : `/export/pdf?dateFrom=${from}&dateTo=${to}`;
-        const res = await fetch(`${ui.apiBase.value}${path}`, {
-          method: "GET",
-          headers: { authorization: `Bearer ${ui.token.value}` }
+        const path = type === "excel"
+          ? `/export/excel?dateFrom=${from}&dateTo=${to}`
+          : `/export/pdf?dateFrom=${from}&dateTo=${to}`;
+        const res = await fetch(`${getApiBase()}${path}`, {
+          headers: { authorization: `Bearer ${getToken()}` }
         });
-        if (!res.ok) {
-          throw new Error(`Export failed: HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`ייצוא נכשל: HTTP ${res.status}`);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -366,160 +1230,45 @@
         URL.revokeObjectURL(url);
       }
 
-      document.getElementById("exportExcel").onclick = async () => {
-        try {
-          await downloadExport("excel");
-          setStatus("Excel export generated");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("exportPdf").onclick = async () => {
-        try {
-          await downloadExport("pdf");
-          setStatus("PDF export generated");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("savePickup").onclick = async () => {
-        try { await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup")); await loadDashboard(); setStatus("Saved pickup daily metrics"); } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("saveDropoff").onclick = async () => {
-        try { await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff")); await loadDashboard(); setStatus("Saved dropoff daily metrics"); } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("saveIncident").onclick = async () => {
-        try {
-          const delayRaw = document.getElementById("incident_delay_minutes").value;
-          await api("POST", "/incidents", {
-            serviceDate: document.getElementById("incident_date").value,
-            serviceType: document.getElementById("incident_type").value,
-            origin: document.getElementById("incident_origin").value,
-            destination: document.getElementById("incident_destination").value,
-            shiftTime: document.getElementById("incident_shift").value,
-            passengersCount: Number(document.getElementById("incident_passengers").value || 0),
-            issueType: document.getElementById("incident_issue_type").value,
-            description: document.getElementById("incident_description").value,
-            delayMinutes: delayRaw === "" ? null : Number(delayRaw)
-          });
-          setStatus("Incident saved");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("recalcIncident").onclick = async () => {
-        try {
-          const date = document.getElementById("incident_date").value;
-          const type = document.getElementById("incident_type").value;
-          const result = await api("POST", "/incidents/recalculate", { serviceDate: date, serviceType: type });
-          if (date === pickupDate && type === "pickup") {
-            document.getElementById("pickup_issues").value = result.metric.issuesCount;
-            document.getElementById("pickup_affected").value = result.metric.affectedPassengers;
-          }
-          if (date === dropoffDate && type === "dropoff") {
-            document.getElementById("dropoff_issues").value = result.metric.issuesCount;
-            document.getElementById("dropoff_affected").value = result.metric.affectedPassengers;
-          }
-          await loadDashboard();
-          setStatus("Recalculation completed");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("loadIncidents").onclick = async () => {
-        try {
-          const date = document.getElementById("filter_date").value;
-          const type = document.getElementById("filter_type").value;
-          const data = await api("GET", `/incidents?date=${date}&serviceType=${type}`);
-          const tbody = document.getElementById("incidentRows");
-          tbody.innerHTML = "";
-          for (const row of data.incidents) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${row.id}</td><td>${row.serviceDate}</td><td>${row.serviceType}</td><td>${row.origin}</td><td>${row.destination}</td><td>${row.passengersCount}</td><td>${row.issueType}</td>`;
-            tbody.appendChild(tr);
-          }
-          setStatus(`Loaded ${data.incidents.length} incidents`);
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("loadDrilldown").onclick = async () => {
-        try {
-          const from = document.getElementById("drillFrom").value;
-          const to = document.getElementById("drillTo").value;
-          const serviceType = document.getElementById("drillServiceType").value;
-          const metricKey = document.getElementById("drillMetricKey").value;
-          const q = new URLSearchParams({ dateFrom: from, dateTo: to });
-          if (serviceType) q.set("serviceType", serviceType);
-          if (metricKey) q.set("metricKey", metricKey);
-          const data = await api("GET", `/kpi/drilldown?${q.toString()}`);
-          document.getElementById("drillRowsCount").textContent = String(data.dailyRows.length);
-          document.getElementById("drillIncidentsCount").textContent = String(data.incidents.length);
-          setStatus("Drilldown loaded");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("saveTarget").onclick = async () => {
-        try {
-          await api("POST", "/management/targets", {
-            metricKey: document.getElementById("targetMetricKey").value,
-            scopeKey: document.getElementById("targetScopeKey").value,
-            direction: document.getElementById("targetDirection").value,
-            targetValue: Number(document.getElementById("targetValue").value || 0),
-            effectiveFrom: document.getElementById("targetFrom").value,
-            effectiveTo: document.getElementById("targetTo").value || null
-          });
-          setStatus("Target saved");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("loadTargets").onclick = async () => {
-        try {
-          const metricKey = document.getElementById("targetMetricKey").value;
-          const data = await api("GET", `/management/targets?metricKey=${encodeURIComponent(metricKey)}`);
-          document.getElementById("targetsCount").textContent = `Targets: ${data.targets.length}`;
-          setStatus("Targets loaded");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("saveThreshold").onclick = async () => {
-        try {
-          const metricKey = document.getElementById("thresholdMetricKey").value;
-          await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, {
-            greenMin: Number(document.getElementById("thGreenMin").value || 0),
-            greenMax: Number(document.getElementById("thGreenMax").value || 0),
-            yellowMin: Number(document.getElementById("thYellowMin").value || 0),
-            yellowMax: Number(document.getElementById("thYellowMax").value || 0),
-            redMin: Number(document.getElementById("thRedMin").value || 0),
-            redMax: Number(document.getElementById("thRedMax").value || 0)
-          });
-          setStatus("Threshold saved");
-        } catch (e) { setStatus(e.message); }
-      };
-
-      document.getElementById("loadThresholds").onclick = async () => {
-        try {
-          const data = await api("GET", "/management/thresholds");
-          document.getElementById("thresholdsCount").textContent = `Thresholds: ${data.thresholds.length}`;
-          setStatus("Thresholds loaded");
-        } catch (e) { setStatus(e.message); }
-      };
-
+      // ═══════════════════════════════
+      // BOOTSTRAP
+      // ═══════════════════════════════
       async function bootstrap() {
+        initDates();
+        wireButtons();
         try {
-          await loadDailySection(pickupDate, "pickup", "pickup");
-          await loadDailySection(dropoffDate, "dropoff", "dropoff");
-          await loadDashboard();
-          setStatus("Loaded dashboard and daily sections");
-        } catch {
-          setStatus("Set API base URL and session token, then continue.");
+          await loadThresholdsForKPI();
+          await Promise.all([
+            loadDailySection(pickupDate, "pickup", "pickup"),
+            loadDailySection(dropoffDate, "dropoff", "dropoff"),
+            loadDashboard()
+          ]);
+          toastOk("לוח הבקרה נטען בהצלחה");
+        } catch (e) {
+          toastErr("שגיאה בטעינה: " + e.message);
         }
       }
 
+      // Auto-refresh every 10s
       setInterval(() => {
-        if (ui.token.value.trim()) {
+        if (getToken() && document.getElementById("appScreen").style.display !== "none") {
           loadDashboard().catch(() => {});
         }
       }, 10000);
 
-      bootstrap();
+      // ═══════════════════════════════
+      // INIT
+      // ═══════════════════════════════
+      (async function init() {
+        initDates();
+        await fetchConfig();
+        const savedToken = getToken();
+        if (savedToken) {
+          enterApp(null);
+        } else {
+          initGoogleLogin();
+        }
+      })();
     </script>
   </body>
 </html>

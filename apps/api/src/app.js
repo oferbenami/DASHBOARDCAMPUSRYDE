@@ -768,6 +768,13 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/auth/config") {
+      sendJson(res, 200, {
+        googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || ""
+      });
+      return;
+    }
+
     if (req.method === "POST" && pathname === "/auth/google/callback") {
       await handleGoogleCallback(req, res);
       return;
