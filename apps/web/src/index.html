@@ -183,6 +183,56 @@
         <table style="margin-top:12px"><thead><tr><th>ID</th><th>תאריך</th><th>סוג</th><th>מוצא</th><th>יעד</th><th>נוסעים</th><th>תקלה</th></tr></thead><tbody id="incidentRows"></tbody></table>
       </section>
 
+      <section class="card">
+        <h2>Drilldown</h2>
+        <div class="grid cols-4">
+          <div><label>Date From</label><input id="drillFrom" type="date" /></div>
+          <div><label>Date To</label><input id="drillTo" type="date" /></div>
+          <div><label>Service Type</label><select id="drillServiceType"><option value="">all</option><option value="pickup">pickup</option><option value="dropoff">dropoff</option></select></div>
+          <div><label>Metric Key</label><input id="drillMetricKey" placeholder="serviceQuality" /></div>
+        </div>
+        <button id="loadDrilldown" class="secondary" style="margin-top:10px">טען Drilldown</button>
+        <div class="grid cols-2" style="margin-top:10px">
+          <div class="kpi"><div class="name">Rows</div><div class="val" id="drillRowsCount">0</div></div>
+          <div class="kpi"><div class="name">Incidents</div><div class="val" id="drillIncidentsCount">0</div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Management</h2>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>Target</h3>
+            <div class="grid cols-2">
+              <div><label>Metric</label><input id="targetMetricKey" value="serviceQuality" /></div>
+              <div><label>Scope</label><input id="targetScopeKey" value="total" /></div>
+              <div><label>Direction</label><select id="targetDirection"><option value="at_least">at_least</option><option value="at_most">at_most</option></select></div>
+              <div><label>Value</label><input id="targetValue" type="number" value="98" /></div>
+              <div><label>Effective From</label><input id="targetFrom" type="date" /></div>
+              <div><label>Effective To</label><input id="targetTo" type="date" /></div>
+            </div>
+            <button id="saveTarget">שמור יעד</button>
+            <button id="loadTargets" class="secondary" style="margin-top:8px">טען יעדים</button>
+            <div id="targetsCount" style="margin-top:8px;font-size:0.85rem">Targets: 0</div>
+          </div>
+          <div class="card">
+            <h3>Threshold</h3>
+            <div class="grid cols-2">
+              <div><label>Metric</label><input id="thresholdMetricKey" value="serviceQuality" /></div>
+              <div><label>Green Min</label><input id="thGreenMin" type="number" value="95" /></div>
+              <div><label>Green Max</label><input id="thGreenMax" type="number" value="100" /></div>
+              <div><label>Yellow Min</label><input id="thYellowMin" type="number" value="90" /></div>
+              <div><label>Yellow Max</label><input id="thYellowMax" type="number" value="95" /></div>
+              <div><label>Red Min</label><input id="thRedMin" type="number" value="0" /></div>
+              <div><label>Red Max</label><input id="thRedMax" type="number" value="90" /></div>
+            </div>
+            <button id="saveThreshold">שמור סף</button>
+            <button id="loadThresholds" class="secondary" style="margin-top:8px">טען ספים</button>
+            <div id="thresholdsCount" style="margin-top:8px;font-size:0.85rem">Thresholds: 0</div>
+          </div>
+        </div>
+      </section>
+
       <section class="status" id="statusBox">Ready.</section>
     </div>
 
@@ -212,6 +262,9 @@
       document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
       document.getElementById("incident_date").value = pickupDate;
       document.getElementById("filter_date").value = pickupDate;
+      document.getElementById("drillFrom").value = toDateInputValue(weekAgo);
+      document.getElementById("drillTo").value = pickupDate;
+      document.getElementById("targetFrom").value = pickupDate;
 
       async function api(method, path, body) {
         const res = await fetch(`${ui.apiBase.value}${path}`, {
@@ -330,6 +383,68 @@
             tbody.appendChild(tr);
           }
           setStatus(`Loaded ${data.incidents.length} incidents`);
+        } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("loadDrilldown").onclick = async () => {
+        try {
+          const from = document.getElementById("drillFrom").value;
+          const to = document.getElementById("drillTo").value;
+          const serviceType = document.getElementById("drillServiceType").value;
+          const metricKey = document.getElementById("drillMetricKey").value;
+          const q = new URLSearchParams({ dateFrom: from, dateTo: to });
+          if (serviceType) q.set("serviceType", serviceType);
+          if (metricKey) q.set("metricKey", metricKey);
+          const data = await api("GET", `/kpi/drilldown?${q.toString()}`);
+          document.getElementById("drillRowsCount").textContent = String(data.dailyRows.length);
+          document.getElementById("drillIncidentsCount").textContent = String(data.incidents.length);
+          setStatus("Drilldown loaded");
+        } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("saveTarget").onclick = async () => {
+        try {
+          await api("POST", "/management/targets", {
+            metricKey: document.getElementById("targetMetricKey").value,
+            scopeKey: document.getElementById("targetScopeKey").value,
+            direction: document.getElementById("targetDirection").value,
+            targetValue: Number(document.getElementById("targetValue").value || 0),
+            effectiveFrom: document.getElementById("targetFrom").value,
+            effectiveTo: document.getElementById("targetTo").value || null
+          });
+          setStatus("Target saved");
+        } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("loadTargets").onclick = async () => {
+        try {
+          const metricKey = document.getElementById("targetMetricKey").value;
+          const data = await api("GET", `/management/targets?metricKey=${encodeURIComponent(metricKey)}`);
+          document.getElementById("targetsCount").textContent = `Targets: ${data.targets.length}`;
+          setStatus("Targets loaded");
+        } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("saveThreshold").onclick = async () => {
+        try {
+          const metricKey = document.getElementById("thresholdMetricKey").value;
+          await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, {
+            greenMin: Number(document.getElementById("thGreenMin").value || 0),
+            greenMax: Number(document.getElementById("thGreenMax").value || 0),
+            yellowMin: Number(document.getElementById("thYellowMin").value || 0),
+            yellowMax: Number(document.getElementById("thYellowMax").value || 0),
+            redMin: Number(document.getElementById("thRedMin").value || 0),
+            redMax: Number(document.getElementById("thRedMax").value || 0)
+          });
+          setStatus("Threshold saved");
+        } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("loadThresholds").onclick = async () => {
+        try {
+          const data = await api("GET", "/management/thresholds");
+          document.getElementById("thresholdsCount").textContent = `Thresholds: ${data.thresholds.length}`;
+          setStatus("Thresholds loaded");
         } catch (e) { setStatus(e.message); }
       };
 

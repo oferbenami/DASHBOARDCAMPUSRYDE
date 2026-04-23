@@ -1,18 +1,9 @@
-﻿# API Stage 4 Contracts
+﻿# API Stage 5 Contracts
 
 ## Infrastructure baseline
 - Database provider: `excel` (default), path in Drive via `EXCEL_DB_PATH`
 - Optional provider: `supabase`
 - Hosting: Vercel (Serverless API)
-
-## Required environment variables
-- `DB_PROVIDER` (`excel` or `supabase`)
-- `EXCEL_DB_PATH` (when `DB_PROVIDER=excel`)
-- `SUPABASE_URL` (when `DB_PROVIDER=supabase`)
-- `SUPABASE_SERVICE_ROLE_KEY` (when `DB_PROVIDER=supabase`)
-- `GOOGLE_OAUTH_CLIENT_ID`
-- `GOOGLE_OAUTH_CLIENT_SECRET`
-- `SESSION_TTL_HOURS`
 
 ## Core APIs
 - `GET /health`
@@ -23,22 +14,24 @@
 
 ## Daily operations APIs
 - `GET /daily-metrics?date=YYYY-MM-DD`
-- `PUT /daily-metrics/:date/:serviceType` (`serviceType`=`pickup|dropoff`)
+- `PUT /daily-metrics/:date/:serviceType`
 - `GET /incidents?date=&serviceType=`
 - `POST /incidents`
 - `PUT /incidents/:id`
 - `POST /incidents/recalculate`
 - `PUT /day-types/:date`
+- `GET /day-types?dateFrom=&dateTo=`
 
 ## KPI APIs
 - `GET /kpi/summary?dateFrom=&dateTo=`
 - `GET /kpi/trends?dateFrom=&dateTo=`
-- `GET /kpi/stream?dateFrom=&dateTo=` (SSE)
+- `GET /kpi/stream?dateFrom=&dateTo=`
+- `GET /kpi/drilldown?dateFrom=&dateTo=&serviceType=&metricKey=`
 
-## Validation rules
-- Quantitative fields must be integers >= 0.
-- `affectedPassengers <= registeredPassengers`
-- `issuesCount <= ridesCount`
-- `delayMinutes` is mandatory when `issueType=delay`.
+## Management APIs
+- `GET /management/targets?metricKey=&scopeKey=`
+- `POST /management/targets`
+- `GET /management/thresholds?metricKey=`
+- `PUT /management/thresholds/:metricKey`
 
 All non-health endpoints require `Authorization: Bearer <sessionToken>`.

@@ -17,15 +17,23 @@ const {
   updateIncident,
   recalculateIncidents,
   upsertDayType,
+  listDayTypes,
   getKpiSummary,
-  getKpiTrends
+  getKpiTrends,
+  getKpiDrilldown,
+  listTargets,
+  createTarget,
+  listThresholds,
+  upsertThreshold
 } = require("./storage/identity-store");
 const {
   isDateString,
   normalizeDailyMetricInput,
   normalizeIncidentInput,
   normalizeDayTypeInput,
-  normalizeServiceType
+  normalizeServiceType,
+  normalizeTargetInput,
+  normalizeThresholdInput
 } = require("./core/daily-validation");
 
 const sessionTtlHours = Number(process.env.SESSION_TTL_HOURS || 10);
@@ -360,6 +368,24 @@ async function handleUpsertDayType(req, res, serviceDate) {
   sendJson(res, 200, { dayType: saved.dayType });
 }
 
+async function handleListDayTypes(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const rows = await listDayTypes(range);
+  sendJson(res, 200, { dayTypes: rows });
+}
+
 function resolveRange(parsedUrl) {
   const dateFrom = parsedUrl.searchParams.get("dateFrom") || null;
   const dateTo = parsedUrl.searchParams.get("dateTo") || null;
@@ -406,6 +432,119 @@ async function handleKpiTrends(req, res, parsedUrl) {
 
   const trends = await getKpiTrends(range);
   sendJson(res, 200, trends);
+}
+
+async function handleKpiDrilldown(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const serviceTypeRaw = parsedUrl.searchParams.get("serviceType") || null;
+  const metricKey = parsedUrl.searchParams.get("metricKey") || null;
+  let serviceType = null;
+  if (serviceTypeRaw) {
+    try {
+      serviceType = normalizeServiceType(serviceTypeRaw);
+    } catch (error) {
+      badRequest(res, error.message);
+      return;
+    }
+  }
+
+  const payload = await getKpiDrilldown({
+    ...range,
+    metricKey,
+    serviceType
+  });
+  sendJson(res, 200, payload);
+}
+
+async function handleListTargets(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  const metricKey = parsedUrl.searchParams.get("metricKey") || undefined;
+  const scopeKey = parsedUrl.searchParams.get("scopeKey") || undefined;
+  const targets = await listTargets({ metricKey, scopeKey });
+  sendJson(res, 200, { targets });
+}
+
+async function handleCreateTarget(req, res) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  const body = await readJsonBody(req);
+  let normalized;
+  try {
+    normalized = normalizeTargetInput(body);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const saved = await createTarget(normalized);
+  await appendAudit({
+    actorUserId: active.user.id,
+    action: "TARGET_CREATED",
+    entityType: "targets_history",
+    entityId: saved.target.id,
+    beforeData: saved.before,
+    afterData: saved.after,
+    metadata: { metricKey: normalized.metricKey, scopeKey: normalized.scopeKey }
+  });
+  sendJson(res, 201, { target: saved.target });
+}
+
+async function handleListThresholds(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  const metricKey = parsedUrl.searchParams.get("metricKey") || undefined;
+  const thresholds = await listThresholds({ metricKey });
+  sendJson(res, 200, { thresholds });
+}
+
+async function handleUpsertThreshold(req, res, metricKey) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  const body = await readJsonBody(req);
+  let normalized;
+  try {
+    normalized = normalizeThresholdInput(body);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const saved = await upsertThreshold(metricKey, normalized);
+  await appendAudit({
+    actorUserId: active.user.id,
+    action: saved.before ? "THRESHOLD_UPDATED" : "THRESHOLD_CREATED",
+    entityType: "kpi_thresholds",
+    entityId: metricKey,
+    beforeData: saved.before,
+    afterData: saved.after,
+    metadata: { metricKey }
+  });
+  sendJson(res, 200, { threshold: saved.threshold });
 }
 
 async function handleKpiStream(req, res, parsedUrl) {
@@ -456,7 +595,7 @@ async function handleRequest(req, res) {
       const provider = providerName();
       sendJson(res, 200, {
         status: "ok",
-        stage: 3,
+        stage: 5,
         infra: { database: provider, hosting: "vercel" }
       });
       return;
@@ -520,6 +659,11 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/day-types") {
+      await handleListDayTypes(req, res, parsedUrl);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/kpi/summary") {
       await handleKpiSummary(req, res, parsedUrl);
       return;
@@ -530,8 +674,34 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/kpi/drilldown") {
+      await handleKpiDrilldown(req, res, parsedUrl);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/kpi/stream") {
       await handleKpiStream(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/management/targets") {
+      await handleListTargets(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/management/targets") {
+      await handleCreateTarget(req, res);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/management/thresholds") {
+      await handleListThresholds(req, res, parsedUrl);
+      return;
+    }
+
+    const thresholdMatch = pathname.match(/^\/management\/thresholds\/([a-zA-Z0-9_.-]+)$/);
+    if (req.method === "PUT" && thresholdMatch) {
+      await handleUpsertThreshold(req, res, thresholdMatch[1]);
       return;
     }
 

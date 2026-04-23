@@ -222,6 +222,61 @@ async function testApiFlow() {
   assert.ok(Array.isArray(trends.payload.points));
   assert.equal(trends.payload.points.length, 1);
 
+  const drilldown = await invokeApi({
+    method: "GET",
+    pathName: "/kpi/drilldown?dateFrom=2026-04-22&dateTo=2026-04-22&serviceType=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(drilldown.statusCode, 200);
+  assert.ok(Array.isArray(drilldown.payload.dailyRows));
+  assert.ok(drilldown.payload.dailyRows.length >= 1);
+
+  const createTargetRes = await invokeApi({
+    method: "POST",
+    pathName: "/management/targets",
+    token: session.sessionToken,
+    body: {
+      metricKey: "serviceQuality",
+      scopeKey: "total",
+      direction: "at_least",
+      targetValue: 98,
+      effectiveFrom: "2026-04-01",
+      effectiveTo: null
+    }
+  });
+  assert.equal(createTargetRes.statusCode, 201);
+
+  const listTargetsRes = await invokeApi({
+    method: "GET",
+    pathName: "/management/targets?metricKey=serviceQuality",
+    token: session.sessionToken
+  });
+  assert.equal(listTargetsRes.statusCode, 200);
+  assert.ok(listTargetsRes.payload.targets.length >= 1);
+
+  const putThresholdRes = await invokeApi({
+    method: "PUT",
+    pathName: "/management/thresholds/serviceQuality",
+    token: session.sessionToken,
+    body: {
+      greenMin: 95,
+      greenMax: 100,
+      yellowMin: 90,
+      yellowMax: 95,
+      redMin: 0,
+      redMax: 90
+    }
+  });
+  assert.equal(putThresholdRes.statusCode, 200);
+
+  const listThresholdRes = await invokeApi({
+    method: "GET",
+    pathName: "/management/thresholds",
+    token: session.sessionToken
+  });
+  assert.equal(listThresholdRes.statusCode, 200);
+  assert.ok(listThresholdRes.payload.thresholds.length >= 1);
+
   await appendAudit({
     actorUserId: userWrite.user.id,
     action: "MANUAL_TEST_AUDIT",

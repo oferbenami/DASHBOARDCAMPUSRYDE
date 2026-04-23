@@ -278,5 +278,23 @@ module.exports = {
   },
   getKpiTrends: async () => {
     throw new Error("Stage 4 KPI engine is not implemented for supabase provider yet");
+  },
+  getKpiDrilldown: async () => {
+    throw new Error("Stage 5 drilldown is not implemented for supabase provider yet");
+  },
+  listDayTypes: async () => {
+    throw new Error("Stage 5 day types list is not implemented for supabase provider yet");
+  },
+  listTargets: async () => {
+    throw new Error("Stage 5 targets management is not implemented for supabase provider yet");
+  },
+  createTarget: async () => {
+    throw new Error("Stage 5 targets management is not implemented for supabase provider yet");
+  },
+  listThresholds: async () => {
+    throw new Error("Stage 5 thresholds management is not implemented for supabase provider yet");
+  },
+  upsertThreshold: async () => {
+    throw new Error("Stage 5 thresholds management is not implemented for supabase provider yet");
   }
 };

@@ -31,6 +31,8 @@ function ensureWorkbook() {
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([]), "daily_metrics");
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([]), "incidents");
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([]), "day_types");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([]), "targets_history");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([]), "kpi_thresholds");
   XLSX.writeFile(workbook, target);
 }
 
@@ -52,7 +54,9 @@ function loadWorkbookState() {
     auditLog: readSheet(workbook, "audit_log"),
     dailyMetrics: readSheet(workbook, "daily_metrics"),
     incidents: readSheet(workbook, "incidents"),
-    dayTypes: readSheet(workbook, "day_types")
+    dayTypes: readSheet(workbook, "day_types"),
+    targetsHistory: readSheet(workbook, "targets_history"),
+    kpiThresholds: readSheet(workbook, "kpi_thresholds")
   };
 }
 
@@ -64,6 +68,8 @@ function saveWorkbookState(state) {
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(state.dailyMetrics), "daily_metrics");
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(state.incidents), "incidents");
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(state.dayTypes), "day_types");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(state.targetsHistory), "targets_history");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(state.kpiThresholds), "kpi_thresholds");
   XLSX.writeFile(workbook, dbPath());
 }
 
@@ -569,6 +575,167 @@ async function getKpiTrends(filters) {
   };
 }
 
+async function getKpiDrilldown(filters) {
+  const state = loadWorkbookState();
+  const dateFrom = filters.dateFrom || null;
+  const dateTo = filters.dateTo || null;
+  const serviceType = filters.serviceType ? normalizeServiceType(filters.serviceType) : null;
+  const metricKey = filters.metricKey || null;
+
+  const metricsScoped = filterByDateRange(state.dailyMetrics, dateFrom, dateTo).filter((row) => {
+    if (!serviceType) {
+      return true;
+    }
+    return row.serviceType === serviceType;
+  });
+
+  const incidentsScoped = filterByDateRange(state.incidents, dateFrom, dateTo).filter((row) => {
+    if (!serviceType) {
+      return true;
+    }
+    return row.serviceType === serviceType;
+  });
+
+  const summary = aggregateRows(metricsScoped);
+  return {
+    filters: { dateFrom, dateTo, serviceType, metricKey },
+    summary,
+    dailyRows: metricsScoped.map(cleanDailyMetric),
+    incidents: incidentsScoped.map(cleanIncident)
+  };
+}
+
+async function listDayTypes(filters) {
+  const state = loadWorkbookState();
+  const dateFrom = filters.dateFrom || null;
+  const dateTo = filters.dateTo || null;
+  const rows = filterByDateRange(state.dayTypes, dateFrom, dateTo)
+    .sort((a, b) => (a.serviceDate < b.serviceDate ? 1 : -1))
+    .map((row) => ({
+      serviceDate: row.serviceDate,
+      dayType: row.dayType,
+      reason: row.reason,
+      isPartial: Boolean(row.isPartial),
+      noActivity: Boolean(row.noActivity),
+      updatedAt: row.updatedAt
+    }));
+  return rows;
+}
+
+async function listTargets(filters) {
+  const state = loadWorkbookState();
+  let rows = [...state.targetsHistory];
+
+  if (filters.metricKey) {
+    rows = rows.filter((row) => row.metricKey === filters.metricKey);
+  }
+  if (filters.scopeKey) {
+    rows = rows.filter((row) => row.scopeKey === filters.scopeKey);
+  }
+
+  rows.sort((a, b) => (a.effectiveFrom < b.effectiveFrom ? 1 : -1));
+  return rows.map((row) => ({
+    id: row.id,
+    metricKey: row.metricKey,
+    scopeKey: row.scopeKey,
+    direction: row.direction,
+    targetValue: Number(row.targetValue),
+    effectiveFrom: row.effectiveFrom,
+    effectiveTo: row.effectiveTo || null,
+    updatedAt: row.updatedAt
+  }));
+}
+
+async function createTarget(input) {
+  const state = loadWorkbookState();
+  const row = {
+    id: crypto.randomUUID(),
+    metricKey: input.metricKey,
+    scopeKey: input.scopeKey,
+    direction: input.direction,
+    targetValue: input.targetValue,
+    effectiveFrom: input.effectiveFrom,
+    effectiveTo: input.effectiveTo || null,
+    createdAt: nowIso(),
+    updatedAt: nowIso()
+  };
+  state.targetsHistory.push(row);
+  saveWorkbookState(state);
+  return { before: null, after: { ...row }, target: { ...row, targetValue: Number(row.targetValue) } };
+}
+
+async function listThresholds(filters) {
+  const state = loadWorkbookState();
+  let rows = [...state.kpiThresholds];
+  if (filters.metricKey) {
+    rows = rows.filter((row) => row.metricKey === filters.metricKey);
+  }
+  rows.sort((a, b) => (a.metricKey < b.metricKey ? -1 : 1));
+  return rows.map((row) => ({
+    metricKey: row.metricKey,
+    greenMin: Number(row.greenMin),
+    greenMax: Number(row.greenMax),
+    yellowMin: Number(row.yellowMin),
+    yellowMax: Number(row.yellowMax),
+    redMin: Number(row.redMin),
+    redMax: Number(row.redMax),
+    updatedAt: row.updatedAt
+  }));
+}
+
+async function upsertThreshold(metricKey, input) {
+  const state = loadWorkbookState();
+  let row = state.kpiThresholds.find((item) => item.metricKey === metricKey);
+  const before = row
+    ? {
+        metricKey: row.metricKey,
+        greenMin: Number(row.greenMin),
+        greenMax: Number(row.greenMax),
+        yellowMin: Number(row.yellowMin),
+        yellowMax: Number(row.yellowMax),
+        redMin: Number(row.redMin),
+        redMax: Number(row.redMax),
+        updatedAt: row.updatedAt
+      }
+    : null;
+
+  if (!row) {
+    row = {
+      metricKey,
+      greenMin: input.greenMin,
+      greenMax: input.greenMax,
+      yellowMin: input.yellowMin,
+      yellowMax: input.yellowMax,
+      redMin: input.redMin,
+      redMax: input.redMax,
+      createdAt: nowIso(),
+      updatedAt: nowIso()
+    };
+    state.kpiThresholds.push(row);
+  } else {
+    row.greenMin = input.greenMin;
+    row.greenMax = input.greenMax;
+    row.yellowMin = input.yellowMin;
+    row.yellowMax = input.yellowMax;
+    row.redMin = input.redMin;
+    row.redMax = input.redMax;
+    row.updatedAt = nowIso();
+  }
+
+  saveWorkbookState(state);
+  const threshold = {
+    metricKey: row.metricKey,
+    greenMin: Number(row.greenMin),
+    greenMax: Number(row.greenMax),
+    yellowMin: Number(row.yellowMin),
+    yellowMax: Number(row.yellowMax),
+    redMin: Number(row.redMin),
+    redMax: Number(row.redMax),
+    updatedAt: row.updatedAt
+  };
+  return { before, after: threshold, threshold };
+}
+
 module.exports = {
   upsertUser,
   createSession,
@@ -583,6 +750,12 @@ module.exports = {
   updateIncident,
   recalculateIncidents,
   upsertDayType,
+  listDayTypes,
   getKpiSummary,
-  getKpiTrends
+  getKpiTrends,
+  getKpiDrilldown,
+  listTargets,
+  createTarget,
+  listThresholds,
+  upsertThreshold
 };

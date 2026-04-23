@@ -107,10 +107,68 @@ function normalizeDayTypeInput(payload, serviceDate) {
   };
 }
 
+function normalizeTargetInput(payload) {
+  const metricKey = String(payload.metricKey || "").trim();
+  const scopeKey = String(payload.scopeKey || "").trim();
+  const direction = String(payload.direction || "").trim();
+  const effectiveFrom = String(payload.effectiveFrom || "").trim();
+  const effectiveTo = payload.effectiveTo ? String(payload.effectiveTo).trim() : null;
+  const targetValue = Number(payload.targetValue);
+
+  if (!metricKey) {
+    throw new Error("metricKey is required");
+  }
+  if (!scopeKey) {
+    throw new Error("scopeKey is required");
+  }
+  if (direction !== "at_least" && direction !== "at_most") {
+    throw new Error("direction must be at_least or at_most");
+  }
+  if (!isDateString(effectiveFrom)) {
+    throw new Error("effectiveFrom must be in YYYY-MM-DD format");
+  }
+  if (effectiveTo && !isDateString(effectiveTo)) {
+    throw new Error("effectiveTo must be in YYYY-MM-DD format");
+  }
+  if (!Number.isFinite(targetValue) || targetValue < 0) {
+    throw new Error("targetValue must be a non-negative number");
+  }
+
+  return {
+    metricKey,
+    scopeKey,
+    direction,
+    targetValue,
+    effectiveFrom,
+    effectiveTo
+  };
+}
+
+function normalizeThresholdInput(payload) {
+  const out = {
+    greenMin: Number(payload.greenMin),
+    greenMax: Number(payload.greenMax),
+    yellowMin: Number(payload.yellowMin),
+    yellowMax: Number(payload.yellowMax),
+    redMin: Number(payload.redMin),
+    redMax: Number(payload.redMax)
+  };
+
+  for (const [k, v] of Object.entries(out)) {
+    if (!Number.isFinite(v)) {
+      throw new Error(`${k} must be a number`);
+    }
+  }
+
+  return out;
+}
+
 module.exports = {
   isDateString,
   normalizeDailyMetricInput,
   normalizeIncidentInput,
   normalizeDayTypeInput,
-  normalizeServiceType
+  normalizeServiceType,
+  normalizeTargetInput,
+  normalizeThresholdInput
 };

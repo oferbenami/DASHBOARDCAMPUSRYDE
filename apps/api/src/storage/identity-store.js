@@ -24,6 +24,12 @@ module.exports = {
   updateIncident: (...args) => backend().updateIncident(...args),
   recalculateIncidents: (...args) => backend().recalculateIncidents(...args),
   upsertDayType: (...args) => backend().upsertDayType(...args),
+  listDayTypes: (...args) => backend().listDayTypes(...args),
   getKpiSummary: (...args) => backend().getKpiSummary(...args),
-  getKpiTrends: (...args) => backend().getKpiTrends(...args)
+  getKpiTrends: (...args) => backend().getKpiTrends(...args),
+  getKpiDrilldown: (...args) => backend().getKpiDrilldown(...args),
+  listTargets: (...args) => backend().listTargets(...args),
+  createTarget: (...args) => backend().createTarget(...args),
+  listThresholds: (...args) => backend().listThresholds(...args),
+  upsertThreshold: (...args) => backend().upsertThreshold(...args)
 };
