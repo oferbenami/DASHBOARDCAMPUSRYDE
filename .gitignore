@@ -10,3 +10,5 @@ dist/
 Thumbs.db
 ~$*
 apps/api/.data/
+
+.vercel
