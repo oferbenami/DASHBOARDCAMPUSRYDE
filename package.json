@@ -11,7 +11,9 @@
     "validate:foundation": "node scripts/validate-foundation.mjs",
     "check": "npm run validate:foundation",
     "check:connections": "node scripts/check-connections.mjs",
-    "smoke:uat": "node scripts/smoke-uat.mjs"
+    "smoke:uat": "node scripts/smoke-uat.mjs",
+    "preflight:go-live": "node scripts/preflight-go-live.mjs",
+    "smoke:prod": "node scripts/postdeploy-smoke.mjs"
   },
   "engines": {
     "node": ">=24.0.0",

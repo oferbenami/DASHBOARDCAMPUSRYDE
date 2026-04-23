@@ -762,7 +762,7 @@ async function handleRequest(req, res) {
       const provider = providerName();
       sendJson(res, 200, {
         status: "ok",
-        stage: 7,
+        stage: 8,
         infra: { database: provider, hosting: "vercel" }
       });
       return;
