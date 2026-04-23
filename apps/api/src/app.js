@@ -2,7 +2,7 @@
 const XLSX = require("xlsx");
 const PDFDocument = require("pdfkit");
 
-const { getBearerToken, readJsonBody, sendJson } = require("./core/http");
+const { getBearerToken, readJsonBody, sendJson, securityHeaders } = require("./core/http");
 const { verifyGoogleIdToken } = require("./auth/google-token");
 const {
   providerName,
@@ -40,6 +40,10 @@ const {
 } = require("./core/daily-validation");
 
 const sessionTtlHours = Number(process.env.SESSION_TTL_HOURS || 10);
+const rateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS || 60000);
+const rateLimitMaxRequests = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 120);
+const authRateLimitMaxRequests = Number(process.env.RATE_LIMIT_AUTH_MAX_REQUESTS || 20);
+const rateLimitStore = new Map();
 
 function unauthorized(res, message) {
   sendJson(res, 401, { error: message || "Unauthorized" });
@@ -47,6 +51,43 @@ function unauthorized(res, message) {
 
 function badRequest(res, message) {
   sendJson(res, 400, { error: message });
+}
+
+function clientIp(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    "unknown"
+  );
+}
+
+function applyRateLimit(req, pathname) {
+  const ip = clientIp(req);
+  const key = `${ip}:${pathname.startsWith("/auth/") ? "auth" : "global"}`;
+  const limit = pathname.startsWith("/auth/") ? authRateLimitMaxRequests : rateLimitMaxRequests;
+  const now = Date.now();
+
+  const current = rateLimitStore.get(key);
+  if (!current || now > current.resetAt) {
+    rateLimitStore.set(key, { count: 1, resetAt: now + rateLimitWindowMs });
+    return { ok: true };
+  }
+
+  if (current.count >= limit) {
+    return { ok: false, retryAfterSec: Math.ceil((current.resetAt - now) / 1000) };
+  }
+
+  current.count += 1;
+  return { ok: true };
+}
+
+function sendRateLimitExceeded(res, retryAfterSec) {
+  res.writeHead(429, {
+    "content-type": "application/json; charset=utf-8",
+    "retry-after": String(retryAfterSec),
+    ...securityHeaders()
+  });
+  res.end(JSON.stringify({ error: "Too Many Requests" }));
 }
 
 async function requireAuth(req, res) {
@@ -567,7 +608,8 @@ async function handleKpiStream(req, res, parsedUrl) {
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
-    Connection: "keep-alive"
+    Connection: "keep-alive",
+    ...securityHeaders()
   });
 
   const emit = async () => {
@@ -635,7 +677,8 @@ async function handleExportExcel(req, res, parsedUrl) {
 
   res.writeHead(200, {
     "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "Content-Disposition": `attachment; filename=\"${filename}\"`
+    "Content-Disposition": `attachment; filename=\"${filename}\"`,
+    ...securityHeaders()
   });
   res.end(fileBuffer);
 }
@@ -685,7 +728,8 @@ async function handleExportPdf(req, res, parsedUrl) {
       const filename = `${toExportFilename("dashboard_export", range)}.pdf`;
       res.writeHead(200, {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=\"${filename}\"`
+        "Content-Disposition": `attachment; filename=\"${filename}\"`,
+        ...securityHeaders()
       });
       res.end(Buffer.concat(chunks));
       resolve();
@@ -707,13 +751,18 @@ async function handleRequest(req, res) {
   const pathname = parsedUrl.pathname.startsWith("/api/")
     ? parsedUrl.pathname.slice("/api".length)
     : parsedUrl.pathname;
+  const rateLimit = applyRateLimit(req, pathname);
+  if (!rateLimit.ok) {
+    sendRateLimitExceeded(res, rateLimit.retryAfterSec);
+    return;
+  }
 
   try {
     if (req.method === "GET" && pathname === "/health") {
       const provider = providerName();
       sendJson(res, 200, {
         status: "ok",
-        stage: 6,
+        stage: 7,
         infra: { database: provider, hosting: "vercel" }
       });
       return;
@@ -845,5 +894,6 @@ async function handleRequest(req, res) {
 module.exports = {
   handleRequest
 };
+
 
 

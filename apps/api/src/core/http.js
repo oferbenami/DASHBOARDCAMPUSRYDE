@@ -1,4 +1,14 @@
-﻿function getBearerToken(req) {
+﻿function securityHeaders() {
+  return {
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "no-referrer",
+    "cache-control": "no-store",
+    "permissions-policy": "geolocation=(), microphone=(), camera=()"
+  };
+}
+
+function getBearerToken(req) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith("Bearer ")) {
     return null;
@@ -7,7 +17,10 @@
 }
 
 function sendJson(res, code, payload) {
-  res.writeHead(code, { "content-type": "application/json; charset=utf-8" });
+  res.writeHead(code, {
+    "content-type": "application/json; charset=utf-8",
+    ...securityHeaders()
+  });
   res.end(JSON.stringify(payload));
 }
 
@@ -40,5 +53,6 @@ function readJsonBody(req) {
 module.exports = {
   getBearerToken,
   sendJson,
-  readJsonBody
+  readJsonBody,
+  securityHeaders
 };

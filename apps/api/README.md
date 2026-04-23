@@ -40,3 +40,8 @@ All non-health endpoints require `Authorization: Bearer <sessionToken>`.
 - GET /export/excel?dateFrom=&dateTo= 
 - GET /export/pdf?dateFrom=&dateTo= 
 
+
+## Hardening
+- Global and auth-specific rate limiting is enabled.
+- Security headers are added to JSON, SSE, and export responses.
+

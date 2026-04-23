@@ -314,6 +314,23 @@ async function testApiFlow() {
   assert.ok(audit.length >= 1);
 }
 
+async function testHardening() {
+  const health = await invokeApi({ method: "GET", pathName: "/health" });
+  assert.equal(health.statusCode, 200);
+  assert.equal(health.headers["x-content-type-options"], "nosniff");
+  assert.equal(health.headers["x-frame-options"], "DENY");
+
+  let rateLimited = false;
+  for (let i = 0; i < 140; i += 1) {
+    const res = await invokeApi({ method: "GET", pathName: "/health" });
+    if (res.statusCode === 429) {
+      rateLimited = true;
+      break;
+    }
+  }
+  assert.equal(rateLimited, true);
+}
+
 async function testGoogleValidatorMock() {
   const originalFetch = global.fetch;
 
@@ -359,6 +376,7 @@ async function run() {
     ["storage CRUD flow", testStorageCrudFlow],
     ["validation rules", testValidationRules],
     ["api flow", testApiFlow],
+    ["hardening", testHardening],
     ["google token validator", testGoogleValidatorMock]
   ];
 
@@ -368,11 +386,11 @@ async function run() {
   }
 
   cleanupTestFile();
-  console.log("Stage 6 test suite passed.");
+  console.log("Stage 7 test suite passed.");
 }
 
 run().catch((error) => {
-  console.error("Stage 6 test suite failed:", error.message);
+  console.error("Stage 7 test suite failed:", error.message);
   cleanupTestFile();
   process.exit(1);
 });
