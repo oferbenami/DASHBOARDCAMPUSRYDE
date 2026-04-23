@@ -74,24 +74,31 @@
         border-radius: 20px;
         margin-bottom: 28px;
       }
-      .btn-google {
+      #googleBtnWrap {
         display: flex;
-        align-items: center;
         justify-content: center;
-        gap: 10px;
-        width: 100%;
-        padding: 13px 20px;
-        background: var(--accent);
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.18s;
+        align-items: center;
+        min-height: 48px;
+        margin-bottom: 4px;
       }
-      .btn-google:hover { background: var(--accent-hover); }
-      .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+      .google-btn-loading {
+        color: #9aa5bb;
+        font-size: 0.85rem;
+      }
+      .btn-dev-login {
+        width: 100%;
+        padding: 11px 20px;
+        background: none;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        color: #6b7a99;
+        font-size: 0.85rem;
+        cursor: pointer;
+        direction: rtl;
+        font-family: inherit;
+        transition: background 0.15s;
+      }
+      .btn-dev-login:hover { background: #f8fafc; color: var(--text); }
       .login-footer {
         margin-top: 20px;
         font-size: 0.78rem;
@@ -427,17 +434,22 @@
         <h1 class="login-title">DashboardRyde</h1>
         <p class="login-subtitle">מערכת ניהול נסיעות קמפוס — ניטור KPI, תקלות ופעילות יומית</p>
         <div class="login-badge">Stage 8 · Go-Live</div>
-        <button class="btn-google" id="btnGoogleLogin">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          התחבר עם Google
-        </button>
+
+        <!-- Google renders its official button here -->
+        <div id="googleBtnWrap">
+          <span class="google-btn-loading">טוען...</span>
+        </div>
+
         <div id="loginError"></div>
-        <p class="login-footer">גישה מורשית בלבד · DashboardRyde Campus</p>
+        <p class="login-footer">
+          גישה מורשית בלבד · DashboardRyde Campus<br>
+          <a href="#" id="devSettingsLink" style="color:#c8d2e2;font-size:0.72rem;text-decoration:none;" onclick="toggleDevSettings();return false;">⚙ הגדרות מתקדמות</a>
+        </p>
+        <div id="devSettingsBox" style="display:none;margin-top:14px;text-align:right;">
+          <label style="font-size:0.78rem;color:#6b7a99;display:block;margin-bottom:4px;">API Base URL</label>
+          <input id="devApiBase" style="font-size:0.82rem;padding:7px 10px;border-radius:8px;border:1px solid #c8d2e2;width:100%;direction:ltr;" />
+          <button onclick="saveDevSettings()" style="margin-top:8px;width:100%;padding:8px;background:#49566a;color:#fff;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">שמור</button>
+        </div>
       </div>
     </div>
 
@@ -803,6 +815,26 @@
       }
 
       // ═══════════════════════════════
+      // DEV SETTINGS
+      // ═══════════════════════════════
+      function toggleDevSettings() {
+        const box = document.getElementById("devSettingsBox");
+        const visible = box.style.display !== "none";
+        box.style.display = visible ? "none" : "block";
+        if (!visible) {
+          document.getElementById("devApiBase").value = getApiBase();
+        }
+      }
+
+      function saveDevSettings() {
+        const val = document.getElementById("devApiBase").value.trim().replace(/\/$/, "");
+        if (val) localStorage.setItem(API_BASE_KEY, val);
+        document.getElementById("devSettingsBox").style.display = "none";
+        // Re-fetch config from new base
+        fetchConfig().then(initGoogleLogin);
+      }
+
+      // ═══════════════════════════════
       // AUTH FLOW
       // ═══════════════════════════════
       function showLoginError(msg) {
@@ -832,10 +864,12 @@
       }
 
       function initGoogleLogin() {
+        const wrap = document.getElementById("googleBtnWrap");
+
         if (!GOOGLE_CLIENT_ID) {
-          // Fallback: manual token input for dev/testing
-          document.getElementById("btnGoogleLogin").addEventListener("click", () => {
-            const token = prompt("הכנס Session Token (מצב פיתוח):");
+          wrap.innerHTML = `<button class="btn-dev-login" id="btnDevLogin">🔑 כניסה ידנית (מצב פיתוח)</button>`;
+          document.getElementById("btnDevLogin").addEventListener("click", () => {
+            const token = prompt("הכנס Session Token:");
             if (token && token.trim()) {
               localStorage.setItem(TOKEN_KEY, token.trim());
               enterApp(null);
@@ -844,15 +878,42 @@
           return;
         }
 
-        google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCredential,
-          auto_select: false
-        });
+        function setupGoogleButton() {
+          google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCredential,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+            ux_mode: "popup"
+          });
+          wrap.innerHTML = "";
+          google.accounts.id.renderButton(wrap, {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            text: "signin_with",
+            locale: "iw",
+            width: 280
+          });
+        }
 
-        document.getElementById("btnGoogleLogin").addEventListener("click", () => {
-          google.accounts.id.prompt();
-        });
+        if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+          setupGoogleButton();
+          return;
+        }
+
+        // Google script is async/defer — poll until ready
+        let attempts = 0;
+        const poll = setInterval(() => {
+          attempts++;
+          if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+            clearInterval(poll);
+            setupGoogleButton();
+          } else if (attempts > 80) {
+            clearInterval(poll);
+            wrap.innerHTML = `<p style="color:#b91c1c;font-size:0.82rem;margin:0">לא ניתן לטעון את כפתור Google. בדוק חיבור לאינטרנט.</p>`;
+          }
+        }, 100);
       }
 
       async function enterApp(userFromLogin) {
