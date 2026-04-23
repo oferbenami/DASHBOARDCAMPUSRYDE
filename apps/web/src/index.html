@@ -79,6 +79,13 @@
         background: #ecf5ff;
         border-radius: 8px;
       }
+      .mobile-note {
+        padding: 10px;
+        border: 1px dashed #b6c3da;
+        border-radius: 8px;
+        background: #f8fbff;
+        font-size: 0.85rem;
+      }
       #trendTable td, #trendTable th { font-size: 0.82rem; }
       @media (max-width: 600px) { .wrap { padding: 10px; } }
     </style>
@@ -105,6 +112,10 @@
           <div><label>Date From</label><input id="kpiFrom" type="date" /></div>
           <div><label>Date To</label><input id="kpiTo" type="date" /></div>
           <div style="display:flex;align-items:flex-end"><button id="loadDashboard">טען Dashboard</button></div>
+        </div>
+        <div class="grid cols-2" style="margin-top:10px">
+          <button id="exportExcel" class="secondary">Export Excel</button>
+          <button id="exportPdf" class="secondary">Export PDF</button>
         </div>
         <div class="grid cols-3" style="margin-top:10px">
           <div class="kpi"><div class="name">נוסעים כולל</div><div class="val" id="kpiPassengers">0</div></div>
@@ -198,7 +209,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="managementSection">
         <h2>Management</h2>
         <div class="grid cols-2">
           <div class="card">
@@ -233,6 +244,10 @@
         </div>
       </section>
 
+      <section class="card mobile-note" id="mobileManagementNote" style="display:none">
+        במובייל: ניהול יעדים וספי צבעים מוסתר בשלב זה. שאר היכולות זמינות.
+      </section>
+
       <section class="status" id="statusBox">Ready.</section>
     </div>
 
@@ -265,6 +280,11 @@
       document.getElementById("drillFrom").value = toDateInputValue(weekAgo);
       document.getElementById("drillTo").value = pickupDate;
       document.getElementById("targetFrom").value = pickupDate;
+      const isMobileView = window.matchMedia("(max-width: 768px)").matches;
+      if (isMobileView) {
+        document.getElementById("managementSection").style.display = "none";
+        document.getElementById("mobileManagementNote").style.display = "block";
+      }
 
       async function api(method, path, body) {
         const res = await fetch(`${ui.apiBase.value}${path}`, {
@@ -324,6 +344,40 @@
 
       document.getElementById("loadDashboard").onclick = async () => {
         try { await loadDashboard(); setStatus("Dashboard loaded"); } catch (e) { setStatus(e.message); }
+      };
+
+      async function downloadExport(type) {
+        const from = document.getElementById("kpiFrom").value;
+        const to = document.getElementById("kpiTo").value;
+        const path = type === "excel" ? `/export/excel?dateFrom=${from}&dateTo=${to}` : `/export/pdf?dateFrom=${from}&dateTo=${to}`;
+        const res = await fetch(`${ui.apiBase.value}${path}`, {
+          method: "GET",
+          headers: { authorization: `Bearer ${ui.token.value}` }
+        });
+        if (!res.ok) {
+          throw new Error(`Export failed: HTTP ${res.status}`);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = type === "excel" ? "dashboard_export.xlsx" : "dashboard_export.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      document.getElementById("exportExcel").onclick = async () => {
+        try {
+          await downloadExport("excel");
+          setStatus("Excel export generated");
+        } catch (e) { setStatus(e.message); }
+      };
+
+      document.getElementById("exportPdf").onclick = async () => {
+        try {
+          await downloadExport("pdf");
+          setStatus("PDF export generated");
+        } catch (e) { setStatus(e.message); }
       };
 
       document.getElementById("savePickup").onclick = async () => {

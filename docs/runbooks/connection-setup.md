@@ -38,4 +38,5 @@ vercel --prod
 - `PUT /api/daily-metrics/{date}/pickup`
 - `POST /api/incidents`
 - `POST /api/incidents/recalculate`
-- `GET /api/audit-log`
+- `GET /api/audit-log`\n- `GET /api/export/excel?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD`\n- `GET /api/export/pdf?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD`
+

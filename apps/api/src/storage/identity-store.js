@@ -31,5 +31,6 @@ module.exports = {
   listTargets: (...args) => backend().listTargets(...args),
   createTarget: (...args) => backend().createTarget(...args),
   listThresholds: (...args) => backend().listThresholds(...args),
-  upsertThreshold: (...args) => backend().upsertThreshold(...args)
+  upsertThreshold: (...args) => backend().upsertThreshold(...args),
+  getExportBundle: (...args) => backend().getExportBundle(...args)
 };

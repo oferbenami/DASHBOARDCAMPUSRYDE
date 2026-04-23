@@ -46,12 +46,21 @@ function createReqRes({ method, pathName, body, token }) {
     statusCode: 200,
     headers: {},
     payload: null,
+    rawBody: null,
     writeHead(code, headers) {
       this.statusCode = code;
-      this.headers = headers;
+      this.headers = Object.fromEntries(
+        Object.entries(headers || {}).map(([k, v]) => [String(k).toLowerCase(), v])
+      );
     },
     end(data) {
-      this.payload = data ? JSON.parse(data) : null;
+      this.rawBody = data || null;
+      const contentType = String(this.headers["content-type"] || "");
+      if (data && contentType.includes("application/json")) {
+        this.payload = JSON.parse(data);
+      } else {
+        this.payload = null;
+      }
     }
   };
 
@@ -277,6 +286,24 @@ async function testApiFlow() {
   assert.equal(listThresholdRes.statusCode, 200);
   assert.ok(listThresholdRes.payload.thresholds.length >= 1);
 
+  const exportExcelRes = await invokeApi({
+    method: "GET",
+    pathName: "/export/excel?dateFrom=2026-04-22&dateTo=2026-04-22",
+    token: session.sessionToken
+  });
+  assert.equal(exportExcelRes.statusCode, 200);
+  assert.match(String(exportExcelRes.headers["content-type"]), /sheet/);
+  assert.ok(exportExcelRes.rawBody);
+
+  const exportPdfRes = await invokeApi({
+    method: "GET",
+    pathName: "/export/pdf?dateFrom=2026-04-22&dateTo=2026-04-22",
+    token: session.sessionToken
+  });
+  assert.equal(exportPdfRes.statusCode, 200);
+  assert.equal(String(exportPdfRes.headers["content-type"]), "application/pdf");
+  assert.ok(exportPdfRes.rawBody);
+
   await appendAudit({
     actorUserId: userWrite.user.id,
     action: "MANUAL_TEST_AUDIT",
@@ -341,11 +368,12 @@ async function run() {
   }
 
   cleanupTestFile();
-  console.log("Stage 3 test suite passed.");
+  console.log("Stage 6 test suite passed.");
 }
 
 run().catch((error) => {
-  console.error("Stage 3 test suite failed:", error.message);
+  console.error("Stage 6 test suite failed:", error.message);
   cleanupTestFile();
   process.exit(1);
 });
+

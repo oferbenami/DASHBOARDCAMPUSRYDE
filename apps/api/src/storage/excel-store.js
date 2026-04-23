@@ -736,6 +736,26 @@ async function upsertThreshold(metricKey, input) {
   return { before, after: threshold, threshold };
 }
 
+async function getExportBundle(filters) {
+  const summary = await getKpiSummary(filters);
+  const trends = await getKpiTrends(filters);
+  const drilldown = await getKpiDrilldown(filters);
+  const targets = await listTargets({});
+  const thresholds = await listThresholds({});
+  const dayTypes = await listDayTypes(filters);
+
+  return {
+    generatedAt: nowIso(),
+    range: { dateFrom: filters.dateFrom || null, dateTo: filters.dateTo || null },
+    summary,
+    trends,
+    drilldown,
+    targets,
+    thresholds,
+    dayTypes
+  };
+}
+
 module.exports = {
   upsertUser,
   createSession,
@@ -757,5 +777,6 @@ module.exports = {
   listTargets,
   createTarget,
   listThresholds,
-  upsertThreshold
+  upsertThreshold,
+  getExportBundle
 };

@@ -35,3 +35,8 @@
 - `PUT /management/thresholds/:metricKey`
 
 All non-health endpoints require `Authorization: Bearer <sessionToken>`.
+
+## Export APIs
+- GET /export/excel?dateFrom=&dateTo= 
+- GET /export/pdf?dateFrom=&dateTo= 
+

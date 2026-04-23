@@ -296,5 +296,8 @@ module.exports = {
   },
   upsertThreshold: async () => {
     throw new Error("Stage 5 thresholds management is not implemented for supabase provider yet");
+  },
+  getExportBundle: async () => {
+    throw new Error("Stage 6 export is not implemented for supabase provider yet");
   }
 };

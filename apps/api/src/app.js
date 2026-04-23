@@ -1,4 +1,6 @@
 ﻿const { URL } = require("node:url");
+const XLSX = require("xlsx");
+const PDFDocument = require("pdfkit");
 
 const { getBearerToken, readJsonBody, sendJson } = require("./core/http");
 const { verifyGoogleIdToken } = require("./auth/google-token");
@@ -24,7 +26,8 @@ const {
   listTargets,
   createTarget,
   listThresholds,
-  upsertThreshold
+  upsertThreshold,
+  getExportBundle
 } = require("./storage/identity-store");
 const {
   isDateString,
@@ -583,6 +586,121 @@ async function handleKpiStream(req, res, parsedUrl) {
   });
 }
 
+function toExportFilename(prefix, range) {
+  const from = range.dateFrom || "all";
+  const to = range.dateTo || "all";
+  return `${prefix}_${from}_${to}`;
+}
+
+function buildExportWorkbook(bundle) {
+  const workbook = XLSX.utils.book_new();
+  const summaryRows = [
+    { scope: "pickup", ...bundle.summary.pickup },
+    { scope: "dropoff", ...bundle.summary.dropoff },
+    { scope: "total", ...bundle.summary.total }
+  ];
+
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryRows), "kpi_summary");
+  XLSX.utils.book_append_sheet(
+    workbook,
+    XLSX.utils.json_to_sheet(bundle.trends.points.map((p) => ({ serviceDate: p.serviceDate, ...p.total }))),
+    "kpi_trends"
+  );
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(bundle.drilldown.dailyRows), "daily_metrics");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(bundle.drilldown.incidents), "incidents");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(bundle.targets), "targets");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(bundle.thresholds), "thresholds");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(bundle.dayTypes), "day_types");
+
+  return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+}
+
+async function handleExportExcel(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const bundle = await getExportBundle(range);
+  const fileBuffer = buildExportWorkbook(bundle);
+  const filename = `${toExportFilename("dashboard_export", range)}.xlsx`;
+
+  res.writeHead(200, {
+    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "Content-Disposition": `attachment; filename=\"${filename}\"`
+  });
+  res.end(fileBuffer);
+}
+
+async function handleExportPdf(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const bundle = await getExportBundle(range);
+  const summary = bundle.summary.total;
+  const lines = [
+    `Generated At: ${bundle.generatedAt}`,
+    `Range: ${bundle.range.dateFrom || "all"} -> ${bundle.range.dateTo || "all"}`,
+    "",
+    "KPI Summary (total):",
+    `Passengers: ${summary.passengers}`,
+    `Rides: ${summary.rides}`,
+    `Efficiency: ${summary.efficiency.toFixed(2)}`,
+    `Issues: ${summary.issues}`,
+    `Issues Rate: ${summary.issuesRate.toFixed(2)}%`,
+    `Affected Rate: ${summary.affectedRate.toFixed(2)}%`,
+    `Service Quality: ${summary.serviceQuality.toFixed(2)}%`,
+    "",
+    `Trend Points: ${bundle.trends.points.length}`,
+    `Daily Rows: ${bundle.drilldown.dailyRows.length}`,
+    `Incidents: ${bundle.drilldown.incidents.length}`,
+    `Targets: ${bundle.targets.length}`,
+    `Thresholds: ${bundle.thresholds.length}`
+  ];
+
+  await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "A4", margin: 40 });
+    const chunks = [];
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("error", reject);
+    doc.on("end", () => {
+      const filename = `${toExportFilename("dashboard_export", range)}.pdf`;
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=\"${filename}\"`
+      });
+      res.end(Buffer.concat(chunks));
+      resolve();
+    });
+
+    doc.fontSize(16).text("DashboardRyde Export", { underline: true });
+    doc.moveDown();
+    doc.fontSize(11);
+    for (const line of lines) {
+      doc.text(line);
+    }
+    doc.end();
+  });
+}
+
 async function handleRequest(req, res) {
   const host = req.headers.host || "localhost";
   const parsedUrl = new URL(req.url, `http://${host}`);
@@ -595,7 +713,7 @@ async function handleRequest(req, res) {
       const provider = providerName();
       sendJson(res, 200, {
         status: "ok",
-        stage: 5,
+        stage: 6,
         infra: { database: provider, hosting: "vercel" }
       });
       return;
@@ -705,6 +823,16 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/export/excel") {
+      await handleExportExcel(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/export/pdf") {
+      await handleExportPdf(req, res, parsedUrl);
+      return;
+    }
+
     sendJson(res, 404, { error: "Not Found" });
   } catch (error) {
     sendJson(res, 500, {
@@ -717,3 +845,5 @@ async function handleRequest(req, res) {
 module.exports = {
   handleRequest
 };
+
+
