@@ -1,12 +1,16 @@
 ﻿const excelStore = require("./excel-store");
 const supabaseStore = require("./supabase-store");
+const sheetsStore = require("./sheets-store");
 
 function selectedProvider() {
   return (process.env.DB_PROVIDER || "excel").toLowerCase();
 }
 
 function backend() {
-  return selectedProvider() === "supabase" ? supabaseStore : excelStore;
+  const p = selectedProvider();
+  if (p === "supabase") return supabaseStore;
+  if (p === "sheets") return sheetsStore;
+  return excelStore;
 }
 
 module.exports = {

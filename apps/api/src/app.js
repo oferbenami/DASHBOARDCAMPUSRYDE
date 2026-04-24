@@ -891,6 +891,7 @@ async function handleRequest(req, res) {
 
     sendJson(res, 404, { error: "Not Found" });
   } catch (error) {
+    console.error("[handleRequest] Unhandled error:", error);
     sendJson(res, 500, {
       error: "Internal Server Error",
       message: error.message
