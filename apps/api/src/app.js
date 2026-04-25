@@ -53,6 +53,13 @@ function badRequest(res, message) {
   sendJson(res, 400, { error: message });
 }
 
+function dashboardProviderUnsupported(res) {
+  sendJson(res, 501, {
+    error: "Dashboard analytics not supported for supabase provider",
+    code: "DASHBOARD_PROVIDER_UNSUPPORTED"
+  });
+}
+
 function clientIp(req) {
   return (
     req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
@@ -1652,6 +1659,11 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (pathname.startsWith("/dashboard/") && providerName() === "supabase") {
+      dashboardProviderUnsupported(res);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/dashboard/overview") {
       await handleDashboardOverview(req, res, parsedUrl);
       return;
@@ -1736,6 +1748,10 @@ async function handleRequest(req, res) {
     sendJson(res, 404, { error: "Not Found" });
   } catch (error) {
     console.error("[handleRequest] Unhandled error:", error);
+    if (String(error?.message || "").includes("not implemented for supabase provider yet")) {
+      dashboardProviderUnsupported(res);
+      return;
+    }
     sendJson(res, 500, {
       error: "Internal Server Error",
       message: error.message

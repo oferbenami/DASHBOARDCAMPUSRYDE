@@ -413,6 +413,21 @@ async function testHardening() {
   assert.equal(rateLimited, true);
 }
 
+async function testDashboardProviderGuard() {
+  const prevProvider = process.env.DB_PROVIDER;
+  process.env.DB_PROVIDER = "supabase";
+  try {
+    const res = await invokeApi({
+      method: "GET",
+      pathName: "/dashboard/trends?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup"
+    });
+    assert.equal(res.statusCode, 501);
+    assert.equal(res.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+  } finally {
+    process.env.DB_PROVIDER = prevProvider || "excel";
+  }
+}
+
 async function testGoogleValidatorMock() {
   const originalFetch = global.fetch;
 
@@ -458,6 +473,7 @@ async function run() {
     ["storage CRUD flow", testStorageCrudFlow],
     ["validation rules", testValidationRules],
     ["api flow", testApiFlow],
+    ["dashboard provider guard", testDashboardProviderGuard],
     ["hardening", testHardening],
     ["google token validator", testGoogleValidatorMock]
   ];

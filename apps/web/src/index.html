@@ -562,6 +562,17 @@
         font-size: 0.85rem;
         color: #4a5a73;
       }
+      .provider-warning {
+        display: none;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #fcd34d;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
       .row-actions { display: flex; gap: 8px; }
       .row-actions button { width: auto; padding: 7px 14px; }
       .divider { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
@@ -702,6 +713,9 @@
             <div class="row-actions" style="margin-top:10px">
               <button id="exportExcel" class="secondary">⬇️ ייצוא Excel</button>
               <button id="exportPdf" class="secondary">⬇️ ייצוא PDF</button>
+            </div>
+            <div id="dashboardProviderWarning" class="provider-warning">
+              דוחות מתקדמים זמינים ב-DB_PROVIDER=excel/sheets. מוצגת כרגע תצוגת KPI ומגמה בסיסית בלבד.
             </div>
 
             <div class="grid cols-3" style="margin-top:14px">
@@ -1284,7 +1298,13 @@
           body: body ? JSON.stringify(body) : undefined
         });
         const payload = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+        if (!res.ok) {
+          const err = new Error(payload.error || `HTTP ${res.status}`);
+          err.status = res.status;
+          err.code = payload.code || null;
+          err.payload = payload;
+          throw err;
+        }
         return payload;
       }
 
@@ -1459,6 +1479,7 @@
       let dashboardScope = "total";
       let selectedDashboardReport = "kpi-main";
       let lastDashboardData = null;
+      let dashboardAdvancedUnsupported = false;
       const dashboardMetaCache = new Map();
       const KPI_METRICS = [
         { key: "passengers", cardId: "kpiCard-passengers", valueId: "kpiPassengers", targetId: "kpiTarget-passengers", gapId: "kpiGap-passengers", deltaId: "kpiDelta-passengers" },
@@ -1787,6 +1808,16 @@
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
         dashboardCharts[canvasId] = new Chart(ctx, config);
+      }
+
+      function setDashboardProviderWarning(visible) {
+        dashboardAdvancedUnsupported = Boolean(visible);
+        const warning = document.getElementById("dashboardProviderWarning");
+        if (warning) warning.style.display = visible ? "block" : "none";
+      }
+
+      function isDashboardUnsupportedErr(err) {
+        return err?.status === 501 || err?.code === "DASHBOARD_PROVIDER_UNSUPPORTED";
       }
 
       function renderTrendCharts(trendsPayload) {
@@ -2174,9 +2205,11 @@
         dashboardScope = document.getElementById("dashboardScope").value || "total";
         setKpiLoading(true);
 
-        const [summary, trends, dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff] = await Promise.all([
+        const [summary, trends] = await Promise.all([
           api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
-          api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`),
+          api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
+        ]);
+        const advancedResults = await Promise.allSettled([
           api("GET", `/dashboard/trends?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
           api("GET", `/dashboard/benchmark?serviceDate=${to}&scope=${dashboardScope}`),
           api("GET", `/dashboard/alerts?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
@@ -2186,7 +2219,23 @@
           api("GET", `/dashboard/load-efficiency?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
           api("GET", `/dashboard/pickup-vs-dropoff?dateFrom=${from}&dateTo=${to}`)
         ]);
-        const kpiMeta = await loadDashboardMeta(to, dashboardScope);
+        const unsupported = advancedResults.some((result) => result.status === "rejected" && isDashboardUnsupportedErr(result.reason));
+        const firstUnexpected = advancedResults.find((result) => result.status === "rejected" && !isDashboardUnsupportedErr(result.reason));
+        if (firstUnexpected) throw firstUnexpected.reason;
+        setDashboardProviderWarning(unsupported);
+        const [dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff] =
+          advancedResults.map((result) => (result.status === "fulfilled" ? result.value : null));
+        let kpiMeta;
+        try {
+          kpiMeta = await loadDashboardMeta(to, dashboardScope);
+        } catch (err) {
+          if (isDashboardUnsupportedErr(err)) {
+            setDashboardProviderWarning(true);
+            kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
+          } else {
+            throw err;
+          }
+        }
 
         const scopedSummary = summary[dashboardScope] || summary.total;
         updateHeadlineDates(to);
@@ -2226,14 +2275,14 @@
         lastDashboardData = { summary, trends, scope: dashboardScope, kpiMeta };
         updateTiles(summary, dashboardScope, kpiMeta);
         renderDrilldownReport(selectedDashboardReport);
-        renderTrendCharts(dashboardTrends);
-        renderBenchmark(benchmark);
-        renderAlerts(alerts);
-        renderIncidentsAnalysis(incidentsAnalysis);
-        renderOperationsDaily(operationsDaily);
-        renderTargetsVsActual(targetsVsActual);
-        renderLoadEfficiency(loadEfficiency);
-        renderPickupVsDropoff(pickupVsDropoff);
+        if (dashboardTrends) renderTrendCharts(dashboardTrends);
+        if (benchmark) renderBenchmark(benchmark);
+        if (alerts) renderAlerts(alerts);
+        if (incidentsAnalysis) renderIncidentsAnalysis(incidentsAnalysis);
+        if (operationsDaily) renderOperationsDaily(operationsDaily);
+        if (targetsVsActual) renderTargetsVsActual(targetsVsActual);
+        if (loadEfficiency) renderLoadEfficiency(loadEfficiency);
+        if (pickupVsDropoff) renderPickupVsDropoff(pickupVsDropoff);
       }
 
       // ═══════════════════════════════
@@ -2271,6 +2320,10 @@
           const reportKey = document.getElementById("openDetailedReport").dataset.report || "kpi-main";
           const cfg = reportConfig()[reportKey];
           if (!cfg) return;
+          if (dashboardAdvancedUnsupported && reportKey !== "kpi-main") {
+            toastErr("דוחות מתקדמים אינם נתמכים ב-DB_PROVIDER=supabase. ניתן לעבוד עם KPI ומגמה בסיסיים.");
+            return;
+          }
           const sectionMap = {
             "kpi-main": "dashboardTiles",
             "trend-analysis": "section-trend-analysis",
