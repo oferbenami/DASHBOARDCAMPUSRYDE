@@ -561,6 +561,15 @@
             <div class="section-header">
               <span class="section-icon">🚌</span>
               <h2 style="margin:0">פעילות יומית — הזנת נתונים</h2>
+              <div style="margin-right:auto;display:flex;align-items:center;gap:0.5rem">
+                <label style="font-size:0.85rem;font-weight:600;white-space:nowrap">תאריך איסוף:</label>
+                <input type="date" id="entryDate" style="font-size:0.85rem;padding:0.25rem 0.5rem;border-radius:6px;border:1px solid var(--border)" />
+              </div>
+            </div>
+            <div id="existingDataNotice" style="display:none;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;margin-bottom:1rem;color:#5d4037;font-size:0.875rem">
+              <span>נמצאו נתונים קיימים לתאריך זה. האם ברצונך לעדכן?</span>
+              <button id="btnConfirmUpdate" style="padding:0.25rem 0.75rem;background:#1976d2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">כן, עדכן</button>
+              <button id="btnCancelUpdate" style="padding:0.25rem 0.75rem;background:#e0e0e0;color:#333;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">לא</button>
             </div>
             <div class="grid cols-2">
               <div class="card">
@@ -980,12 +989,13 @@
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
       }
 
-      const pickupDate = toDateVal(today);
-      const dropoffDate = toDateVal(yesterday);
+      let pickupDate = toDateVal(today);
+      let dropoffDate = toDateVal(yesterday);
 
       function initDates() {
         document.getElementById("kpiFrom").value = toDateVal(weekAgo);
         document.getElementById("kpiTo").value = pickupDate;
+        document.getElementById("entryDate").value = pickupDate;
         document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
         document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
         document.getElementById("incident_date").value = pickupDate;
@@ -1103,6 +1113,28 @@
           document.getElementById("exportPdf"),
           async () => { await downloadExport("pdf"); toastOk("קובץ PDF הורד"); }
         );
+
+        document.getElementById("entryDate").addEventListener("change", async (e) => {
+          const newPickup = e.target.value;
+          if (!newPickup) return;
+          pickupDate = newPickup;
+          const d = new Date(newPickup + "T12:00:00");
+          d.setDate(d.getDate() - 1);
+          dropoffDate = toDateVal(d);
+          document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
+          document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
+          await reloadDailySections();
+        });
+
+        document.getElementById("btnConfirmUpdate").onclick = () => {
+          document.getElementById("existingDataNotice").style.display = "none";
+          document.getElementById("savePickup").disabled = false;
+          document.getElementById("saveDropoff").disabled = false;
+        };
+
+        document.getElementById("btnCancelUpdate").onclick = () => {
+          document.getElementById("existingDataNotice").style.display = "none";
+        };
 
         document.getElementById("savePickup").onclick = withLoading(
           document.getElementById("savePickup"),
@@ -1263,11 +1295,36 @@
       async function loadDailySection(date, type, prefix) {
         const data = await api("GET", `/daily-metrics?date=${date}`);
         const row = data[type];
-        if (!row) return;
+        if (!row) {
+          ["rides","registered","issues","affected"].forEach(f =>
+            { document.getElementById(`${prefix}_${f}`).value = ""; }
+          );
+          return false;
+        }
         document.getElementById(`${prefix}_rides`).value = row.ridesCount;
         document.getElementById(`${prefix}_registered`).value = row.registeredPassengers;
         document.getElementById(`${prefix}_issues`).value = row.issuesCount;
         document.getElementById(`${prefix}_affected`).value = row.affectedPassengers;
+        return true;
+      }
+
+      async function reloadDailySections() {
+        const [hasPickup, hasDropoff] = await Promise.all([
+          loadDailySection(pickupDate, "pickup", "pickup"),
+          loadDailySection(dropoffDate, "dropoff", "dropoff")
+        ]);
+        const notice = document.getElementById("existingDataNotice");
+        const btnSavePickup = document.getElementById("savePickup");
+        const btnSaveDropoff = document.getElementById("saveDropoff");
+        if (hasPickup || hasDropoff) {
+          notice.style.display = "flex";
+          btnSavePickup.disabled = true;
+          btnSaveDropoff.disabled = true;
+        } else {
+          notice.style.display = "none";
+          btnSavePickup.disabled = false;
+          btnSaveDropoff.disabled = false;
+        }
       }
 
       // ═══════════════════════════════
@@ -1301,8 +1358,7 @@
         try {
           await loadThresholdsForKPI();
           await Promise.all([
-            loadDailySection(pickupDate, "pickup", "pickup"),
-            loadDailySection(dropoffDate, "dropoff", "dropoff"),
+            reloadDailySections(),
             loadDashboard()
           ]);
           toastOk("לוח הבקרה נטען בהצלחה");
