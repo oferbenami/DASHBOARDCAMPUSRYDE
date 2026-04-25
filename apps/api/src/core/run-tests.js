@@ -286,6 +286,39 @@ async function testApiFlow() {
   assert.equal(listThresholdRes.statusCode, 200);
   assert.ok(listThresholdRes.payload.thresholds.length >= 1);
 
+  const dashboardOverview = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/overview?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardOverview.statusCode, 200);
+  assert.equal(dashboardOverview.payload.scope, "pickup");
+  assert.ok(dashboardOverview.payload.cards.serviceQuality);
+
+  const dashboardTrends = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/trends?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardTrends.statusCode, 200);
+  assert.ok(Array.isArray(dashboardTrends.payload.points));
+
+  const dashboardBenchmark = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/benchmark?serviceDate=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardBenchmark.statusCode, 200);
+  assert.ok(dashboardBenchmark.payload.metrics.serviceQuality);
+
+  const dashboardAlerts = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/alerts?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardAlerts.statusCode, 200);
+  assert.ok(Array.isArray(dashboardAlerts.payload.redDays));
+
   const exportExcelRes = await invokeApi({
     method: "GET",
     pathName: "/export/excel?dateFrom=2026-04-22&dateTo=2026-04-22",

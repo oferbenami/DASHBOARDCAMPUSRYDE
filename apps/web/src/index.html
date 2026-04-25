@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DashboardRyde</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
     <style>
       :root {
         --bg: #f4f6fb;
@@ -416,6 +417,30 @@
         font-size: 0.74rem;
         color: #38517a;
       }
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 12px;
+      }
+      .chart-card {
+        background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        border: 1px solid #dbe4f3;
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .chart-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #1f2b43;
+        margin-bottom: 8px;
+      }
+      .chart-wrap {
+        position: relative;
+        height: 220px;
+      }
+      .alert-table td.alert-good { color: #166534; font-weight: 700; }
+      .alert-table td.alert-warn { color: #a16207; font-weight: 700; }
+      .alert-table td.alert-danger { color: #b91c1c; font-weight: 700; }
 
       /* ═══════════════════════════════
          TABLES
@@ -810,6 +835,66 @@
                   </tr>
                 </thead>
                 <tbody id="trendRows"></tbody>
+              </table>
+            </div>
+
+            <hr class="divider" />
+            <h3>Trend Analysis</h3>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-title">מספר נוסעים לאורך זמן</div>
+                <div class="chart-wrap"><canvas id="chartPassengers"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">מספר נסיעות לאורך זמן</div>
+                <div class="chart-wrap"><canvas id="chartRides"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">יעילות המערך</div>
+                <div class="chart-wrap"><canvas id="chartEfficiency"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">איכות שירות</div>
+                <div class="chart-wrap"><canvas id="chartQuality"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">תקלות יומיות</div>
+                <div class="chart-wrap"><canvas id="chartIssues"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">% נסיעות עם תקלה / % נוסעים שנפגעו</div>
+                <div class="chart-wrap"><canvas id="chartRates"></canvas></div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3>Benchmark</h3>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-title">יום נוכחי מול ממוצע שבועי קודם מול יעד</div>
+                <div class="chart-wrap"><canvas id="chartBenchmark"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">השוואה לפי סוג יום (א–ה / שישי / ערב חג / חריג)</div>
+                <div class="table-wrap" style="margin-top:0">
+                  <table>
+                    <thead>
+                      <tr><th>סוג יום</th><th>נוסעים</th><th>נסיעות</th><th>יעילות</th><th>איכות</th></tr>
+                    </thead>
+                    <tbody id="benchmarkDayTypeRows"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3>Critical Control</h3>
+            <div class="table-wrap alert-table">
+              <table>
+                <thead>
+                  <tr><th>סוג חריגה</th><th>תאריך</th><th>ערך</th><th>סטטוס</th></tr>
+                </thead>
+                <tbody id="alertRows"></tbody>
               </table>
             </div>
           </div>
@@ -1266,6 +1351,7 @@
         { key: "serviceQuality", cardId: "kpiCard-quality", valueId: "kpiQuality", targetId: "kpiTarget-serviceQuality", gapId: "kpiGap-serviceQuality", deltaId: "kpiDelta-serviceQuality" },
         { key: "affectedRate", cardId: "kpiCard-affectedRate", valueId: "kpiAffectedRate", targetId: "kpiTarget-affectedRate", gapId: "kpiGap-affectedRate", deltaId: "kpiDelta-affectedRate" }
       ];
+      const dashboardCharts = {};
 
       function initDates() {
         document.getElementById("kpiFrom").value = toDateVal(weekAgo);
@@ -1518,6 +1604,197 @@
         }
       }
 
+      function upsertChart(canvasId, config) {
+        if (typeof Chart === "undefined") return;
+        if (dashboardCharts[canvasId]) {
+          dashboardCharts[canvasId].destroy();
+        }
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        dashboardCharts[canvasId] = new Chart(ctx, config);
+      }
+
+      function renderTrendCharts(trendsPayload) {
+        if (!trendsPayload || !Array.isArray(trendsPayload.points)) return;
+        const labels = trendsPayload.points.map((p) => p.serviceDate);
+        const overlays = trendsPayload.overlays || {};
+        const baseline = overlays.weeklyBaseline || {};
+        const target = overlays.target || {};
+
+        const lineCfg = (titleKey, chartId, color, yAxisLabel, extra = null) => {
+          const baseDataset = {
+            label: titleKey,
+            data: trendsPayload.points.map((p) => Number(p[titleKey] || 0)),
+            borderColor: color,
+            backgroundColor: color + "33",
+            borderWidth: 2.5,
+            pointRadius: 2,
+            tension: 0.32
+          };
+          const datasets = [baseDataset];
+          if (target[titleKey] !== null && target[titleKey] !== undefined) {
+            datasets.push({
+              label: "יעד",
+              data: labels.map(() => Number(target[titleKey] || 0)),
+              borderColor: "#0f766e",
+              borderDash: [6, 5],
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0
+            });
+          }
+          if (baseline[titleKey] !== null && baseline[titleKey] !== undefined) {
+            datasets.push({
+              label: "ממוצע שבועי קודם",
+              data: labels.map(() => Number(baseline[titleKey] || 0)),
+              borderColor: "#64748b",
+              borderDash: [4, 4],
+              borderWidth: 1.8,
+              pointRadius: 0,
+              tension: 0
+            });
+          }
+          if (extra) datasets.push(extra);
+          upsertChart(chartId, {
+            type: "line",
+            data: { labels, datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              plugins: { legend: { position: "bottom", rtl: true, labels: { usePointStyle: true } } },
+              scales: {
+                x: { grid: { color: "#eef2fa" } },
+                y: { grid: { color: "#eef2fa" }, title: { display: true, text: yAxisLabel } }
+              }
+            }
+          });
+        };
+
+        lineCfg("passengers", "chartPassengers", "#2563eb", "נוסעים");
+        lineCfg("rides", "chartRides", "#0ea5e9", "נסיעות");
+        lineCfg("efficiency", "chartEfficiency", "#7c3aed", "נוסעים לנסיעה");
+        lineCfg("serviceQuality", "chartQuality", "#16a34a", "% איכות");
+
+        upsertChart("chartIssues", {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "תקלות יומיות",
+                data: trendsPayload.points.map((p) => Number(p.issues || 0)),
+                backgroundColor: "rgba(245, 158, 11, 0.7)",
+                borderColor: "#f59e0b",
+                borderWidth: 1.2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: "bottom", rtl: true } },
+            scales: { x: { grid: { color: "#eef2fa" } }, y: { grid: { color: "#eef2fa" } } }
+          }
+        });
+
+        upsertChart("chartRates", {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "% נסיעות עם תקלה",
+                data: trendsPayload.points.map((p) => Number(p.issuesRate || 0)),
+                borderColor: "#dc2626",
+                backgroundColor: "#dc262633",
+                borderWidth: 2,
+                pointRadius: 2,
+                tension: 0.3
+              },
+              {
+                label: "% נוסעים שנפגעו",
+                data: trendsPayload.points.map((p) => Number(p.affectedRate || 0)),
+                borderColor: "#ea580c",
+                backgroundColor: "#ea580c33",
+                borderWidth: 2,
+                pointRadius: 2,
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: "bottom", rtl: true } },
+            scales: { x: { grid: { color: "#eef2fa" } }, y: { grid: { color: "#eef2fa" } } }
+          }
+        });
+      }
+
+      function renderBenchmark(benchmarkPayload) {
+        if (!benchmarkPayload || !benchmarkPayload.metrics) return;
+        const quality = benchmarkPayload.metrics.serviceQuality || {};
+        upsertChart("chartBenchmark", {
+          type: "bar",
+          data: {
+            labels: ["יום נוכחי", "ממוצע שבועי קודם", "יעד"],
+            datasets: [
+              {
+                label: "איכות שירות %",
+                data: [
+                  Number(quality.current || 0),
+                  Number(quality.baseline || 0),
+                  Number(quality.target || 0)
+                ],
+                backgroundColor: ["#2563ebcc", "#64748bcc", "#16a34acc"],
+                borderColor: ["#2563eb", "#64748b", "#16a34a"],
+                borderWidth: 1.4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 100, grid: { color: "#eef2fa" } }, x: { grid: { display: false } } }
+          }
+        });
+
+        const tbody = document.getElementById("benchmarkDayTypeRows");
+        tbody.innerHTML = "";
+        for (const row of benchmarkPayload.byDayType || []) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${row.dayType}</td><td>${fmt(row.passengers,0)}</td><td>${fmt(row.rides,0)}</td><td>${fmt(row.efficiency)}</td><td>${fmt(row.serviceQuality)}%</td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function renderAlerts(alertsPayload) {
+        const tbody = document.getElementById("alertRows");
+        tbody.innerHTML = "";
+        const rows = [];
+        for (const row of alertsPayload.redDays || []) rows.push({ type: "יום אדום", date: row.serviceDate, value: row.value, status: "danger" });
+        for (const row of alertsPayload.efficiencyDropDays || []) rows.push({ type: "ירידת יעילות", date: row.serviceDate, value: row.value, status: "warn" });
+        for (const row of alertsPayload.issueSpikeDays || []) rows.push({ type: "חריגת תקלות", date: row.serviceDate, value: row.value, status: "danger" });
+        for (const row of alertsPayload.topWorstQuality || []) rows.push({ type: "Top איכות נמוכה", date: row.serviceDate, value: row.value, status: "warn" });
+        for (const row of alertsPayload.topIssueDays || []) rows.push({ type: "Top תקלות", date: row.serviceDate, value: row.value, status: "danger" });
+
+        if (!rows.length) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="4">לא זוהו חריגות בטווח הנבחר</td>`;
+          tbody.appendChild(tr);
+          return;
+        }
+        rows.slice(0, 30).forEach((row) => {
+          const tr = document.createElement("tr");
+          const statusText = row.status === "danger" ? "אדום" : row.status === "warn" ? "צהוב" : "ירוק";
+          const className = row.status === "danger" ? "alert-danger" : row.status === "warn" ? "alert-warn" : "alert-good";
+          tr.innerHTML = `<td>${row.type}</td><td>${row.date}</td><td>${fmt(row.value)}</td><td class="${className}">${statusText}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
       function renderDrilldownReport(reportKey) {
         const cfg = reportConfig()[reportKey];
         if (!cfg || !lastDashboardData) return;
@@ -1562,9 +1839,12 @@
         dashboardScope = document.getElementById("dashboardScope").value || "total";
         setKpiLoading(true);
 
-        const [summary, trends] = await Promise.all([
+        const [summary, trends, dashboardTrends, benchmark, alerts] = await Promise.all([
           api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
-          api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
+          api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`),
+          api("GET", `/dashboard/trends?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/benchmark?serviceDate=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/alerts?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`)
         ]);
         const kpiMeta = await loadDashboardMeta(to, dashboardScope);
 
@@ -1606,6 +1886,9 @@
         lastDashboardData = { summary, trends, scope: dashboardScope, kpiMeta };
         updateTiles(summary, dashboardScope, kpiMeta);
         renderDrilldownReport(selectedDashboardReport);
+        renderTrendCharts(dashboardTrends);
+        renderBenchmark(benchmark);
+        renderAlerts(alerts);
       }
 
       // ═══════════════════════════════

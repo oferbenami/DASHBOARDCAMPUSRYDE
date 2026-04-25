@@ -445,6 +445,413 @@ function resolveRange(parsedUrl) {
   return { dateFrom, dateTo };
 }
 
+function toDateValue(dateLike) {
+  const d = new Date(`${dateLike}T12:00:00`);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function shiftDate(dateValue, diffDays) {
+  const d = new Date(`${dateValue}T12:00:00`);
+  d.setDate(d.getDate() + diffDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function resolveDashboardScope(parsedUrl) {
+  const raw = String(parsedUrl.searchParams.get("scope") || "total").toLowerCase();
+  if (raw !== "total" && raw !== "pickup" && raw !== "dropoff") {
+    throw new Error("scope must be total, pickup, or dropoff");
+  }
+  return raw;
+}
+
+function metricsList() {
+  return ["passengers", "rides", "efficiency", "serviceQuality", "issues", "issuesRate", "affectedRate"];
+}
+
+function pickScopePoint(point, scope) {
+  if (!point) return {};
+  return point[scope] || point.total || {};
+}
+
+function defaultDirection(metricKey) {
+  if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate") {
+    return "at_most";
+  }
+  return "at_least";
+}
+
+function computeGap(actual, target, direction) {
+  if (target === null || target === undefined) return null;
+  return direction === "at_most" ? target - actual : actual - target;
+}
+
+function resolveActiveTarget(targets, metricKey, scopeKey, focusDate) {
+  const scopes = scopeKey === "total" ? ["total"] : [scopeKey, "total"];
+  for (const scope of scopes) {
+    const active = (targets || [])
+      .filter((row) =>
+        row.metricKey === metricKey &&
+        row.scopeKey === scope &&
+        row.effectiveFrom <= focusDate &&
+        (!row.effectiveTo || row.effectiveTo >= focusDate)
+      )
+      .sort((a, b) => (a.effectiveFrom < b.effectiveFrom ? 1 : -1));
+    if (active.length) return active[0];
+  }
+  return null;
+}
+
+function avg(values) {
+  if (!values.length) return null;
+  return values.reduce((acc, v) => acc + Number(v || 0), 0) / values.length;
+}
+
+function mapDayTypes(dayTypes) {
+  const out = {};
+  for (const row of dayTypes || []) {
+    out[row.serviceDate] = row.dayType || "";
+  }
+  return out;
+}
+
+function computeBaselineByDayType(trendPoints, dayTypes, focusDate, scope) {
+  const dayTypeByDate = mapDayTypes(dayTypes);
+  const focusType = dayTypeByDate[focusDate] || null;
+  const previous = (trendPoints || [])
+    .filter((point) => point.serviceDate < focusDate)
+    .sort((a, b) => (a.serviceDate < b.serviceDate ? 1 : -1));
+  const chosen = focusType
+    ? previous.filter((p) => dayTypeByDate[p.serviceDate] === focusType).slice(0, 7)
+    : previous.slice(0, 7);
+
+  const baseline = {};
+  for (const metricKey of metricsList()) {
+    baseline[metricKey] = avg(chosen.map((point) => Number(pickScopePoint(point, scope)[metricKey] || 0)));
+  }
+  return { baseline, focusDayType: focusType, sampleCount: chosen.length };
+}
+
+function statusFromThresholdsOrTarget(actual, metricKey, threshold, target, direction) {
+  if (threshold) {
+    if (actual >= threshold.greenMin && actual <= threshold.greenMax) return "green";
+    if (actual >= threshold.yellowMin && actual <= threshold.yellowMax) return "yellow";
+    if (actual >= threshold.redMin && actual <= threshold.redMax) return "red";
+    return null;
+  }
+  if (target === null || target === undefined) return null;
+  if (direction === "at_most") {
+    if (actual <= target) return "green";
+    if (actual <= target * 1.03) return "yellow";
+    return "red";
+  }
+  if (actual >= target) return "green";
+  if (actual >= target * 0.97) return "yellow";
+  return "red";
+}
+
+function normalizeDayTypeBucket(dayTypeRaw) {
+  const normalized = String(dayTypeRaw || "").toLowerCase().trim();
+  if (!normalized) return "unknown";
+  if (normalized.includes("שישי") || normalized.includes("friday")) return "friday";
+  if (normalized.includes("ערב חג") || normalized.includes("holiday_eve")) return "holiday_eve";
+  if (normalized.includes("חריג") || normalized.includes("exception")) return "exception";
+  if (normalized.includes("א-ה") || normalized.includes("weekday") || normalized.includes("regular")) return "weekday";
+  return normalized;
+}
+
+async function handleDashboardOverview(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let range;
+  let scope;
+  try {
+    range = resolveRange(parsedUrl);
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const today = toDateValue(new Date().toISOString().slice(0, 10));
+  const serviceDate = parsedUrl.searchParams.get("serviceDate") || range.dateTo || today;
+  if (!isDateString(serviceDate)) {
+    badRequest(res, "serviceDate must be in YYYY-MM-DD format");
+    return;
+  }
+  const dateFrom = range.dateFrom || shiftDate(serviceDate, -6);
+  const dateTo = range.dateTo || serviceDate;
+  const baselineFrom = shiftDate(serviceDate, -60);
+
+  const [summary, trends, dayTypes, targetsData, thresholdsData] = await Promise.all([
+    getKpiSummary({ dateFrom, dateTo }),
+    getKpiTrends({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    listDayTypes({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    listTargets({}),
+    listThresholds({})
+  ]);
+
+  const thresholdMap = {};
+  for (const threshold of thresholdsData || []) {
+    thresholdMap[threshold.metricKey] = threshold;
+  }
+  const baselineMeta = computeBaselineByDayType(trends.points || [], dayTypes || [], serviceDate, scope);
+  const scopedSummary = summary[scope] || summary.total || {};
+  const cards = {};
+  for (const metricKey of metricsList()) {
+    const actual = Number(scopedSummary[metricKey] || 0);
+    const targetObj = resolveActiveTarget(targetsData || [], metricKey, scope, serviceDate);
+    const target = targetObj ? Number(targetObj.targetValue) : null;
+    const direction = targetObj?.direction || defaultDirection(metricKey);
+    const gap = computeGap(actual, target, direction);
+    const baseline = baselineMeta.baseline[metricKey];
+    const deltaVsWeekly = baseline === null || baseline === undefined ? null : actual - baseline;
+    cards[metricKey] = {
+      actual,
+      target,
+      gap,
+      baseline,
+      deltaVsWeekly,
+      status: statusFromThresholdsOrTarget(actual, metricKey, thresholdMap[metricKey], target, direction)
+    };
+  }
+
+  sendJson(res, 200, {
+    scope,
+    range: { dateFrom, dateTo },
+    context: {
+      pickupDateCurrent: today,
+      dropoffDatePrevious: shiftDate(today, -1),
+      focusDate: serviceDate,
+      focusDayType: baselineMeta.focusDayType,
+      baselineSampleCount: baselineMeta.sampleCount
+    },
+    summary: scopedSummary,
+    cards
+  });
+}
+
+async function handleDashboardTrends(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let range;
+  let scope;
+  try {
+    range = resolveRange(parsedUrl);
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  if (!range.dateFrom || !range.dateTo) {
+    badRequest(res, "dateFrom and dateTo are required");
+    return;
+  }
+
+  const baselineFrom = shiftDate(range.dateTo, -60);
+  const [trends, dayTypes, targetsData] = await Promise.all([
+    getKpiTrends({ dateFrom: range.dateFrom, dateTo: range.dateTo }),
+    listDayTypes({ dateFrom: baselineFrom, dateTo: range.dateTo }),
+    listTargets({})
+  ]);
+  const baselineTrends = await getKpiTrends({ dateFrom: baselineFrom, dateTo: range.dateTo });
+  const baselineMeta = computeBaselineByDayType(baselineTrends.points || [], dayTypes || [], range.dateTo, scope);
+  const focusDate = range.dateTo;
+
+  const targetLines = {};
+  for (const metricKey of metricsList()) {
+    const targetObj = resolveActiveTarget(targetsData || [], metricKey, scope, focusDate);
+    targetLines[metricKey] = targetObj ? Number(targetObj.targetValue) : null;
+  }
+
+  const points = (trends.points || []).map((point) => {
+    const scopedPoint = pickScopePoint(point, scope);
+    return {
+      serviceDate: point.serviceDate,
+      passengers: Number(scopedPoint.passengers || 0),
+      rides: Number(scopedPoint.rides || 0),
+      efficiency: Number(scopedPoint.efficiency || 0),
+      serviceQuality: Number(scopedPoint.serviceQuality || 0),
+      issues: Number(scopedPoint.issues || 0),
+      issuesRate: Number(scopedPoint.issuesRate || 0),
+      affectedRate: Number(scopedPoint.affectedRate || 0)
+    };
+  });
+
+  sendJson(res, 200, {
+    scope,
+    range,
+    points,
+    overlays: {
+      target: targetLines,
+      weeklyBaseline: baselineMeta.baseline
+    },
+    context: {
+      focusDate,
+      focusDayType: baselineMeta.focusDayType,
+      baselineSampleCount: baselineMeta.sampleCount
+    }
+  });
+}
+
+async function handleDashboardBenchmark(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let scope;
+  try {
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  const serviceDate = parsedUrl.searchParams.get("serviceDate");
+  if (!isDateString(serviceDate)) {
+    badRequest(res, "serviceDate is required in YYYY-MM-DD format");
+    return;
+  }
+  const baselineFrom = shiftDate(serviceDate, -60);
+
+  const [dailySummary, trends, dayTypes, targetsData] = await Promise.all([
+    getKpiSummary({ dateFrom: serviceDate, dateTo: serviceDate }),
+    getKpiTrends({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    listDayTypes({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    listTargets({})
+  ]);
+
+  const baselineMeta = computeBaselineByDayType(trends.points || [], dayTypes || [], serviceDate, scope);
+  const scopedCurrent = dailySummary[scope] || dailySummary.total || {};
+  const metrics = {};
+  for (const metricKey of metricsList()) {
+    const targetObj = resolveActiveTarget(targetsData || [], metricKey, scope, serviceDate);
+    metrics[metricKey] = {
+      current: Number(scopedCurrent[metricKey] || 0),
+      baseline: baselineMeta.baseline[metricKey],
+      target: targetObj ? Number(targetObj.targetValue) : null
+    };
+  }
+
+  const dayTypeByDate = mapDayTypes(dayTypes || []);
+  const grouped = {};
+  for (const point of trends.points || []) {
+    const key = normalizeDayTypeBucket(dayTypeByDate[point.serviceDate]);
+    grouped[key] = grouped[key] || [];
+    grouped[key].push(pickScopePoint(point, scope));
+  }
+  const byDayType = Object.entries(grouped).map(([dayTypeBucket, rows]) => ({
+    dayType: dayTypeBucket,
+    passengers: avg(rows.map((row) => Number(row.passengers || 0))),
+    rides: avg(rows.map((row) => Number(row.rides || 0))),
+    efficiency: avg(rows.map((row) => Number(row.efficiency || 0))),
+    serviceQuality: avg(rows.map((row) => Number(row.serviceQuality || 0))),
+    issues: avg(rows.map((row) => Number(row.issues || 0)))
+  }));
+
+  sendJson(res, 200, {
+    scope,
+    serviceDate,
+    metrics,
+    byDayType,
+    context: {
+      focusDayType: baselineMeta.focusDayType,
+      baselineSampleCount: baselineMeta.sampleCount
+    }
+  });
+}
+
+async function handleDashboardAlerts(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let range;
+  let scope;
+  try {
+    range = resolveRange(parsedUrl);
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  if (!range.dateFrom || !range.dateTo) {
+    badRequest(res, "dateFrom and dateTo are required");
+    return;
+  }
+
+  const [trends, incidents, thresholds] = await Promise.all([
+    getKpiTrends(range),
+    listIncidents({ serviceDate: undefined, serviceType: scope === "total" ? undefined : scope }),
+    listThresholds({})
+  ]);
+  const thresholdMap = {};
+  for (const threshold of thresholds || []) {
+    thresholdMap[threshold.metricKey] = threshold;
+  }
+  const scopedPoints = (trends.points || [])
+    .map((point) => ({ serviceDate: point.serviceDate, metrics: pickScopePoint(point, scope) }))
+    .sort((a, b) => (a.serviceDate < b.serviceDate ? -1 : 1));
+
+  const redDays = scopedPoints
+    .filter(({ metrics }) => {
+      const quality = Number(metrics.serviceQuality || 0);
+      const threshold = thresholdMap.serviceQuality;
+      if (!threshold) return quality < 90;
+      return quality >= threshold.redMin && quality <= threshold.redMax;
+    })
+    .slice(-7)
+    .reverse()
+    .map((row) => ({ serviceDate: row.serviceDate, value: Number(row.metrics.serviceQuality || 0) }));
+
+  const efficiencyDropDays = scopedPoints
+    .filter((row, index, rows) => {
+      if (index === 0) return false;
+      const prev = Number(rows[index - 1].metrics.efficiency || 0);
+      const current = Number(row.metrics.efficiency || 0);
+      return prev > 0 && current < prev * 0.9;
+    })
+    .slice(-7)
+    .reverse()
+    .map((row) => ({ serviceDate: row.serviceDate, value: Number(row.metrics.efficiency || 0) }));
+
+  const issueSpikeDays = scopedPoints
+    .filter((row, index, rows) => {
+      if (index < 3) return false;
+      const current = Number(row.metrics.issues || 0);
+      const baseline = avg(rows.slice(Math.max(0, index - 3), index).map((x) => Number(x.metrics.issues || 0))) || 0;
+      return current > baseline * 1.25 && current > 0;
+    })
+    .slice(-7)
+    .reverse()
+    .map((row) => ({ serviceDate: row.serviceDate, value: Number(row.metrics.issues || 0) }));
+
+  const topWorstQuality = [...scopedPoints]
+    .sort((a, b) => Number(a.metrics.serviceQuality || 0) - Number(b.metrics.serviceQuality || 0))
+    .slice(0, 5)
+    .map((row) => ({ serviceDate: row.serviceDate, value: Number(row.metrics.serviceQuality || 0) }));
+  const topIssueDays = [...scopedPoints]
+    .sort((a, b) => Number(b.metrics.issues || 0) - Number(a.metrics.issues || 0))
+    .slice(0, 5)
+    .map((row) => ({ serviceDate: row.serviceDate, value: Number(row.metrics.issues || 0) }));
+
+  const incidentCountsByDate = {};
+  for (const incident of incidents || []) {
+    if (!incident.serviceDate) continue;
+    if (incident.serviceDate < range.dateFrom || incident.serviceDate > range.dateTo) continue;
+    incidentCountsByDate[incident.serviceDate] = (incidentCountsByDate[incident.serviceDate] || 0) + 1;
+  }
+
+  sendJson(res, 200, {
+    scope,
+    range,
+    redDays,
+    efficiencyDropDays,
+    issueSpikeDays,
+    topWorstQuality,
+    topIssueDays,
+    incidentCountsByDate
+  });
+}
+
 async function handleKpiSummary(req, res, parsedUrl) {
   const active = await requireAuth(req, res);
   if (!active) {
@@ -861,6 +1268,26 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/dashboard/overview") {
+      await handleDashboardOverview(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/trends") {
+      await handleDashboardTrends(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/benchmark") {
+      await handleDashboardBenchmark(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/alerts") {
+      await handleDashboardAlerts(req, res, parsedUrl);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/management/targets") {
       await handleListTargets(req, res, parsedUrl);
       return;
@@ -905,6 +1332,3 @@ async function handleRequest(req, res) {
 module.exports = {
   handleRequest
 };
-
-
-
