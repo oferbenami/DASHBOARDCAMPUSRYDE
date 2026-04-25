@@ -295,6 +295,127 @@
       .kpi.kpi-yellow .val { color: #92400e; }
       .kpi.kpi-red .val { color: var(--danger); }
       .kpi .loading-val { color: #a0aec0; font-size: 0.9rem; font-weight: 400; }
+      .kpi .sub-grid {
+        margin-top: 10px;
+        border-top: 1px dashed #d7e0ee;
+        padding-top: 8px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+      .kpi .sub-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.76rem;
+        color: #4a5a73;
+      }
+      .kpi .sub-line strong { font-size: 0.8rem; color: #1e2a3d; }
+      .kpi .sub-line .muted { color: #8a97ad; }
+      .kpi-headline {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #dbe4f3;
+        background: linear-gradient(135deg, #f5f9ff 0%, #eef4ff 100%);
+      }
+      .kpi-headline .headline-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #2a3b5f;
+        margin-bottom: 8px;
+      }
+      .kpi-headline .headline-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 8px;
+      }
+      .kpi-headline .headline-item {
+        background: #fff;
+        border: 1px solid #dbe4f3;
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+      .kpi-headline .headline-item .label {
+        font-size: 0.72rem;
+        color: #6b7893;
+        margin-bottom: 2px;
+      }
+      .kpi-headline .headline-item .value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1f2b43;
+      }
+      .section-subtitle {
+        margin: 8px 0 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #2a3b5f;
+      }
+      .report-tile {
+        text-align: right;
+        background: linear-gradient(170deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #dbe4f3;
+        border-radius: 12px;
+        padding: 12px;
+        transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+      }
+      .report-tile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(17, 51, 102, 0.08);
+        border-color: #9cb6e6;
+      }
+      .report-tile.active {
+        border-color: #4d84e2;
+        box-shadow: 0 0 0 2px rgba(77,132,226,0.15);
+      }
+      .report-tile .tile-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1f2b43;
+      }
+      .report-tile .tile-kpi {
+        margin-top: 6px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #0f4f9f;
+      }
+      .report-tile .tile-note {
+        margin-top: 4px;
+        font-size: 0.73rem;
+        color: #6b7893;
+      }
+      .drill-card {
+        margin-top: 12px;
+        border: 1px solid #dbe4f3;
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 12px;
+      }
+      .drill-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1f2b43;
+      }
+      .drill-sub {
+        margin-top: 4px;
+        font-size: 0.78rem;
+        color: #5f6f8d;
+      }
+      .drill-row {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .drill-chip {
+        background: #f4f8ff;
+        border: 1px solid #dbe4f3;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.74rem;
+        color: #38517a;
+      }
 
       /* ═══════════════════════════════
          TABLES
@@ -499,7 +620,25 @@
               <span class="section-icon">📊</span>
               <h2 style="margin:0">לוח בקרה — KPI</h2>
             </div>
-            <div class="grid cols-4">
+            <div class="kpi-headline">
+              <div class="headline-title">תמונת מצב תפעולית</div>
+              <div class="headline-grid">
+                <div class="headline-item">
+                  <div class="label">יום איסוף נוכחי</div>
+                  <div class="value" id="headlinePickupDate">—</div>
+                </div>
+                <div class="headline-item">
+                  <div class="label">יום פיזור קודם</div>
+                  <div class="value" id="headlineDropoffDate">—</div>
+                </div>
+                <div class="headline-item">
+                  <div class="label">תאריך מיקוד KPI</div>
+                  <div class="value" id="headlineFocusDate">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid cols-4" style="margin-top:12px">
               <div><label>מתאריך</label><input id="kpiFrom" type="date" /></div>
               <div><label>עד תאריך</label><input id="kpiTo" type="date" /></div>
               <div>
@@ -521,28 +660,143 @@
 
             <div class="grid cols-3" style="margin-top:14px">
               <div class="kpi" id="kpiCard-passengers">
-                <div class="name">נוסעים כולל</div>
+                <div class="name">מספר נוסעים</div>
                 <div class="val loading-val" id="kpiPassengers">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-passengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-passengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-passengers" class="muted">—</strong></div>
+                </div>
               </div>
               <div class="kpi" id="kpiCard-rides">
-                <div class="name">נסיעות כולל</div>
+                <div class="name">מספר נסיעות</div>
                 <div class="val loading-val" id="kpiRides">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-rides" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-rides" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-rides" class="muted">—</strong></div>
+                </div>
               </div>
               <div class="kpi" id="kpiCard-efficiency">
-                <div class="name">יעילות ממוצעת</div>
+                <div class="name">יעילות (נוסעים לנסיעה)</div>
                 <div class="val loading-val" id="kpiEfficiency">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-efficiency" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-efficiency" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-efficiency" class="muted">—</strong></div>
+                </div>
               </div>
               <div class="kpi" id="kpiCard-issues">
                 <div class="name">מספר תקלות</div>
                 <div class="val loading-val" id="kpiIssues">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-issues" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-issues" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-issues" class="muted">—</strong></div>
+                </div>
               </div>
               <div class="kpi" id="kpiCard-issuesRate">
                 <div class="name">% נסיעות עם תקלה</div>
                 <div class="val loading-val" id="kpiIssuesRate">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-issuesRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-issuesRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-issuesRate" class="muted">—</strong></div>
+                </div>
               </div>
               <div class="kpi" id="kpiCard-quality">
                 <div class="name">איכות שירות</div>
                 <div class="val loading-val" id="kpiQuality">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-serviceQuality" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-serviceQuality" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-serviceQuality" class="muted">—</strong></div>
+                </div>
+              </div>
+              <div class="kpi" id="kpiCard-affectedRate">
+                <div class="name">% נוסעים שנפגעו</div>
+                <div class="val loading-val" id="kpiAffectedRate">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-affectedRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-affectedRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-affectedRate" class="muted">—</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3>קוביות דוחות ו-Drilldown</h3>
+            <div class="grid cols-3" id="dashboardTiles">
+              <button type="button" class="report-tile active" data-report="kpi-main">
+                <div class="tile-title">שכבת KPI ראשית</div>
+                <div class="tile-kpi" id="tileValue-kpi-main">—</div>
+                <div class="tile-note">מדד מרכזי: איכות שירות</div>
+              </button>
+              <button type="button" class="report-tile" data-report="trend-analysis">
+                <div class="tile-title">גרפי מגמה</div>
+                <div class="tile-kpi" id="tileValue-trend-analysis">—</div>
+                <div class="tile-note">מדד מרכזי: נוסעים</div>
+              </button>
+              <button type="button" class="report-tile" data-report="benchmark">
+                <div class="tile-title">גרפי השוואה</div>
+                <div class="tile-kpi" id="tileValue-benchmark">—</div>
+                <div class="tile-note">מדד מרכזי: פער מול יעד</div>
+              </button>
+              <button type="button" class="report-tile" data-report="critical-control">
+                <div class="tile-title">דוחות חריגים</div>
+                <div class="tile-kpi" id="tileValue-critical-control">—</div>
+                <div class="tile-note">מדד מרכזי: ימים אדומים</div>
+              </button>
+              <button type="button" class="report-tile" data-report="root-cause">
+                <div class="tile-title">ניתוח תקלות</div>
+                <div class="tile-kpi" id="tileValue-root-cause">—</div>
+                <div class="tile-note">מדד מרכזי: תקלות כולל</div>
+              </button>
+              <button type="button" class="report-tile" data-report="incident-drilldown">
+                <div class="tile-title">דוח פירוט תקלות</div>
+                <div class="tile-kpi" id="tileValue-incident-drilldown">—</div>
+                <div class="tile-note">מדד מרכזי: אירועי תקלה</div>
+              </button>
+              <button type="button" class="report-tile" data-report="operations-daily">
+                <div class="tile-title">דוח תפעולי יומי</div>
+                <div class="tile-kpi" id="tileValue-operations-daily">—</div>
+                <div class="tile-note">מדד מרכזי: עמידה יומית</div>
+              </button>
+              <button type="button" class="report-tile" data-report="targets-vs-actual">
+                <div class="tile-title">יעדים מול ביצוע</div>
+                <div class="tile-kpi" id="tileValue-targets-vs-actual">—</div>
+                <div class="tile-note">מדד מרכזי: KPI מעל יעד</div>
+              </button>
+              <button type="button" class="report-tile" data-report="load-efficiency">
+                <div class="tile-title">עומסים ויעילות</div>
+                <div class="tile-kpi" id="tileValue-load-efficiency">—</div>
+                <div class="tile-note">מדד מרכזי: יעילות</div>
+              </button>
+              <button type="button" class="report-tile" data-report="pickup-vs-dropoff">
+                <div class="tile-title">השוואת איסוף/פיזור</div>
+                <div class="tile-kpi" id="tileValue-pickup-vs-dropoff">—</div>
+                <div class="tile-note">מדד מרכזי: הפרש איכות</div>
+              </button>
+            </div>
+
+            <div class="drill-card" id="dashboardDrillCard">
+              <div class="drill-title" id="drillReportTitle">שכבת KPI ראשית</div>
+              <div class="drill-sub" id="drillReportSubtitle">בחירה בקובייה מציגה פירוט ממוקד של אותו נושא.</div>
+              <div class="drill-row">
+                <span class="drill-chip" id="drillPrimaryValue">מדד מרכזי: —</span>
+                <span class="drill-chip" id="drillTargetValue">יעד: —</span>
+                <span class="drill-chip" id="drillGapValue">פער: —</span>
+              </div>
+              <div class="row-actions" style="margin-top:10px">
+                <button id="openDetailedReport">פתח דוח מפורט</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>תאריך</th><th>ערך</th></tr>
+                  </thead>
+                  <tbody id="drillMetricRows"></tbody>
+                </table>
               </div>
             </div>
 
@@ -1000,6 +1254,18 @@
       let pickupDate = toDateVal(today);
       let dropoffDate = toDateVal(yesterday);
       let dashboardScope = "total";
+      let selectedDashboardReport = "kpi-main";
+      let lastDashboardData = null;
+      const dashboardMetaCache = new Map();
+      const KPI_METRICS = [
+        { key: "passengers", cardId: "kpiCard-passengers", valueId: "kpiPassengers", targetId: "kpiTarget-passengers", gapId: "kpiGap-passengers", deltaId: "kpiDelta-passengers" },
+        { key: "rides", cardId: "kpiCard-rides", valueId: "kpiRides", targetId: "kpiTarget-rides", gapId: "kpiGap-rides", deltaId: "kpiDelta-rides" },
+        { key: "efficiency", cardId: "kpiCard-efficiency", valueId: "kpiEfficiency", targetId: "kpiTarget-efficiency", gapId: "kpiGap-efficiency", deltaId: "kpiDelta-efficiency" },
+        { key: "issues", cardId: "kpiCard-issues", valueId: "kpiIssues", targetId: "kpiTarget-issues", gapId: "kpiGap-issues", deltaId: "kpiDelta-issues" },
+        { key: "issuesRate", cardId: "kpiCard-issuesRate", valueId: "kpiIssuesRate", targetId: "kpiTarget-issuesRate", gapId: "kpiGap-issuesRate", deltaId: "kpiDelta-issuesRate" },
+        { key: "serviceQuality", cardId: "kpiCard-quality", valueId: "kpiQuality", targetId: "kpiTarget-serviceQuality", gapId: "kpiGap-serviceQuality", deltaId: "kpiDelta-serviceQuality" },
+        { key: "affectedRate", cardId: "kpiCard-affectedRate", valueId: "kpiAffectedRate", targetId: "kpiTarget-affectedRate", gapId: "kpiGap-affectedRate", deltaId: "kpiDelta-affectedRate" }
+      ];
 
       function initDates() {
         document.getElementById("kpiFrom").value = toDateVal(weekAgo);
@@ -1013,6 +1279,7 @@
         document.getElementById("drillFrom").value = toDateVal(weekAgo);
         document.getElementById("drillTo").value = pickupDate;
         document.getElementById("targetFrom").value = pickupDate;
+        updateHeadlineDates(pickupDate);
       }
 
       // ═══════════════════════════════
@@ -1042,20 +1309,248 @@
         else if (v >= t.redMin && v <= t.redMax) card.classList.add("kpi-red");
       }
 
+      function addDays(dateVal, days) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        d.setDate(d.getDate() + days);
+        return d;
+      }
+
+      function metricDigits(metricKey) {
+        if (metricKey === "efficiency" || metricKey === "issuesRate" || metricKey === "serviceQuality" || metricKey === "affectedRate") return 2;
+        return 0;
+      }
+
+      function isPercentMetric(metricKey) {
+        return metricKey === "issuesRate" || metricKey === "serviceQuality" || metricKey === "affectedRate";
+      }
+
+      function formatMetric(metricKey, value, withSign = false) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
+        const n = Number(value);
+        const sign = withSign && n > 0 ? "+" : "";
+        const fixed = n.toFixed(metricDigits(metricKey));
+        return `${sign}${fixed}${isPercentMetric(metricKey) ? "%" : ""}`;
+      }
+
+      function updateHeadlineDates(focusDate) {
+        const currentPickup = toDateVal(new Date());
+        const prevDropoff = toDateVal(addDays(currentPickup, -1));
+        document.getElementById("headlinePickupDate").textContent = currentPickup;
+        document.getElementById("headlineDropoffDate").textContent = prevDropoff;
+        document.getElementById("headlineFocusDate").textContent = focusDate || "—";
+      }
+
+      function defaultDirection(metricKey) {
+        if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate") return "at_most";
+        return "at_least";
+      }
+
+      function resolveActiveTarget(targets, metricKey, scopeKey, focusDate) {
+        const scopes = scopeKey === "total" ? ["total"] : [scopeKey, "total"];
+        for (const scope of scopes) {
+          const active = (targets || [])
+            .filter((row) =>
+              row.metricKey === metricKey &&
+              row.scopeKey === scope &&
+              row.effectiveFrom <= focusDate &&
+              (!row.effectiveTo || row.effectiveTo >= focusDate)
+            )
+            .sort((a, b) => (a.effectiveFrom < b.effectiveFrom ? 1 : -1));
+          if (active.length) return active[0];
+        }
+        return null;
+      }
+
+      function computeGap(actual, target, direction) {
+        if (target === null || target === undefined) return null;
+        if (direction === "at_most") return target - actual;
+        return actual - target;
+      }
+
+      function statusFromTarget(actual, target, direction) {
+        if (target === null || target === undefined) return null;
+        if (direction === "at_most") {
+          if (actual <= target) return "green";
+          if (actual <= target * 1.03) return "yellow";
+          return "red";
+        }
+        if (actual >= target) return "green";
+        if (actual >= target * 0.97) return "yellow";
+        return "red";
+      }
+
+      function applyKpiStatus(cardId, status) {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+        card.classList.remove("kpi-green", "kpi-yellow", "kpi-red");
+        if (status === "green") card.classList.add("kpi-green");
+        else if (status === "yellow") card.classList.add("kpi-yellow");
+        else if (status === "red") card.classList.add("kpi-red");
+      }
+
+      function computeBaseline(points, dayTypeRows, focusDate, scope) {
+        const dayTypeByDate = {};
+        for (const row of dayTypeRows || []) {
+          dayTypeByDate[row.serviceDate] = row.dayType || "";
+        }
+        const focusType = dayTypeByDate[focusDate] || null;
+        const previous = (points || [])
+          .filter((p) => p.serviceDate < focusDate)
+          .sort((a, b) => (a.serviceDate < b.serviceDate ? 1 : -1));
+        const chosen = focusType
+          ? previous.filter((p) => dayTypeByDate[p.serviceDate] === focusType).slice(0, 7)
+          : previous.slice(0, 7);
+
+        const baseline = {};
+        for (const metric of KPI_METRICS) {
+          if (!chosen.length) {
+            baseline[metric.key] = null;
+            continue;
+          }
+          const values = chosen.map((p) => Number((p[scope] || p.total || {})[metric.key] || 0));
+          const avg = values.reduce((acc, v) => acc + v, 0) / values.length;
+          baseline[metric.key] = avg;
+        }
+        return { baseline, sampleCount: chosen.length, focusType };
+      }
+
+      async function loadDashboardMeta(focusDate, scope) {
+        const cacheKey = `${focusDate}|${scope}`;
+        const cached = dashboardMetaCache.get(cacheKey);
+        if (cached && Date.now() - cached.ts < 60000) return cached.value;
+
+        const baselineFrom = toDateVal(addDays(focusDate, -60));
+        const [targetsData, dayTypesData, baselineTrends] = await Promise.all([
+          api("GET", "/management/targets"),
+          api("GET", `/day-types?dateFrom=${baselineFrom}&dateTo=${focusDate}`),
+          api("GET", `/kpi/trends?dateFrom=${baselineFrom}&dateTo=${focusDate}`)
+        ]);
+
+        const baselineMeta = computeBaseline(
+          baselineTrends.points || [],
+          dayTypesData.dayTypes || [],
+          focusDate,
+          scope
+        );
+        const value = {
+          targets: targetsData.targets || [],
+          baselineByMetric: baselineMeta.baseline,
+          baselineSampleCount: baselineMeta.sampleCount,
+          focusDayType: baselineMeta.focusType
+        };
+        dashboardMetaCache.set(cacheKey, { ts: Date.now(), value });
+        return value;
+      }
+
       function fmt(n, digits = 2) { return Number(n || 0).toFixed(digits); }
 
       function setKpiLoading(loading) {
-        const ids = ["kpiPassengers","kpiRides","kpiEfficiency","kpiIssues","kpiIssuesRate","kpiQuality"];
+        const ids = ["kpiPassengers","kpiRides","kpiEfficiency","kpiIssues","kpiIssuesRate","kpiQuality","kpiAffectedRate"];
         for (const id of ids) {
           const el = document.getElementById(id);
           if (loading) { el.textContent = "טוען..."; el.classList.add("loading-val"); }
           else { el.classList.remove("loading-val"); }
         }
-        ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality"]
+        KPI_METRICS.forEach((metric) => {
+          const targetEl = document.getElementById(metric.targetId);
+          const gapEl = document.getElementById(metric.gapId);
+          const deltaEl = document.getElementById(metric.deltaId);
+          if (loading) {
+            targetEl.textContent = "—";
+            gapEl.textContent = "—";
+            deltaEl.textContent = "—";
+          }
+        });
+        ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality","kpiCard-affectedRate"]
           .forEach(id => {
             const c = document.getElementById(id);
             if (loading) c.classList.remove("kpi-green","kpi-yellow","kpi-red");
           });
+      }
+
+      function reportConfig() {
+        return {
+          "kpi-main": { title: "שכבת KPI ראשית", subtitle: "מצב יעד-ביצוע למדד איכות השירות", metricKey: "serviceQuality", actionTab: "dashboard" },
+          "trend-analysis": { title: "גרפי מגמה", subtitle: "מעקב שינוי לאורך זמן במדד נוסעים", metricKey: "passengers", actionTab: "dashboard" },
+          "benchmark": { title: "גרפי השוואה", subtitle: "השוואה בין ביצוע בפועל ליעד", metricKey: "serviceQuality", actionTab: "dashboard" },
+          "critical-control": { title: "דוחות חריגים", subtitle: "מוקדי שליטה: תקלות וחריגות איכות", metricKey: "issues", actionTab: "incidents" },
+          "root-cause": { title: "ניתוח תקלות", subtitle: "זיהוי גורמי שורש לפי סוגי תקלה", metricKey: "issuesRate", actionTab: "incidents" },
+          "incident-drilldown": { title: "דוח פירוט תקלות", subtitle: "מעבר מהיר לרשימת התקלות המלאה", metricKey: "issues", actionTab: "incidents" },
+          "operations-daily": { title: "דוח תפעולי יומי", subtitle: "תמונת ביצוע יומית לפי פעילות", metricKey: "rides", actionTab: "operations" },
+          "targets-vs-actual": { title: "יעדים מול ביצוע", subtitle: "בקרה ניהולית על עמידה ביעדים", metricKey: "serviceQuality", actionTab: "management" },
+          "load-efficiency": { title: "ניתוח עומסים ויעילות", subtitle: "איתור צווארי בקבוק במערך הנסיעות", metricKey: "efficiency", actionTab: "dashboard" },
+          "pickup-vs-dropoff": { title: "השוואת איסוף מול פיזור", subtitle: "זיהוי מקור הפערים התפעוליים", metricKey: "serviceQuality", actionTab: "dashboard" }
+        };
+      }
+
+      function updateTiles(summary, scope, kpiMeta) {
+        const scopedSummary = summary[scope] || summary.total || {};
+        const benchmarkTarget = resolveActiveTarget(
+          kpiMeta.targets,
+          "serviceQuality",
+          scope,
+          document.getElementById("kpiTo").value
+        );
+        const tiles = {
+          "kpi-main": scopedSummary.serviceQuality,
+          "trend-analysis": scopedSummary.passengers,
+          "benchmark": benchmarkTarget ? computeGap(Number(scopedSummary.serviceQuality || 0), Number(benchmarkTarget.targetValue), "at_least") : null,
+          "critical-control": scopedSummary.issues,
+          "root-cause": scopedSummary.issuesRate,
+          "incident-drilldown": scopedSummary.issues,
+          "operations-daily": scopedSummary.rides,
+          "targets-vs-actual": scopedSummary.serviceQuality,
+          "load-efficiency": scopedSummary.efficiency,
+          "pickup-vs-dropoff": Number((summary.pickup || {}).serviceQuality || 0) - Number((summary.dropoff || {}).serviceQuality || 0)
+        };
+
+        for (const [key, value] of Object.entries(tiles)) {
+          const el = document.getElementById(`tileValue-${key}`);
+          if (!el) continue;
+          let metricKey = "passengers";
+          if (key === "kpi-main" || key === "targets-vs-actual" || key === "pickup-vs-dropoff") metricKey = "serviceQuality";
+          if (key === "benchmark") metricKey = "serviceQuality";
+          if (key === "root-cause") metricKey = "issuesRate";
+          if (key === "critical-control" || key === "incident-drilldown") metricKey = "issues";
+          if (key === "operations-daily") metricKey = "rides";
+          if (key === "load-efficiency") metricKey = "efficiency";
+          el.textContent = formatMetric(metricKey, value, key === "benchmark" || key === "pickup-vs-dropoff");
+        }
+      }
+
+      function renderDrilldownReport(reportKey) {
+        const cfg = reportConfig()[reportKey];
+        if (!cfg || !lastDashboardData) return;
+
+        const { summary, trends, scope, kpiMeta } = lastDashboardData;
+        const scopedSummary = summary[scope] || summary.total || {};
+        const actual = Number(scopedSummary[cfg.metricKey] || 0);
+        const focusDate = document.getElementById("kpiTo").value;
+        const target = resolveActiveTarget(kpiMeta.targets, cfg.metricKey, scope, focusDate);
+        const targetValue = target ? Number(target.targetValue) : null;
+        const gap = computeGap(actual, targetValue, target?.direction || defaultDirection(cfg.metricKey));
+
+        document.getElementById("drillReportTitle").textContent = cfg.title;
+        document.getElementById("drillReportSubtitle").textContent = cfg.subtitle;
+        document.getElementById("drillPrimaryValue").textContent = `מדד מרכזי: ${formatMetric(cfg.metricKey, actual)}`;
+        document.getElementById("drillTargetValue").textContent = `יעד: ${formatMetric(cfg.metricKey, targetValue)}`;
+        document.getElementById("drillGapValue").textContent = `פער: ${formatMetric(cfg.metricKey, gap, true)}`;
+
+        const tbody = document.getElementById("drillMetricRows");
+        tbody.innerHTML = "";
+        const recent = [...(trends.points || [])]
+          .sort((a, b) => (a.serviceDate < b.serviceDate ? 1 : -1))
+          .slice(0, 10)
+          .reverse();
+        for (const point of recent) {
+          const scopedPoint = point[scope] || point.total || {};
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${point.serviceDate}</td><td>${formatMetric(cfg.metricKey, scopedPoint[cfg.metricKey])}</td>`;
+          tbody.appendChild(tr);
+        }
+
+        const openBtn = document.getElementById("openDetailedReport");
+        openBtn.dataset.report = reportKey;
       }
 
       // ═══════════════════════════════
@@ -1071,19 +1566,33 @@
           api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
           api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
         ]);
+        const kpiMeta = await loadDashboardMeta(to, dashboardScope);
 
         const scopedSummary = summary[dashboardScope] || summary.total;
+        updateHeadlineDates(to);
 
-        document.getElementById("kpiPassengers").textContent = fmt(scopedSummary.passengers, 0);
-        document.getElementById("kpiRides").textContent = fmt(scopedSummary.rides, 0);
-        document.getElementById("kpiEfficiency").textContent = fmt(scopedSummary.efficiency);
-        document.getElementById("kpiIssues").textContent = fmt(scopedSummary.issues, 0);
-        document.getElementById("kpiIssuesRate").textContent = `${fmt(scopedSummary.issuesRate)}%`;
-        document.getElementById("kpiQuality").textContent = `${fmt(scopedSummary.serviceQuality)}%`;
+        for (const metric of KPI_METRICS) {
+          const actual = Number(scopedSummary[metric.key] || 0);
+          const target = resolveActiveTarget(kpiMeta.targets, metric.key, dashboardScope, to);
+          const direction = target?.direction || defaultDirection(metric.key);
+          const targetValue = target ? Number(target.targetValue) : null;
+          const baselineValue = kpiMeta.baselineByMetric[metric.key];
+          const gap = computeGap(actual, targetValue, direction);
+          const deltaVsBaseline = baselineValue === null || baselineValue === undefined ? null : actual - baselineValue;
+
+          document.getElementById(metric.valueId).textContent = formatMetric(metric.key, actual);
+          document.getElementById(metric.targetId).textContent = formatMetric(metric.key, targetValue);
+          document.getElementById(metric.gapId).textContent = formatMetric(metric.key, gap, true);
+          document.getElementById(metric.deltaId).textContent = formatMetric(metric.key, deltaVsBaseline, true);
+
+          const thresholdExists = Boolean(currentThresholds[metric.key]);
+          if (thresholdExists) {
+            colorKpiCard(metric.cardId, actual, metric.key);
+          } else {
+            applyKpiStatus(metric.cardId, statusFromTarget(actual, targetValue, direction));
+          }
+        }
         setKpiLoading(false);
-
-        colorKpiCard("kpiCard-quality", scopedSummary.serviceQuality, "serviceQuality");
-        colorKpiCard("kpiCard-issuesRate", scopedSummary.issuesRate, "issuesRate");
 
         const tbody = document.getElementById("trendRows");
         tbody.innerHTML = "";
@@ -1093,6 +1602,10 @@
           tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(scopedPoint.passengers,0)}</td><td>${fmt(scopedPoint.rides,0)}</td><td>${fmt(scopedPoint.issues,0)}</td><td>${fmt(scopedPoint.issuesRate)}%</td><td>${fmt(scopedPoint.serviceQuality)}%</td>`;
           tbody.appendChild(tr);
         }
+
+        lastDashboardData = { summary, trends, scope: dashboardScope, kpiMeta };
+        updateTiles(summary, dashboardScope, kpiMeta);
+        renderDrilldownReport(selectedDashboardReport);
       }
 
       // ═══════════════════════════════
@@ -1117,6 +1630,26 @@
           document.getElementById("loadDashboard"),
           async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
         );
+        document.querySelectorAll(".report-tile").forEach((tile) => {
+          tile.addEventListener("click", () => {
+            selectedDashboardReport = tile.dataset.report || "kpi-main";
+            document.querySelectorAll(".report-tile").forEach((btn) =>
+              btn.classList.toggle("active", btn.dataset.report === selectedDashboardReport)
+            );
+            renderDrilldownReport(selectedDashboardReport);
+          });
+        });
+        document.getElementById("openDetailedReport").onclick = () => {
+          const reportKey = document.getElementById("openDetailedReport").dataset.report || "kpi-main";
+          const cfg = reportConfig()[reportKey];
+          if (!cfg) return;
+          if (cfg.actionTab && cfg.actionTab !== "dashboard") {
+            showTab(cfg.actionTab);
+            toastOk(`נפתח דוח ${cfg.title}`);
+            return;
+          }
+          toastOk("הפירוט המלא יושלם בשלבים הבאים; כרגע מוצג Drilldown ממוקד במסך זה.");
+        };
         document.getElementById("dashboardScope").addEventListener("change", async (e) => {
           dashboardScope = e.target.value || "total";
           try {
