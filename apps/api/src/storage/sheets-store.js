@@ -114,6 +114,30 @@ async function sheetsPost(path, body) {
 async function readSheet(name) {
   const data = await sheetsGet(`/values/${encodeURIComponent(name)}`);
   const rows = data.values || [];
+  const expectedHeaders = HEADERS[name];
+
+  // Auto-repair: if first row doesn't match expected headers, prepend them
+  if (expectedHeaders) {
+    const firstRowMatches =
+      rows.length > 0 && expectedHeaders.every((h, i) => rows[0][i] === h);
+    if (!firstRowMatches) {
+      console.log(`[readSheet] ${name}: header missing or wrong — repairing (rows=${rows.length})`);
+      const allValues = [expectedHeaders, ...rows];
+      await sheetsPut(
+        `/values/${encodeURIComponent(name)}!A1?valueInputOption=RAW`,
+        { range: `${name}!A1`, majorDimension: "ROWS", values: allValues }
+      );
+      return rows.map((row) => {
+        const obj = {};
+        expectedHeaders.forEach((key, i) => {
+          const val = row[i];
+          obj[key] = val === undefined ? null : val === "" ? null : val;
+        });
+        return obj;
+      });
+    }
+  }
+
   if (rows.length < 1) return [];
   const headers = rows[0];
   return rows.slice(1).map((row) => {
