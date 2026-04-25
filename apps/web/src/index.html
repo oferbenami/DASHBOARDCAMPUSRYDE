@@ -499,9 +499,17 @@
               <span class="section-icon">📊</span>
               <h2 style="margin:0">לוח בקרה — KPI</h2>
             </div>
-            <div class="grid cols-3">
+            <div class="grid cols-4">
               <div><label>מתאריך</label><input id="kpiFrom" type="date" /></div>
               <div><label>עד תאריך</label><input id="kpiTo" type="date" /></div>
+              <div>
+                <label>תצוגת נסיעות</label>
+                <select id="dashboardScope">
+                  <option value="total">כל הנסיעות</option>
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
+                </select>
+              </div>
               <div style="display:flex;align-items:flex-end">
                 <button id="loadDashboard">טען נתונים</button>
               </div>
@@ -991,10 +999,12 @@
 
       let pickupDate = toDateVal(today);
       let dropoffDate = toDateVal(yesterday);
+      let dashboardScope = "total";
 
       function initDates() {
         document.getElementById("kpiFrom").value = toDateVal(weekAgo);
         document.getElementById("kpiTo").value = pickupDate;
+        document.getElementById("dashboardScope").value = dashboardScope;
         document.getElementById("entryDate").value = pickupDate;
         document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
         document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
@@ -1054,6 +1064,7 @@
       async function loadDashboard() {
         const from = document.getElementById("kpiFrom").value;
         const to = document.getElementById("kpiTo").value;
+        dashboardScope = document.getElementById("dashboardScope").value || "total";
         setKpiLoading(true);
 
         const [summary, trends] = await Promise.all([
@@ -1061,22 +1072,25 @@
           api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
         ]);
 
-        document.getElementById("kpiPassengers").textContent = fmt(summary.total.passengers, 0);
-        document.getElementById("kpiRides").textContent = fmt(summary.total.rides, 0);
-        document.getElementById("kpiEfficiency").textContent = fmt(summary.total.efficiency);
-        document.getElementById("kpiIssues").textContent = fmt(summary.total.issues, 0);
-        document.getElementById("kpiIssuesRate").textContent = `${fmt(summary.total.issuesRate)}%`;
-        document.getElementById("kpiQuality").textContent = `${fmt(summary.total.serviceQuality)}%`;
+        const scopedSummary = summary[dashboardScope] || summary.total;
+
+        document.getElementById("kpiPassengers").textContent = fmt(scopedSummary.passengers, 0);
+        document.getElementById("kpiRides").textContent = fmt(scopedSummary.rides, 0);
+        document.getElementById("kpiEfficiency").textContent = fmt(scopedSummary.efficiency);
+        document.getElementById("kpiIssues").textContent = fmt(scopedSummary.issues, 0);
+        document.getElementById("kpiIssuesRate").textContent = `${fmt(scopedSummary.issuesRate)}%`;
+        document.getElementById("kpiQuality").textContent = `${fmt(scopedSummary.serviceQuality)}%`;
         setKpiLoading(false);
 
-        colorKpiCard("kpiCard-quality", summary.total.serviceQuality, "serviceQuality");
-        colorKpiCard("kpiCard-issuesRate", summary.total.issuesRate, "issuesRate");
+        colorKpiCard("kpiCard-quality", scopedSummary.serviceQuality, "serviceQuality");
+        colorKpiCard("kpiCard-issuesRate", scopedSummary.issuesRate, "issuesRate");
 
         const tbody = document.getElementById("trendRows");
         tbody.innerHTML = "";
         for (const p of trends.points) {
+          const scopedPoint = p[dashboardScope] || p.total;
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(p.total.passengers,0)}</td><td>${fmt(p.total.rides,0)}</td><td>${fmt(p.total.issues,0)}</td><td>${fmt(p.total.issuesRate)}%</td><td>${fmt(p.total.serviceQuality)}%</td>`;
+          tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(scopedPoint.passengers,0)}</td><td>${fmt(scopedPoint.rides,0)}</td><td>${fmt(scopedPoint.issues,0)}</td><td>${fmt(scopedPoint.issuesRate)}%</td><td>${fmt(scopedPoint.serviceQuality)}%</td>`;
           tbody.appendChild(tr);
         }
       }
@@ -1103,6 +1117,14 @@
           document.getElementById("loadDashboard"),
           async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
         );
+        document.getElementById("dashboardScope").addEventListener("change", async (e) => {
+          dashboardScope = e.target.value || "total";
+          try {
+            await loadDashboard();
+          } catch (err) {
+            toastErr(err.message || "שגיאה בטעינת הדשבורד");
+          }
+        });
 
         document.getElementById("exportExcel").onclick = withLoading(
           document.getElementById("exportExcel"),
