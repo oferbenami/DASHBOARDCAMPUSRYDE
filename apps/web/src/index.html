@@ -360,6 +360,18 @@
         border-radius: 12px;
         padding: 12px;
         transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+        position: relative;
+        overflow: hidden;
+      }
+      .report-tile::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #2563eb 0%, #0ea5e9 100%);
+        opacity: 0.75;
       }
       .report-tile:hover {
         transform: translateY(-2px);
@@ -561,10 +573,16 @@
         #toastContainer { bottom: calc(var(--bottom-nav-h) + 12px); }
         .user-email { display: none; }
         .header-brand-icon { display: none; }
+        .chart-grid { grid-template-columns: 1fr; }
+        .chart-wrap { height: 210px; }
+        .row-actions { flex-wrap: wrap; }
+        .report-tile .tile-kpi { font-size: 1.1rem; }
       }
       @media (max-width: 600px) {
         .wrap { padding: 10px; }
         .login-card { padding: 32px 20px 28px; }
+        .chart-wrap { height: 190px; }
+        th, td { font-size: 0.78rem; }
         .row-actions { flex-direction: column; }
       }
     </style>
@@ -839,7 +857,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-trend-analysis">Trend Analysis</h3>
+            <h3 id="section-trend-analysis">ניתוח מגמות</h3>
             <div class="chart-grid">
               <div class="chart-card">
                 <div class="chart-title">מספר נוסעים לאורך זמן</div>
@@ -868,7 +886,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-benchmark">Benchmark</h3>
+            <h3 id="section-benchmark">השוואת ביצועים</h3>
             <div class="chart-grid">
               <div class="chart-card">
                 <div class="chart-title">יום נוכחי מול ממוצע שבועי קודם מול יעד</div>
@@ -888,7 +906,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-critical-control">Critical Control</h3>
+            <h3 id="section-critical-control">בקרת חריגים</h3>
             <div class="table-wrap alert-table">
               <table>
                 <thead>
@@ -899,7 +917,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-root-cause">Root Cause Analysis</h3>
+            <h3 id="section-root-cause">ניתוח גורמי שורש</h3>
             <div class="chart-grid">
               <div class="chart-card">
                 <div class="chart-title">התפלגות סוגי תקלות</div>
@@ -923,7 +941,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-operations-daily">Operations Daily Report</h3>
+            <h3 id="section-operations-daily">דוח תפעולי יומי</h3>
             <div class="chart-card">
               <div class="drill-row">
                 <span class="drill-chip" id="opsSummaryPassengers">נוסעים: —</span>
@@ -945,7 +963,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-targets-vs-actual">Targets Vs Actual</h3>
+            <h3 id="section-targets-vs-actual">יעדים מול ביצוע</h3>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -956,10 +974,10 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-load-efficiency">Load & Efficiency</h3>
+            <h3 id="section-load-efficiency">ניתוח עומסים ויעילות</h3>
             <div class="chart-grid">
               <div class="chart-card">
-                <div class="chart-title">Histogram: נוסעים לנסיעה</div>
+                <div class="chart-title">התפלגות נוסעים לנסיעה (היסטוגרמה)</div>
                 <div class="chart-wrap"><canvas id="chartLoadHistogram"></canvas></div>
               </div>
               <div class="chart-card">
@@ -977,7 +995,7 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-pickup-vs-dropoff">Pickup Vs Dropoff</h3>
+            <h3 id="section-pickup-vs-dropoff">השוואת איסוף מול פיזור</h3>
             <div class="chart-grid">
               <div class="chart-card">
                 <div class="chart-title">השוואת מדדי ליבה: איסוף מול פיזור</div>
@@ -1515,6 +1533,31 @@
         return `${sign}${fixed}${isPercentMetric(metricKey) ? "%" : ""}`;
       }
 
+      function metricLabel(metricKey) {
+        const labels = {
+          passengers: "נוסעים",
+          rides: "נסיעות",
+          efficiency: "יעילות",
+          serviceQuality: "איכות שירות",
+          issues: "תקלות",
+          issuesRate: "% נסיעות עם תקלה",
+          affectedRate: "% נוסעים שנפגעו"
+        };
+        return labels[metricKey] || metricKey;
+      }
+
+      function dayTypeLabel(dayType) {
+        const labels = {
+          weekday: "א–ה",
+          friday: "שישי",
+          holiday_eve: "ערב חג",
+          exception: "חריג",
+          regular: "א–ה",
+          unknown: "לא מסווג"
+        };
+        return labels[dayType] || dayType || "לא מסווג";
+      }
+
       function updateHeadlineDates(focusDate) {
         const currentPickup = toDateVal(new Date());
         const prevDropoff = toDateVal(addDays(currentPickup, -1));
@@ -1860,9 +1903,11 @@
 
         const tbody = document.getElementById("benchmarkDayTypeRows");
         tbody.innerHTML = "";
-        for (const row of benchmarkPayload.byDayType || []) {
+        const order = { weekday: 1, friday: 2, holiday_eve: 3, exception: 4, unknown: 5 };
+        const rows = [...(benchmarkPayload.byDayType || [])].sort((a, b) => (order[a.dayType] || 99) - (order[b.dayType] || 99));
+        for (const row of rows) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${row.dayType}</td><td>${fmt(row.passengers,0)}</td><td>${fmt(row.rides,0)}</td><td>${fmt(row.efficiency)}</td><td>${fmt(row.serviceQuality)}%</td>`;
+          tr.innerHTML = `<td>${dayTypeLabel(row.dayType)}</td><td>${fmt(row.passengers,0)}</td><td>${fmt(row.rides,0)}</td><td>${fmt(row.efficiency)}</td><td>${fmt(row.serviceQuality)}%</td>`;
           tbody.appendChild(tr);
         }
       }
@@ -1978,7 +2023,7 @@
         (payload.rows || []).forEach((row) => {
           const statusClass = row.status === "green" ? "alert-good" : row.status === "yellow" ? "alert-warn" : row.status === "red" ? "alert-danger" : "";
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${row.metricKey}</td><td>${fmt(row.actual)}</td><td>${row.target === null ? "—" : fmt(row.target)}</td><td>${row.gap === null ? "—" : fmt(row.gap)}</td><td>${row.deltaVsWeekly === null ? "—" : fmt(row.deltaVsWeekly)}</td><td class="${statusClass}">${row.status || "—"}</td>`;
+          tr.innerHTML = `<td>${metricLabel(row.metricKey)}</td><td>${formatMetric(row.metricKey, row.actual)}</td><td>${row.target === null ? "—" : formatMetric(row.metricKey, row.target)}</td><td>${row.gap === null ? "—" : formatMetric(row.metricKey, row.gap, true)}</td><td>${row.deltaVsWeekly === null ? "—" : formatMetric(row.metricKey, row.deltaVsWeekly, true)}</td><td class="${statusClass}">${row.status || "—"}</td>`;
           tbody.appendChild(tr);
         });
       }
@@ -2020,11 +2065,11 @@
 
       function renderPickupVsDropoff(payload) {
         const metrics = payload.metrics || {};
-        const keys = ["passengers", "rides", "efficiency", "issues"];
+        const keys = ["passengers", "rides", "efficiency", "issues", "serviceQuality"];
         upsertChart("chartPickupVsDropoff", {
           type: "bar",
           data: {
-            labels: keys,
+            labels: keys.map((k) => metricLabel(k)),
             datasets: [
               {
                 label: "איסוף",
@@ -2045,7 +2090,7 @@
         tbody.innerHTML = "";
         for (const [metric, vals] of Object.entries(metrics)) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${metric}</td><td>${fmt(vals.pickup)}</td><td>${fmt(vals.dropoff)}</td><td>${fmt(vals.diff)}</td>`;
+          tr.innerHTML = `<td>${metricLabel(metric)}</td><td>${formatMetric(metric, vals.pickup)}</td><td>${formatMetric(metric, vals.dropoff)}</td><td>${formatMetric(metric, vals.diff, true)}</td>`;
           tbody.appendChild(tr);
         }
       }
