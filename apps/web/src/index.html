@@ -1080,6 +1080,7 @@
           const orig = btn.textContent;
           btn.textContent = "...";
           try { await fn(); }
+          catch(err) { toastErr(err.message || "שגיאה בשמירה"); }
           finally { btn.disabled = false; btn.textContent = orig; }
         };
       }
