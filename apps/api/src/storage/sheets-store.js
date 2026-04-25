@@ -49,6 +49,9 @@ async function getAccessToken() {
   }
 
   const data = await res.json();
+  if (!data.access_token) {
+    throw new Error(`Google token exchange returned no access_token: ${JSON.stringify(data)}`);
+  }
   _tokenCache = { token: data.access_token, expiresAt: Date.now() + 50 * 60 * 1000 };
   return _tokenCache.token;
 }
@@ -327,11 +330,21 @@ async function revokeSession(token) {
 
 async function getActiveSession(token) {
   const [sessions, users] = await Promise.all([readSheet("sessions"), readSheet("users")]);
+  console.log(`[getActiveSession] sessions=${sessions.length} users=${users.length} token=${token.slice(0, 8)}...`);
   const session = sessions.find((s) => s.sessionToken === token && !s.revokedAt);
-  if (!session) return null;
-  if (new Date(session.expiresAt).getTime() <= Date.now()) return null;
+  if (!session) {
+    console.log(`[getActiveSession] session NOT FOUND. sheet tokens: [${sessions.map((s) => s.sessionToken?.slice(0, 8)).join(", ")}]`);
+    return null;
+  }
+  if (new Date(session.expiresAt).getTime() <= Date.now()) {
+    console.log(`[getActiveSession] session EXPIRED expiresAt=${session.expiresAt}`);
+    return null;
+  }
   const user = users.find((u) => u.id === session.userId && u.isActive === "true");
-  if (!user) return null;
+  if (!user) {
+    console.log(`[getActiveSession] user NOT FOUND userId=${session.userId} isActive values: [${users.map((u) => u.isActive).join(", ")}]`);
+    return null;
+  }
   return { session, user };
 }
 
