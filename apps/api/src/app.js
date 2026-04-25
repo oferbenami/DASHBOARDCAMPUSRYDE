@@ -559,6 +559,390 @@ function normalizeDayTypeBucket(dayTypeRaw) {
   return normalized;
 }
 
+function filterRowsByDate(rows, dateFrom, dateTo) {
+  return (rows || []).filter((row) => {
+    const d = row.serviceDate;
+    if (!d) return false;
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
+    return true;
+  });
+}
+
+function scopeToServiceType(scope) {
+  return scope === "total" ? undefined : scope;
+}
+
+async function handleDashboardIncidentsAnalysis(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let range;
+  let scope;
+  try {
+    range = resolveRange(parsedUrl);
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  if (!range.dateFrom || !range.dateTo) {
+    badRequest(res, "dateFrom and dateTo are required");
+    return;
+  }
+
+  const incidentsRaw = await listIncidents({
+    serviceType: scopeToServiceType(scope)
+  });
+  const incidents = filterRowsByDate(incidentsRaw, range.dateFrom, range.dateTo);
+  const byTypeMap = {};
+  for (const incident of incidents) {
+    byTypeMap[incident.issueType] = (byTypeMap[incident.issueType] || 0) + 1;
+  }
+  const byType = Object.entries(byTypeMap)
+    .map(([issueType, count]) => ({ issueType, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const delayIncidents = incidents.filter(
+    (row) => row.issueType === "delay" && Number.isFinite(Number(row.delayMinutes))
+  );
+  const avgDelayMinutes = avg(delayIncidents.map((row) => Number(row.delayMinutes || 0)));
+
+  const dateSet = new Set(incidents.map((row) => row.serviceDate));
+  const dates = [...dateSet].sort((a, b) => (a < b ? -1 : 1));
+  const trendSeries = byType.map((issueRow) => ({
+    issueType: issueRow.issueType,
+    points: dates.map((date) => ({
+      serviceDate: date,
+      count: incidents.filter((row) => row.serviceDate === date && row.issueType === issueRow.issueType).length
+    }))
+  }));
+
+  sendJson(res, 200, {
+    scope,
+    range,
+    byType,
+    trendSeries,
+    avgDelayMinutes: avgDelayMinutes === null ? null : Number(avgDelayMinutes.toFixed(2)),
+    delayCount: delayIncidents.length,
+    incidentsCount: incidents.length
+  });
+}
+
+function buildTargetRowsForScope(summaryScoped, targets, thresholdsMap, scope, serviceDate, baseline) {
+  const rows = [];
+  for (const metricKey of metricsList()) {
+    const actual = Number(summaryScoped[metricKey] || 0);
+    const targetObj = resolveActiveTarget(targets || [], metricKey, scope, serviceDate);
+    const target = targetObj ? Number(targetObj.targetValue) : null;
+    const direction = targetObj?.direction || defaultDirection(metricKey);
+    const gap = computeGap(actual, target, direction);
+    rows.push({
+      metricKey,
+      actual,
+      target,
+      gap,
+      status: statusFromThresholdsOrTarget(actual, metricKey, thresholdsMap[metricKey], target, direction),
+      deltaVsWeekly:
+        baseline && baseline[metricKey] !== null && baseline[metricKey] !== undefined
+          ? actual - Number(baseline[metricKey] || 0)
+          : null
+    });
+  }
+  return rows;
+}
+
+async function handleDashboardOperationsDaily(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let scope;
+  try {
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const serviceDate = parsedUrl.searchParams.get("serviceDate");
+  if (!isDateString(serviceDate)) {
+    badRequest(res, "serviceDate is required in YYYY-MM-DD format");
+    return;
+  }
+  const baselineFrom = shiftDate(serviceDate, -60);
+
+  const [summary, incidentsRaw, targetsData, thresholdsData, dayTypes, trends] = await Promise.all([
+    getKpiSummary({ dateFrom: serviceDate, dateTo: serviceDate }),
+    listIncidents({ serviceDate, serviceType: scopeToServiceType(scope) }),
+    listTargets({}),
+    listThresholds({}),
+    listDayTypes({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    getKpiTrends({ dateFrom: baselineFrom, dateTo: serviceDate })
+  ]);
+
+  const thresholdMap = {};
+  for (const threshold of thresholdsData || []) thresholdMap[threshold.metricKey] = threshold;
+  const baselineMeta = computeBaselineByDayType(trends.points || [], dayTypes || [], serviceDate, scope);
+  const selectedSummary = summary[scope] || summary.total || {};
+  const targetAttainment = buildTargetRowsForScope(
+    selectedSummary,
+    targetsData || [],
+    thresholdMap,
+    scope,
+    serviceDate,
+    baselineMeta.baseline
+  );
+
+  const issuesByTypeMap = {};
+  for (const row of incidentsRaw || []) {
+    issuesByTypeMap[row.issueType] = (issuesByTypeMap[row.issueType] || 0) + 1;
+  }
+  const issuesByType = Object.entries(issuesByTypeMap)
+    .map(([issueType, count]) => ({ issueType, count }))
+    .sort((a, b) => b.count - a.count);
+
+  sendJson(res, 200, {
+    serviceDate,
+    scope,
+    summary: {
+      pickup: summary.pickup || {},
+      dropoff: summary.dropoff || {},
+      total: summary.total || {},
+      selected: selectedSummary
+    },
+    incidentsCount: (incidentsRaw || []).length,
+    issuesByType,
+    targetAttainment
+  });
+}
+
+async function handleDashboardTargetsVsActual(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let scope;
+  try {
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  const serviceDate = parsedUrl.searchParams.get("serviceDate");
+  if (!isDateString(serviceDate)) {
+    badRequest(res, "serviceDate is required in YYYY-MM-DD format");
+    return;
+  }
+  const baselineFrom = shiftDate(serviceDate, -60);
+
+  const [summary, targetsData, thresholdsData, dayTypes, trends] = await Promise.all([
+    getKpiSummary({ dateFrom: serviceDate, dateTo: serviceDate }),
+    listTargets({}),
+    listThresholds({}),
+    listDayTypes({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    getKpiTrends({ dateFrom: baselineFrom, dateTo: serviceDate })
+  ]);
+  const thresholdMap = {};
+  for (const threshold of thresholdsData || []) thresholdMap[threshold.metricKey] = threshold;
+  const baselineMeta = computeBaselineByDayType(trends.points || [], dayTypes || [], serviceDate, scope);
+  const rows = buildTargetRowsForScope(
+    summary[scope] || summary.total || {},
+    targetsData || [],
+    thresholdMap,
+    scope,
+    serviceDate,
+    baselineMeta.baseline
+  );
+
+  sendJson(res, 200, {
+    serviceDate,
+    scope,
+    rows
+  });
+}
+
+async function handleDashboardLoadEfficiency(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let range;
+  let scope;
+  try {
+    range = resolveRange(parsedUrl);
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  if (!range.dateFrom || !range.dateTo) {
+    badRequest(res, "dateFrom and dateTo are required");
+    return;
+  }
+
+  const [trends, incidents] = await Promise.all([
+    getKpiTrends(range),
+    listIncidents({ serviceType: scopeToServiceType(scope) })
+  ]);
+  const points = (trends.points || []).map((point) => ({
+    serviceDate: point.serviceDate,
+    efficiency: Number((pickScopePoint(point, scope).efficiency || 0))
+  }));
+
+  const bins = [
+    { key: "0-2", min: 0, max: 2, count: 0 },
+    { key: "2-4", min: 2, max: 4, count: 0 },
+    { key: "4-6", min: 4, max: 6, count: 0 },
+    { key: "6-8", min: 6, max: 8, count: 0 },
+    { key: "8+", min: 8, max: Number.POSITIVE_INFINITY, count: 0 }
+  ];
+  for (const point of points) {
+    const bin = bins.find((item) => point.efficiency >= item.min && point.efficiency < item.max);
+    if (bin) bin.count += 1;
+  }
+
+  const underloadedDays = points.filter((point) => point.efficiency > 0 && point.efficiency < 2.5);
+  const overloadedDays = points.filter((point) => point.efficiency >= 6);
+  const incidentsScoped = filterRowsByDate(incidents, range.dateFrom, range.dateTo);
+  const overCapacityIncidents = incidentsScoped.filter((row) => row.issueType === "over_capacity").length;
+
+  sendJson(res, 200, {
+    scope,
+    range,
+    histogram: bins.map((item) => ({ bin: item.key, count: item.count })),
+    series: points,
+    flags: {
+      underloadedDaysCount: underloadedDays.length,
+      overloadedDaysCount: overloadedDays.length,
+      overCapacityIncidents
+    },
+    flagDays: {
+      underloaded: underloadedDays.slice(-20),
+      overloaded: overloadedDays.slice(-20)
+    }
+  });
+}
+
+async function handleDashboardPickupVsDropoff(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let range;
+  try {
+    range = resolveRange(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  if (!range.dateFrom || !range.dateTo) {
+    badRequest(res, "dateFrom and dateTo are required");
+    return;
+  }
+
+  const summary = await getKpiSummary(range);
+  const pickup = summary.pickup || {};
+  const dropoff = summary.dropoff || {};
+  const metrics = {};
+  for (const metricKey of metricsList()) {
+    metrics[metricKey] = {
+      pickup: Number(pickup[metricKey] || 0),
+      dropoff: Number(dropoff[metricKey] || 0),
+      diff: Number(pickup[metricKey] || 0) - Number(dropoff[metricKey] || 0)
+    };
+  }
+  sendJson(res, 200, {
+    range,
+    metrics
+  });
+}
+
+async function handleDashboardExportDailyPdf(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let scope;
+  try {
+    scope = resolveDashboardScope(parsedUrl);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  const serviceDate = parsedUrl.searchParams.get("serviceDate");
+  if (!isDateString(serviceDate)) {
+    badRequest(res, "serviceDate is required in YYYY-MM-DD format");
+    return;
+  }
+
+  const operationsSummary = await getKpiSummary({ dateFrom: serviceDate, dateTo: serviceDate });
+  const baselineFrom = shiftDate(serviceDate, -60);
+  const [targetsData, thresholdsData, dayTypes, trends, pickupDropoff] = await Promise.all([
+    listTargets({}),
+    listThresholds({}),
+    listDayTypes({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    getKpiTrends({ dateFrom: baselineFrom, dateTo: serviceDate }),
+    getKpiSummary({ dateFrom: shiftDate(serviceDate, -6), dateTo: serviceDate })
+  ]);
+  const thresholdMap = {};
+  for (const threshold of thresholdsData || []) thresholdMap[threshold.metricKey] = threshold;
+  const baselineMeta = computeBaselineByDayType(trends.points || [], dayTypes || [], serviceDate, scope);
+  const targetsVsActual = buildTargetRowsForScope(
+    operationsSummary[scope] || operationsSummary.total || {},
+    targetsData || [],
+    thresholdMap,
+    scope,
+    serviceDate,
+    baselineMeta.baseline
+  );
+
+  await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "A4", margin: 36 });
+    const chunks = [];
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("error", reject);
+    doc.on("end", () => {
+      const filename = `dashboard_daily_report_${serviceDate}_${scope}.pdf`;
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=\"${filename}\"`,
+        ...securityHeaders()
+      });
+      res.end(Buffer.concat(chunks));
+      resolve();
+    });
+
+    const selected = operationsSummary[scope] || operationsSummary.total || {};
+    const pickup = pickupDropoff.pickup || {};
+    const dropoff = pickupDropoff.dropoff || {};
+    doc.fontSize(18).text("DashboardRyde Daily Management Report", { align: "left" });
+    doc.moveDown(0.5);
+    doc.fontSize(11).text(`Service Date: ${serviceDate}`);
+    doc.text(`Scope: ${scope}`);
+    doc.moveDown(0.8);
+    doc.fontSize(13).text("Daily KPI Summary", { underline: true });
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    for (const metricKey of metricsList()) {
+      doc.text(`${metricKey}: ${Number(selected[metricKey] || 0).toFixed(2)}`);
+    }
+    doc.moveDown(0.8);
+    doc.fontSize(13).text("Pickup vs Dropoff Snapshot", { underline: true });
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    doc.text(`Pickup serviceQuality: ${Number(pickup.serviceQuality || 0).toFixed(2)}`);
+    doc.text(`Dropoff serviceQuality: ${Number(dropoff.serviceQuality || 0).toFixed(2)}`);
+    doc.text(`Pickup issues: ${Number(pickup.issues || 0).toFixed(0)}`);
+    doc.text(`Dropoff issues: ${Number(dropoff.issues || 0).toFixed(0)}`);
+    doc.moveDown(0.8);
+    doc.fontSize(13).text("Targets vs Actual", { underline: true });
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    for (const row of targetsVsActual) {
+      doc.text(
+        `${row.metricKey}: actual=${row.actual.toFixed(2)} target=${row.target === null ? "n/a" : Number(row.target).toFixed(2)} gap=${row.gap === null ? "n/a" : Number(row.gap).toFixed(2)} status=${row.status || "n/a"}`
+      );
+    }
+    doc.end();
+  });
+}
+
 async function handleDashboardOverview(req, res, parsedUrl) {
   const active = await requireAuth(req, res);
   if (!active) return;
@@ -1285,6 +1669,36 @@ async function handleRequest(req, res) {
 
     if (req.method === "GET" && pathname === "/dashboard/alerts") {
       await handleDashboardAlerts(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/incidents-analysis") {
+      await handleDashboardIncidentsAnalysis(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/operations-daily") {
+      await handleDashboardOperationsDaily(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/targets-vs-actual") {
+      await handleDashboardTargetsVsActual(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/load-efficiency") {
+      await handleDashboardLoadEfficiency(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/pickup-vs-dropoff") {
+      await handleDashboardPickupVsDropoff(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/export/daily-pdf") {
+      await handleDashboardExportDailyPdf(req, res, parsedUrl);
       return;
     }
 

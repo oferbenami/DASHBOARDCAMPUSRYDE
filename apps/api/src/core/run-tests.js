@@ -319,6 +319,55 @@ async function testApiFlow() {
   assert.equal(dashboardAlerts.statusCode, 200);
   assert.ok(Array.isArray(dashboardAlerts.payload.redDays));
 
+  const dashboardIncidentAnalysis = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/incidents-analysis?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardIncidentAnalysis.statusCode, 200);
+  assert.ok(Array.isArray(dashboardIncidentAnalysis.payload.byType));
+
+  const dashboardOperationsDaily = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/operations-daily?serviceDate=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardOperationsDaily.statusCode, 200);
+  assert.ok(dashboardOperationsDaily.payload.summary.selected);
+
+  const dashboardTargetsVsActual = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/targets-vs-actual?serviceDate=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardTargetsVsActual.statusCode, 200);
+  assert.ok(Array.isArray(dashboardTargetsVsActual.payload.rows));
+
+  const dashboardLoadEfficiency = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/load-efficiency?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardLoadEfficiency.statusCode, 200);
+  assert.ok(Array.isArray(dashboardLoadEfficiency.payload.histogram));
+
+  const dashboardPickupVsDropoff = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/pickup-vs-dropoff?dateFrom=2026-04-22&dateTo=2026-04-22",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardPickupVsDropoff.statusCode, 200);
+  assert.ok(dashboardPickupVsDropoff.payload.metrics.serviceQuality);
+
+  const dashboardDailyPdf = await invokeApi({
+    method: "GET",
+    pathName: "/dashboard/export/daily-pdf?serviceDate=2026-04-22&scope=pickup",
+    token: session.sessionToken
+  });
+  assert.equal(dashboardDailyPdf.statusCode, 200);
+  assert.equal(String(dashboardDailyPdf.headers["content-type"]), "application/pdf");
+  assert.ok(dashboardDailyPdf.rawBody);
+
   const exportExcelRes = await invokeApi({
     method: "GET",
     pathName: "/export/excel?dateFrom=2026-04-22&dateTo=2026-04-22",

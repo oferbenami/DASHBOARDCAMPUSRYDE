@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DashboardRyde</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <style>
       :root {
         --bg: #f4f6fb;
@@ -839,7 +839,7 @@
             </div>
 
             <hr class="divider" />
-            <h3>Trend Analysis</h3>
+            <h3 id="section-trend-analysis">Trend Analysis</h3>
             <div class="chart-grid">
               <div class="chart-card">
                 <div class="chart-title">מספר נוסעים לאורך זמן</div>
@@ -868,7 +868,7 @@
             </div>
 
             <hr class="divider" />
-            <h3>Benchmark</h3>
+            <h3 id="section-benchmark">Benchmark</h3>
             <div class="chart-grid">
               <div class="chart-card">
                 <div class="chart-title">יום נוכחי מול ממוצע שבועי קודם מול יעד</div>
@@ -888,7 +888,7 @@
             </div>
 
             <hr class="divider" />
-            <h3>Critical Control</h3>
+            <h3 id="section-critical-control">Critical Control</h3>
             <div class="table-wrap alert-table">
               <table>
                 <thead>
@@ -896,6 +896,103 @@
                 </thead>
                 <tbody id="alertRows"></tbody>
               </table>
+            </div>
+
+            <hr class="divider" />
+            <h3 id="section-root-cause">Root Cause Analysis</h3>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-title">התפלגות סוגי תקלות</div>
+                <div class="chart-wrap"><canvas id="chartIssueDistributionPie"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">כמות תקלות לפי סוג</div>
+                <div class="chart-wrap"><canvas id="chartIssueByTypeBar"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">מגמת תקלות לפי סוג</div>
+                <div class="chart-wrap"><canvas id="chartIssueTrendByType"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">ממוצע זמן איחור</div>
+                <div class="drill-row">
+                  <span class="drill-chip" id="avgDelayChip">ממוצע איחור: —</span>
+                  <span class="drill-chip" id="delayCountChip">כמות תקלות איחור: —</span>
+                </div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3 id="section-operations-daily">Operations Daily Report</h3>
+            <div class="chart-card">
+              <div class="drill-row">
+                <span class="drill-chip" id="opsSummaryPassengers">נוסעים: —</span>
+                <span class="drill-chip" id="opsSummaryRides">נסיעות: —</span>
+                <span class="drill-chip" id="opsSummaryQuality">איכות שירות: —</span>
+                <span class="drill-chip" id="opsSummaryIncidents">תקלות: —</span>
+              </div>
+              <div class="row-actions" style="margin-top:10px">
+                <button id="exportDailyManagerPdf" class="secondary">ייצוא PDF יומי ניהולי</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>סוג תקלה</th><th>כמות</th></tr>
+                  </thead>
+                  <tbody id="opsIssueRows"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3 id="section-targets-vs-actual">Targets Vs Actual</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>מדד</th><th>בפועל</th><th>יעד</th><th>פער</th><th>שינוי מול שבוע קודם</th><th>סטטוס</th></tr>
+                </thead>
+                <tbody id="targetsActualRows"></tbody>
+              </table>
+            </div>
+
+            <hr class="divider" />
+            <h3 id="section-load-efficiency">Load & Efficiency</h3>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-title">Histogram: נוסעים לנסיעה</div>
+                <div class="chart-wrap"><canvas id="chartLoadHistogram"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">ממוצע נוסעים לנסיעה לאורך זמן</div>
+                <div class="chart-wrap"><canvas id="chartEfficiencySeries"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">איתור עומסים</div>
+                <div class="drill-row">
+                  <span class="drill-chip" id="loadUnderChip">ימים בתת עומס: —</span>
+                  <span class="drill-chip" id="loadOverChip">ימים בעומס יתר: —</span>
+                  <span class="drill-chip" id="loadOverCapacityChip">אירועי עומס יתר: —</span>
+                </div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+            <h3 id="section-pickup-vs-dropoff">Pickup Vs Dropoff</h3>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-title">השוואת מדדי ליבה: איסוף מול פיזור</div>
+                <div class="chart-wrap"><canvas id="chartPickupVsDropoff"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <div class="table-wrap" style="margin-top:0">
+                  <table>
+                    <thead>
+                      <tr><th>מדד</th><th>איסוף</th><th>פיזור</th><th>פער</th></tr>
+                    </thead>
+                    <tbody id="pickupDropoffRows"></tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1559,11 +1656,11 @@
           "kpi-main": { title: "שכבת KPI ראשית", subtitle: "מצב יעד-ביצוע למדד איכות השירות", metricKey: "serviceQuality", actionTab: "dashboard" },
           "trend-analysis": { title: "גרפי מגמה", subtitle: "מעקב שינוי לאורך זמן במדד נוסעים", metricKey: "passengers", actionTab: "dashboard" },
           "benchmark": { title: "גרפי השוואה", subtitle: "השוואה בין ביצוע בפועל ליעד", metricKey: "serviceQuality", actionTab: "dashboard" },
-          "critical-control": { title: "דוחות חריגים", subtitle: "מוקדי שליטה: תקלות וחריגות איכות", metricKey: "issues", actionTab: "incidents" },
-          "root-cause": { title: "ניתוח תקלות", subtitle: "זיהוי גורמי שורש לפי סוגי תקלה", metricKey: "issuesRate", actionTab: "incidents" },
+          "critical-control": { title: "דוחות חריגים", subtitle: "מוקדי שליטה: תקלות וחריגות איכות", metricKey: "issues", actionTab: "dashboard" },
+          "root-cause": { title: "ניתוח תקלות", subtitle: "זיהוי גורמי שורש לפי סוגי תקלה", metricKey: "issuesRate", actionTab: "dashboard" },
           "incident-drilldown": { title: "דוח פירוט תקלות", subtitle: "מעבר מהיר לרשימת התקלות המלאה", metricKey: "issues", actionTab: "incidents" },
-          "operations-daily": { title: "דוח תפעולי יומי", subtitle: "תמונת ביצוע יומית לפי פעילות", metricKey: "rides", actionTab: "operations" },
-          "targets-vs-actual": { title: "יעדים מול ביצוע", subtitle: "בקרה ניהולית על עמידה ביעדים", metricKey: "serviceQuality", actionTab: "management" },
+          "operations-daily": { title: "דוח תפעולי יומי", subtitle: "תמונת ביצוע יומית לפי פעילות", metricKey: "rides", actionTab: "dashboard" },
+          "targets-vs-actual": { title: "יעדים מול ביצוע", subtitle: "בקרה ניהולית על עמידה ביעדים", metricKey: "serviceQuality", actionTab: "dashboard" },
           "load-efficiency": { title: "ניתוח עומסים ויעילות", subtitle: "איתור צווארי בקבוק במערך הנסיעות", metricKey: "efficiency", actionTab: "dashboard" },
           "pickup-vs-dropoff": { title: "השוואת איסוף מול פיזור", subtitle: "זיהוי מקור הפערים התפעוליים", metricKey: "serviceQuality", actionTab: "dashboard" }
         };
@@ -1795,6 +1892,164 @@
         });
       }
 
+      function renderIncidentsAnalysis(payload) {
+        const byType = payload.byType || [];
+        const labels = byType.map((row) => row.issueType);
+        const values = byType.map((row) => Number(row.count || 0));
+        upsertChart("chartIssueDistributionPie", {
+          type: "pie",
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: ["#2563eb", "#f59e0b", "#16a34a", "#dc2626", "#7c3aed", "#0ea5e9", "#ea580c", "#64748b"]
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } } }
+        });
+        upsertChart("chartIssueByTypeBar", {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{
+              label: "כמות תקלות",
+              data: values,
+              backgroundColor: "rgba(37, 99, 235, 0.75)",
+              borderColor: "#2563eb",
+              borderWidth: 1.2
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        const dateSet = new Set();
+        (payload.trendSeries || []).forEach((series) => (series.points || []).forEach((p) => dateSet.add(p.serviceDate)));
+        const dates = [...dateSet].sort((a, b) => (a < b ? -1 : 1));
+        const trendDatasets = (payload.trendSeries || []).slice(0, 5).map((series, idx) => {
+          const palette = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed"];
+          return {
+            label: series.issueType,
+            data: dates.map((d) => {
+              const found = (series.points || []).find((p) => p.serviceDate === d);
+              return Number(found?.count || 0);
+            }),
+            borderColor: palette[idx % palette.length],
+            borderWidth: 2,
+            tension: 0.25,
+            pointRadius: 2
+          };
+        });
+        upsertChart("chartIssueTrendByType", {
+          type: "line",
+          data: { labels: dates, datasets: trendDatasets },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } } }
+        });
+
+        document.getElementById("avgDelayChip").textContent = `ממוצע איחור: ${payload.avgDelayMinutes === null ? "—" : fmt(payload.avgDelayMinutes)} דק׳`;
+        document.getElementById("delayCountChip").textContent = `כמות תקלות איחור: ${payload.delayCount || 0}`;
+      }
+
+      function renderOperationsDaily(payload) {
+        const selected = payload.summary?.selected || {};
+        document.getElementById("opsSummaryPassengers").textContent = `נוסעים: ${fmt(selected.passengers, 0)}`;
+        document.getElementById("opsSummaryRides").textContent = `נסיעות: ${fmt(selected.rides, 0)}`;
+        document.getElementById("opsSummaryQuality").textContent = `איכות שירות: ${fmt(selected.serviceQuality)}%`;
+        document.getElementById("opsSummaryIncidents").textContent = `תקלות: ${payload.incidentsCount || 0}`;
+
+        const tbody = document.getElementById("opsIssueRows");
+        tbody.innerHTML = "";
+        const rows = payload.issuesByType || [];
+        if (!rows.length) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = "<td colspan='2'>אין תקלות בטווח</td>";
+          tbody.appendChild(tr);
+        } else {
+          rows.forEach((row) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row.issueType}</td><td>${row.count}</td>`;
+            tbody.appendChild(tr);
+          });
+        }
+      }
+
+      function renderTargetsVsActual(payload) {
+        const tbody = document.getElementById("targetsActualRows");
+        tbody.innerHTML = "";
+        (payload.rows || []).forEach((row) => {
+          const statusClass = row.status === "green" ? "alert-good" : row.status === "yellow" ? "alert-warn" : row.status === "red" ? "alert-danger" : "";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${row.metricKey}</td><td>${fmt(row.actual)}</td><td>${row.target === null ? "—" : fmt(row.target)}</td><td>${row.gap === null ? "—" : fmt(row.gap)}</td><td>${row.deltaVsWeekly === null ? "—" : fmt(row.deltaVsWeekly)}</td><td class="${statusClass}">${row.status || "—"}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderLoadEfficiency(payload) {
+        upsertChart("chartLoadHistogram", {
+          type: "bar",
+          data: {
+            labels: (payload.histogram || []).map((row) => row.bin),
+            datasets: [{
+              label: "ימים",
+              data: (payload.histogram || []).map((row) => Number(row.count || 0)),
+              backgroundColor: "rgba(14, 165, 233, 0.75)",
+              borderColor: "#0284c7",
+              borderWidth: 1.2
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+        upsertChart("chartEfficiencySeries", {
+          type: "line",
+          data: {
+            labels: (payload.series || []).map((row) => row.serviceDate),
+            datasets: [{
+              label: "נוסעים לנסיעה",
+              data: (payload.series || []).map((row) => Number(row.efficiency || 0)),
+              borderColor: "#7c3aed",
+              borderWidth: 2.2,
+              pointRadius: 2,
+              tension: 0.3
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } } }
+        });
+        document.getElementById("loadUnderChip").textContent = `ימים בתת עומס: ${payload.flags?.underloadedDaysCount || 0}`;
+        document.getElementById("loadOverChip").textContent = `ימים בעומס יתר: ${payload.flags?.overloadedDaysCount || 0}`;
+        document.getElementById("loadOverCapacityChip").textContent = `אירועי עומס יתר: ${payload.flags?.overCapacityIncidents || 0}`;
+      }
+
+      function renderPickupVsDropoff(payload) {
+        const metrics = payload.metrics || {};
+        const keys = ["passengers", "rides", "efficiency", "issues"];
+        upsertChart("chartPickupVsDropoff", {
+          type: "bar",
+          data: {
+            labels: keys,
+            datasets: [
+              {
+                label: "איסוף",
+                data: keys.map((k) => Number(metrics[k]?.pickup || 0)),
+                backgroundColor: "rgba(37, 99, 235, 0.75)"
+              },
+              {
+                label: "פיזור",
+                data: keys.map((k) => Number(metrics[k]?.dropoff || 0)),
+                backgroundColor: "rgba(239, 68, 68, 0.75)"
+              }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        const tbody = document.getElementById("pickupDropoffRows");
+        tbody.innerHTML = "";
+        for (const [metric, vals] of Object.entries(metrics)) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${metric}</td><td>${fmt(vals.pickup)}</td><td>${fmt(vals.dropoff)}</td><td>${fmt(vals.diff)}</td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
       function renderDrilldownReport(reportKey) {
         const cfg = reportConfig()[reportKey];
         if (!cfg || !lastDashboardData) return;
@@ -1839,12 +2094,17 @@
         dashboardScope = document.getElementById("dashboardScope").value || "total";
         setKpiLoading(true);
 
-        const [summary, trends, dashboardTrends, benchmark, alerts] = await Promise.all([
+        const [summary, trends, dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff] = await Promise.all([
           api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
           api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`),
           api("GET", `/dashboard/trends?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
           api("GET", `/dashboard/benchmark?serviceDate=${to}&scope=${dashboardScope}`),
-          api("GET", `/dashboard/alerts?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`)
+          api("GET", `/dashboard/alerts?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/incidents-analysis?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/operations-daily?serviceDate=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/targets-vs-actual?serviceDate=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/load-efficiency?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
+          api("GET", `/dashboard/pickup-vs-dropoff?dateFrom=${from}&dateTo=${to}`)
         ]);
         const kpiMeta = await loadDashboardMeta(to, dashboardScope);
 
@@ -1889,6 +2149,11 @@
         renderTrendCharts(dashboardTrends);
         renderBenchmark(benchmark);
         renderAlerts(alerts);
+        renderIncidentsAnalysis(incidentsAnalysis);
+        renderOperationsDaily(operationsDaily);
+        renderTargetsVsActual(targetsVsActual);
+        renderLoadEfficiency(loadEfficiency);
+        renderPickupVsDropoff(pickupVsDropoff);
       }
 
       // ═══════════════════════════════
@@ -1926,13 +2191,34 @@
           const reportKey = document.getElementById("openDetailedReport").dataset.report || "kpi-main";
           const cfg = reportConfig()[reportKey];
           if (!cfg) return;
+          const sectionMap = {
+            "kpi-main": "dashboardTiles",
+            "trend-analysis": "section-trend-analysis",
+            benchmark: "section-benchmark",
+            "critical-control": "section-critical-control",
+            "root-cause": "section-root-cause",
+            "incident-drilldown": "panel-incidents",
+            "operations-daily": "section-operations-daily",
+            "targets-vs-actual": "section-targets-vs-actual",
+            "load-efficiency": "section-load-efficiency",
+            "pickup-vs-dropoff": "section-pickup-vs-dropoff"
+          };
           if (cfg.actionTab && cfg.actionTab !== "dashboard") {
             showTab(cfg.actionTab);
             toastOk(`נפתח דוח ${cfg.title}`);
             return;
           }
-          toastOk("הפירוט המלא יושלם בשלבים הבאים; כרגע מוצג Drilldown ממוקד במסך זה.");
+          const sectionId = sectionMap[reportKey];
+          const target = sectionId ? document.getElementById(sectionId) : null;
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+          toastOk(`מעבר לפירוט: ${cfg.title}`);
         };
+        document.getElementById("exportDailyManagerPdf").onclick = withLoading(
+          document.getElementById("exportDailyManagerPdf"),
+          async () => { await downloadDailyManagerPdf(); toastOk("דוח יומי ניהולי יוצא ל-PDF"); }
+        );
         document.getElementById("dashboardScope").addEventListener("change", async (e) => {
           dashboardScope = e.target.value || "total";
           try {
@@ -2183,6 +2469,22 @@
         const a = document.createElement("a");
         a.href = url;
         a.download = type === "excel" ? "dashboard_export.xlsx" : "dashboard_export.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function downloadDailyManagerPdf() {
+        const serviceDate = document.getElementById("kpiTo").value;
+        const scope = document.getElementById("dashboardScope").value || "total";
+        const res = await fetch(`${getApiBase()}/dashboard/export/daily-pdf?serviceDate=${serviceDate}&scope=${scope}`, {
+          headers: { authorization: `Bearer ${getToken()}` }
+        });
+        if (!res.ok) throw new Error(`ייצוא דוח יומי נכשל: HTTP ${res.status}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `dashboard_daily_report_${serviceDate}_${scope}.pdf`;
         a.click();
         URL.revokeObjectURL(url);
       }
