@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DashboardRyde</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <style>
@@ -23,7 +26,7 @@
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: "Segoe UI", Tahoma, sans-serif;
+        font-family: "Rubik", "Segoe UI", Tahoma, sans-serif;
         background: linear-gradient(180deg, #f4f6fb, #eef3fb);
         color: var(--text);
       }
@@ -1466,6 +1469,15 @@
         { key: "serviceQuality", cardId: "kpiCard-quality", valueId: "kpiQuality", targetId: "kpiTarget-serviceQuality", gapId: "kpiGap-serviceQuality", deltaId: "kpiDelta-serviceQuality" },
         { key: "affectedRate", cardId: "kpiCard-affectedRate", valueId: "kpiAffectedRate", targetId: "kpiTarget-affectedRate", gapId: "kpiGap-affectedRate", deltaId: "kpiDelta-affectedRate" }
       ];
+      const METRIC_COLORS = {
+        passengers: "#2563eb",
+        rides: "#0ea5e9",
+        efficiency: "#7c3aed",
+        serviceQuality: "#16a34a",
+        issues: "#f59e0b",
+        issuesRate: "#dc2626",
+        affectedRate: "#ea580c"
+      };
       const dashboardCharts = {};
 
       function initDates() {
@@ -1556,6 +1568,29 @@
           unknown: "לא מסווג"
         };
         return labels[dayType] || dayType || "לא מסווג";
+      }
+
+      function issueTypeLabel(issueType) {
+        const labels = {
+          delay: "עיכוב",
+          no_show: "אי הגעה",
+          vehicle_failure: "תקלת רכב",
+          over_capacity: "עומס יתר",
+          route_change: "שינוי מסלול",
+          dispatch_error: "שגיאת שיגור",
+          driver_service: "שירות נהג",
+          other: "אחר"
+        };
+        return labels[issueType] || issueType;
+      }
+
+      function withAlpha(hexColor, alpha = 0.2) {
+        const h = String(hexColor || "").replace("#", "");
+        if (h.length !== 6) return hexColor;
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       }
 
       function updateHeadlineDates(focusDate) {
@@ -1763,10 +1798,10 @@
 
         const lineCfg = (titleKey, chartId, color, yAxisLabel, extra = null) => {
           const baseDataset = {
-            label: titleKey,
+            label: metricLabel(titleKey),
             data: trendsPayload.points.map((p) => Number(p[titleKey] || 0)),
             borderColor: color,
-            backgroundColor: color + "33",
+            backgroundColor: withAlpha(color, 0.2),
             borderWidth: 2.5,
             pointRadius: 2,
             tension: 0.32
@@ -1811,10 +1846,10 @@
           });
         };
 
-        lineCfg("passengers", "chartPassengers", "#2563eb", "נוסעים");
-        lineCfg("rides", "chartRides", "#0ea5e9", "נסיעות");
-        lineCfg("efficiency", "chartEfficiency", "#7c3aed", "נוסעים לנסיעה");
-        lineCfg("serviceQuality", "chartQuality", "#16a34a", "% איכות");
+        lineCfg("passengers", "chartPassengers", METRIC_COLORS.passengers, "נוסעים");
+        lineCfg("rides", "chartRides", METRIC_COLORS.rides, "נסיעות");
+        lineCfg("efficiency", "chartEfficiency", METRIC_COLORS.efficiency, "נוסעים לנסיעה");
+        lineCfg("serviceQuality", "chartQuality", METRIC_COLORS.serviceQuality, "% איכות");
 
         upsertChart("chartIssues", {
           type: "bar",
@@ -1824,8 +1859,8 @@
               {
                 label: "תקלות יומיות",
                 data: trendsPayload.points.map((p) => Number(p.issues || 0)),
-                backgroundColor: "rgba(245, 158, 11, 0.7)",
-                borderColor: "#f59e0b",
+                backgroundColor: withAlpha(METRIC_COLORS.issues, 0.72),
+                borderColor: METRIC_COLORS.issues,
                 borderWidth: 1.2
               }
             ]
@@ -1846,8 +1881,8 @@
               {
                 label: "% נסיעות עם תקלה",
                 data: trendsPayload.points.map((p) => Number(p.issuesRate || 0)),
-                borderColor: "#dc2626",
-                backgroundColor: "#dc262633",
+                borderColor: METRIC_COLORS.issuesRate,
+                backgroundColor: withAlpha(METRIC_COLORS.issuesRate, 0.2),
                 borderWidth: 2,
                 pointRadius: 2,
                 tension: 0.3
@@ -1855,8 +1890,8 @@
               {
                 label: "% נוסעים שנפגעו",
                 data: trendsPayload.points.map((p) => Number(p.affectedRate || 0)),
-                borderColor: "#ea580c",
-                backgroundColor: "#ea580c33",
+                borderColor: METRIC_COLORS.affectedRate,
+                backgroundColor: withAlpha(METRIC_COLORS.affectedRate, 0.2),
                 borderWidth: 2,
                 pointRadius: 2,
                 tension: 0.3
@@ -1887,8 +1922,8 @@
                   Number(quality.baseline || 0),
                   Number(quality.target || 0)
                 ],
-                backgroundColor: ["#2563ebcc", "#64748bcc", "#16a34acc"],
-                borderColor: ["#2563eb", "#64748b", "#16a34a"],
+                backgroundColor: [withAlpha(METRIC_COLORS.serviceQuality, 0.78), withAlpha("#64748b", 0.78), withAlpha("#0f766e", 0.78)],
+                borderColor: [METRIC_COLORS.serviceQuality, "#64748b", "#0f766e"],
                 borderWidth: 1.4
               }
             ]
@@ -1939,15 +1974,16 @@
 
       function renderIncidentsAnalysis(payload) {
         const byType = payload.byType || [];
-        const labels = byType.map((row) => row.issueType);
+        const labels = byType.map((row) => issueTypeLabel(row.issueType));
         const values = byType.map((row) => Number(row.count || 0));
+        const pieColors = ["#2563eb", "#f59e0b", "#16a34a", "#dc2626", "#7c3aed", "#0ea5e9", "#ea580c", "#64748b"];
         upsertChart("chartIssueDistributionPie", {
           type: "pie",
           data: {
             labels,
             datasets: [{
               data: values,
-              backgroundColor: ["#2563eb", "#f59e0b", "#16a34a", "#dc2626", "#7c3aed", "#0ea5e9", "#ea580c", "#64748b"]
+              backgroundColor: pieColors
             }]
           },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } } }
@@ -1959,8 +1995,8 @@
             datasets: [{
               label: "כמות תקלות",
               data: values,
-              backgroundColor: "rgba(37, 99, 235, 0.75)",
-              borderColor: "#2563eb",
+              backgroundColor: withAlpha(METRIC_COLORS.issues, 0.72),
+              borderColor: METRIC_COLORS.issues,
               borderWidth: 1.2
             }]
           },
@@ -1971,14 +2007,13 @@
         (payload.trendSeries || []).forEach((series) => (series.points || []).forEach((p) => dateSet.add(p.serviceDate)));
         const dates = [...dateSet].sort((a, b) => (a < b ? -1 : 1));
         const trendDatasets = (payload.trendSeries || []).slice(0, 5).map((series, idx) => {
-          const palette = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed"];
           return {
-            label: series.issueType,
+            label: issueTypeLabel(series.issueType),
             data: dates.map((d) => {
               const found = (series.points || []).find((p) => p.serviceDate === d);
               return Number(found?.count || 0);
             }),
-            borderColor: palette[idx % palette.length],
+            borderColor: pieColors[idx % pieColors.length],
             borderWidth: 2,
             tension: 0.25,
             pointRadius: 2
@@ -2011,7 +2046,7 @@
         } else {
           rows.forEach((row) => {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${row.issueType}</td><td>${row.count}</td>`;
+            tr.innerHTML = `<td>${issueTypeLabel(row.issueType)}</td><td>${row.count}</td>`;
             tbody.appendChild(tr);
           });
         }
@@ -2036,8 +2071,8 @@
             datasets: [{
               label: "ימים",
               data: (payload.histogram || []).map((row) => Number(row.count || 0)),
-              backgroundColor: "rgba(14, 165, 233, 0.75)",
-              borderColor: "#0284c7",
+              backgroundColor: withAlpha(METRIC_COLORS.rides, 0.72),
+              borderColor: METRIC_COLORS.rides,
               borderWidth: 1.2
             }]
           },
@@ -2050,7 +2085,7 @@
             datasets: [{
               label: "נוסעים לנסיעה",
               data: (payload.series || []).map((row) => Number(row.efficiency || 0)),
-              borderColor: "#7c3aed",
+              borderColor: METRIC_COLORS.efficiency,
               borderWidth: 2.2,
               pointRadius: 2,
               tension: 0.3
@@ -2074,12 +2109,12 @@
               {
                 label: "איסוף",
                 data: keys.map((k) => Number(metrics[k]?.pickup || 0)),
-                backgroundColor: "rgba(37, 99, 235, 0.75)"
+                backgroundColor: withAlpha(METRIC_COLORS.passengers, 0.72)
               },
               {
                 label: "פיזור",
                 data: keys.map((k) => Number(metrics[k]?.dropoff || 0)),
-                backgroundColor: "rgba(239, 68, 68, 0.75)"
+                backgroundColor: withAlpha(METRIC_COLORS.issuesRate, 0.72)
               }
             ]
           },
