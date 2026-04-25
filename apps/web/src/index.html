@@ -2204,11 +2204,36 @@
         const to = document.getElementById("kpiTo").value;
         dashboardScope = document.getElementById("dashboardScope").value || "total";
         setKpiLoading(true);
+        try {
 
-        const [summary, trends] = await Promise.all([
-          api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
-          api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
-        ]);
+        let summary;
+        let trends;
+        try {
+          [summary, trends] = await Promise.all([
+            api("GET", `/kpi/summary?dateFrom=${from}&dateTo=${to}`),
+            api("GET", `/kpi/trends?dateFrom=${from}&dateTo=${to}`)
+          ]);
+        } catch (err) {
+          const hasCache = Boolean(lastDashboardData?.summary && lastDashboardData?.trends);
+          if (isDashboardUnsupportedErr(err)) {
+            setDashboardProviderWarning(true);
+            if (hasCache) {
+              summary = lastDashboardData.summary;
+              trends = lastDashboardData.trends;
+            } else {
+              throw new Error("ספק הנתונים הנוכחי לא תומך בדוחות מתקדמים. יש להגדיר DB_PROVIDER=excel/sheets.");
+            }
+          } else if (hasCache) {
+            summary = lastDashboardData.summary;
+            trends = lastDashboardData.trends;
+            toastErr("חלק מנתוני הדשבורד לא נטענו. מוצגים הנתונים האחרונים.");
+          } else {
+            throw new Error("לא ניתן לטעון את נתוני לוח הבקרה כרגע. יש לנסות שוב בעוד רגע.");
+          }
+        }
+        summary = summary || { total: {}, pickup: {}, dropoff: {} };
+        trends = trends || { points: [] };
+
         const advancedResults = await Promise.allSettled([
           api("GET", `/dashboard/trends?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
           api("GET", `/dashboard/benchmark?serviceDate=${to}&scope=${dashboardScope}`),
@@ -2221,8 +2246,11 @@
         ]);
         const unsupported = advancedResults.some((result) => result.status === "rejected" && isDashboardUnsupportedErr(result.reason));
         const firstUnexpected = advancedResults.find((result) => result.status === "rejected" && !isDashboardUnsupportedErr(result.reason));
-        if (firstUnexpected) throw firstUnexpected.reason;
-        setDashboardProviderWarning(unsupported);
+        if (firstUnexpected) {
+          console.warn("[dashboard] advanced report fetch failed", firstUnexpected.reason);
+          toastErr("חלק מהדוחות המתקדמים לא נטענו כרגע.");
+        }
+        setDashboardProviderWarning(unsupported || Boolean(firstUnexpected));
         const [dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff] =
           advancedResults.map((result) => (result.status === "fulfilled" ? result.value : null));
         let kpiMeta;
@@ -2231,10 +2259,10 @@
         } catch (err) {
           if (isDashboardUnsupportedErr(err)) {
             setDashboardProviderWarning(true);
-            kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
           } else {
-            throw err;
+            console.warn("[dashboard] meta fetch failed", err);
           }
+          kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
         }
 
         const scopedSummary = summary[dashboardScope] || summary.total;
@@ -2261,11 +2289,9 @@
             applyKpiStatus(metric.cardId, statusFromTarget(actual, targetValue, direction));
           }
         }
-        setKpiLoading(false);
-
         const tbody = document.getElementById("trendRows");
         tbody.innerHTML = "";
-        for (const p of trends.points) {
+        for (const p of (trends.points || [])) {
           const scopedPoint = p[dashboardScope] || p.total;
           const tr = document.createElement("tr");
           tr.innerHTML = `<td>${p.serviceDate}</td><td>${fmt(scopedPoint.passengers,0)}</td><td>${fmt(scopedPoint.rides,0)}</td><td>${fmt(scopedPoint.issues,0)}</td><td>${fmt(scopedPoint.issuesRate)}%</td><td>${fmt(scopedPoint.serviceQuality)}%</td>`;
@@ -2283,6 +2309,9 @@
         if (targetsVsActual) renderTargetsVsActual(targetsVsActual);
         if (loadEfficiency) renderLoadEfficiency(loadEfficiency);
         if (pickupVsDropoff) renderPickupVsDropoff(pickupVsDropoff);
+        } finally {
+          setKpiLoading(false);
+        }
       }
 
       // ═══════════════════════════════

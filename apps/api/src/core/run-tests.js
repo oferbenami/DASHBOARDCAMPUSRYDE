@@ -415,14 +415,37 @@ async function testHardening() {
 
 async function testDashboardProviderGuard() {
   const prevProvider = process.env.DB_PROVIDER;
+  const userWrite = await upsertUser({
+    googleSub: "sub-provider-guard",
+    email: "provider-guard@example.com",
+    fullName: "Provider Guard"
+  });
+  const session = await createSession(userWrite.user.id, 2);
   process.env.DB_PROVIDER = "supabase";
   try {
-    const res = await invokeApi({
+    const dashboardRes = await invokeApi({
       method: "GET",
-      pathName: "/dashboard/trends?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup"
+      pathName: "/dashboard/trends?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
+      token: session.sessionToken
     });
-    assert.equal(res.statusCode, 501);
-    assert.equal(res.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+    assert.equal(dashboardRes.statusCode, 501);
+    assert.equal(dashboardRes.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+
+    const kpiSummaryRes = await invokeApi({
+      method: "GET",
+      pathName: "/kpi/summary?dateFrom=2026-04-22&dateTo=2026-04-22",
+      token: session.sessionToken
+    });
+    assert.equal(kpiSummaryRes.statusCode, 501);
+    assert.equal(kpiSummaryRes.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+
+    const kpiTrendsRes = await invokeApi({
+      method: "GET",
+      pathName: "/kpi/trends?dateFrom=2026-04-22&dateTo=2026-04-22",
+      token: session.sessionToken
+    });
+    assert.equal(kpiTrendsRes.statusCode, 501);
+    assert.equal(kpiTrendsRes.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
   } finally {
     process.env.DB_PROVIDER = prevProvider || "excel";
   }

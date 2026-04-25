@@ -60,6 +60,16 @@ function dashboardProviderUnsupported(res) {
   });
 }
 
+function isDashboardUiDependencyPath(pathname) {
+  return (
+    pathname.startsWith("/dashboard/") ||
+    pathname === "/kpi/summary" ||
+    pathname === "/kpi/trends" ||
+    pathname === "/day-types" ||
+    pathname === "/management/targets"
+  );
+}
+
 function clientIp(req) {
   return (
     req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
@@ -1586,6 +1596,11 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (providerName() === "supabase" && isDashboardUiDependencyPath(pathname)) {
+      dashboardProviderUnsupported(res);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/auth/me") {
       await handleMe(req, res);
       return;
@@ -1656,11 +1671,6 @@ async function handleRequest(req, res) {
 
     if (req.method === "GET" && pathname === "/kpi/stream") {
       await handleKpiStream(req, res, parsedUrl);
-      return;
-    }
-
-    if (pathname.startsWith("/dashboard/") && providerName() === "supabase") {
-      dashboardProviderUnsupported(res);
       return;
     }
 
@@ -1749,7 +1759,14 @@ async function handleRequest(req, res) {
   } catch (error) {
     console.error("[handleRequest] Unhandled error:", error);
     if (String(error?.message || "").includes("not implemented for supabase provider yet")) {
-      dashboardProviderUnsupported(res);
+      if (isDashboardUiDependencyPath(pathname)) {
+        dashboardProviderUnsupported(res);
+      } else {
+        sendJson(res, 501, {
+          error: "This feature is not supported for supabase provider",
+          code: "PROVIDER_UNSUPPORTED"
+        });
+      }
       return;
     }
     sendJson(res, 500, {
