@@ -93,10 +93,12 @@ function sendRateLimitExceeded(res, retryAfterSec) {
 async function requireAuth(req, res) {
   const token = getBearerToken(req);
   if (!token) {
+    console.log("[requireAuth] no Bearer token in request");
     unauthorized(res);
     return null;
   }
 
+  console.log(`[requireAuth] token=${token.slice(0, 8)}...`);
   const active = await getActiveSession(token);
   if (!active) {
     unauthorized(res);
@@ -121,6 +123,7 @@ async function handleGoogleCallback(req, res) {
 
   const userWrite = await upsertUser(verified.profile);
   const session = await createSession(userWrite.user.id, sessionTtlHours);
+  console.log(`[login] session created token=${session.sessionToken.slice(0, 8)}... userId=${userWrite.user.id} expiresAt=${session.expiresAt}`);
 
   await appendAudit({
     actorUserId: userWrite.user.id,

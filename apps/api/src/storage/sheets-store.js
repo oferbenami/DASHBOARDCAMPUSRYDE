@@ -340,7 +340,7 @@ async function getActiveSession(token) {
     console.log(`[getActiveSession] session EXPIRED expiresAt=${session.expiresAt}`);
     return null;
   }
-  const user = users.find((u) => u.id === session.userId && u.isActive === "true");
+  const user = users.find((u) => u.id === session.userId && String(u.isActive).toLowerCase() === "true");
   if (!user) {
     console.log(`[getActiveSession] user NOT FOUND userId=${session.userId} isActive values: [${users.map((u) => u.isActive).join(", ")}]`);
     return null;
