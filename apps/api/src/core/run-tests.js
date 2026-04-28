@@ -413,7 +413,7 @@ async function testHardening() {
   assert.equal(rateLimited, true);
 }
 
-async function testDashboardProviderGuard() {
+async function testProviderMisconfiguredGuard() {
   const prevProvider = process.env.DB_PROVIDER;
   const userWrite = await upsertUser({
     googleSub: "sub-provider-guard",
@@ -428,24 +428,24 @@ async function testDashboardProviderGuard() {
       pathName: "/dashboard/trends?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
       token: session.sessionToken
     });
-    assert.equal(dashboardRes.statusCode, 501);
-    assert.equal(dashboardRes.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+    assert.equal(dashboardRes.statusCode, 503);
+    assert.equal(dashboardRes.payload.code, "PROVIDER_MISCONFIGURED");
 
     const kpiSummaryRes = await invokeApi({
       method: "GET",
       pathName: "/kpi/summary?dateFrom=2026-04-22&dateTo=2026-04-22",
       token: session.sessionToken
     });
-    assert.equal(kpiSummaryRes.statusCode, 501);
-    assert.equal(kpiSummaryRes.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+    assert.equal(kpiSummaryRes.statusCode, 503);
+    assert.equal(kpiSummaryRes.payload.code, "PROVIDER_MISCONFIGURED");
 
     const kpiTrendsRes = await invokeApi({
       method: "GET",
       pathName: "/kpi/trends?dateFrom=2026-04-22&dateTo=2026-04-22",
       token: session.sessionToken
     });
-    assert.equal(kpiTrendsRes.statusCode, 501);
-    assert.equal(kpiTrendsRes.payload.code, "DASHBOARD_PROVIDER_UNSUPPORTED");
+    assert.equal(kpiTrendsRes.statusCode, 503);
+    assert.equal(kpiTrendsRes.payload.code, "PROVIDER_MISCONFIGURED");
   } finally {
     process.env.DB_PROVIDER = prevProvider || "excel";
   }
@@ -496,7 +496,7 @@ async function run() {
     ["storage CRUD flow", testStorageCrudFlow],
     ["validation rules", testValidationRules],
     ["api flow", testApiFlow],
-    ["dashboard provider guard", testDashboardProviderGuard],
+    ["provider misconfigured guard", testProviderMisconfiguredGuard],
     ["hardening", testHardening],
     ["google token validator", testGoogleValidatorMock]
   ];

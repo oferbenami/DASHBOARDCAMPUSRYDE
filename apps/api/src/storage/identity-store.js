@@ -6,7 +6,15 @@ function selectedProvider() {
   return (process.env.DB_PROVIDER || "excel").toLowerCase();
 }
 
+function assertExcelOnlyProvider() {
+  const provider = selectedProvider();
+  if (provider !== "excel") {
+    throw new Error("Server is configured for DB_PROVIDER=excel only");
+  }
+}
+
 function backend() {
+  assertExcelOnlyProvider();
   const p = selectedProvider();
   if (p === "supabase") return supabaseStore;
   if (p === "sheets") return sheetsStore;

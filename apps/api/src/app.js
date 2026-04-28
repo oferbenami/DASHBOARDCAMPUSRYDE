@@ -53,21 +53,11 @@ function badRequest(res, message) {
   sendJson(res, 400, { error: message });
 }
 
-function dashboardProviderUnsupported(res) {
-  sendJson(res, 501, {
-    error: "Dashboard analytics not supported for supabase provider",
-    code: "DASHBOARD_PROVIDER_UNSUPPORTED"
+function providerMisconfigured(res) {
+  sendJson(res, 503, {
+    error: "Server is configured for DB_PROVIDER=excel only",
+    code: "PROVIDER_MISCONFIGURED"
   });
-}
-
-function isDashboardUiDependencyPath(pathname) {
-  return (
-    pathname.startsWith("/dashboard/") ||
-    pathname === "/kpi/summary" ||
-    pathname === "/kpi/trends" ||
-    pathname === "/day-types" ||
-    pathname === "/management/targets"
-  );
 }
 
 function clientIp(req) {
@@ -1569,6 +1559,11 @@ async function handleRequest(req, res) {
   }
 
   try {
+    if (providerName() !== "excel") {
+      providerMisconfigured(res);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/health") {
       const provider = providerName();
       sendJson(res, 200, {
@@ -1593,11 +1588,6 @@ async function handleRequest(req, res) {
 
     if (req.method === "POST" && pathname === "/auth/logout") {
       await handleLogout(req, res);
-      return;
-    }
-
-    if (providerName() === "supabase" && isDashboardUiDependencyPath(pathname)) {
-      dashboardProviderUnsupported(res);
       return;
     }
 
@@ -1758,15 +1748,8 @@ async function handleRequest(req, res) {
     sendJson(res, 404, { error: "Not Found" });
   } catch (error) {
     console.error("[handleRequest] Unhandled error:", error);
-    if (String(error?.message || "").includes("not implemented for supabase provider yet")) {
-      if (isDashboardUiDependencyPath(pathname)) {
-        dashboardProviderUnsupported(res);
-      } else {
-        sendJson(res, 501, {
-          error: "This feature is not supported for supabase provider",
-          code: "PROVIDER_UNSUPPORTED"
-        });
-      }
+    if (String(error?.message || "").includes("DB_PROVIDER=excel only")) {
+      providerMisconfigured(res);
       return;
     }
     sendJson(res, 500, {

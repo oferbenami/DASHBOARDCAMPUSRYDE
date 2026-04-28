@@ -714,10 +714,6 @@
               <button id="exportExcel" class="secondary">⬇️ ייצוא Excel</button>
               <button id="exportPdf" class="secondary">⬇️ ייצוא PDF</button>
             </div>
-            <div id="dashboardProviderWarning" class="provider-warning">
-              דוחות מתקדמים זמינים ב-DB_PROVIDER=excel/sheets. מוצגת כרגע תצוגת KPI ומגמה בסיסית בלבד.
-            </div>
-
             <div class="grid cols-3" style="margin-top:14px">
               <div class="kpi" id="kpiCard-passengers">
                 <div class="name">מספר נוסעים</div>
@@ -1812,12 +1808,10 @@
 
       function setDashboardProviderWarning(visible) {
         dashboardAdvancedUnsupported = Boolean(visible);
-        const warning = document.getElementById("dashboardProviderWarning");
-        if (warning) warning.style.display = visible ? "block" : "none";
       }
 
-      function isDashboardUnsupportedErr(err) {
-        return err?.status === 501 || err?.code === "DASHBOARD_PROVIDER_UNSUPPORTED";
+      function isProviderMisconfiguredErr(err) {
+        return err?.status === 503 || err?.code === "PROVIDER_MISCONFIGURED";
       }
 
       function renderTrendCharts(trendsPayload) {
@@ -2215,14 +2209,8 @@
           ]);
         } catch (err) {
           const hasCache = Boolean(lastDashboardData?.summary && lastDashboardData?.trends);
-          if (isDashboardUnsupportedErr(err)) {
-            setDashboardProviderWarning(true);
-            if (hasCache) {
-              summary = lastDashboardData.summary;
-              trends = lastDashboardData.trends;
-            } else {
-              throw new Error("ספק הנתונים הנוכחי לא תומך בדוחות מתקדמים. יש להגדיר DB_PROVIDER=excel/sheets.");
-            }
+          if (isProviderMisconfiguredErr(err)) {
+            throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
           } else if (hasCache) {
             summary = lastDashboardData.summary;
             trends = lastDashboardData.trends;
@@ -2244,23 +2232,27 @@
           api("GET", `/dashboard/load-efficiency?dateFrom=${from}&dateTo=${to}&scope=${dashboardScope}`),
           api("GET", `/dashboard/pickup-vs-dropoff?dateFrom=${from}&dateTo=${to}`)
         ]);
-        const unsupported = advancedResults.some((result) => result.status === "rejected" && isDashboardUnsupportedErr(result.reason));
-        const firstUnexpected = advancedResults.find((result) => result.status === "rejected" && !isDashboardUnsupportedErr(result.reason));
+        const providerMisconfigured = advancedResults.some((result) => result.status === "rejected" && isProviderMisconfiguredErr(result.reason));
+        const firstUnexpected = advancedResults.find((result) => result.status === "rejected" && !isProviderMisconfiguredErr(result.reason));
+        if (providerMisconfigured) {
+          throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
+        }
         if (firstUnexpected) {
           console.warn("[dashboard] advanced report fetch failed", firstUnexpected.reason);
           toastErr("חלק מהדוחות המתקדמים לא נטענו כרגע.");
         }
-        setDashboardProviderWarning(unsupported || Boolean(firstUnexpected));
+        setDashboardProviderWarning(Boolean(firstUnexpected));
         const [dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff] =
           advancedResults.map((result) => (result.status === "fulfilled" ? result.value : null));
         let kpiMeta;
         try {
           kpiMeta = await loadDashboardMeta(to, dashboardScope);
         } catch (err) {
-          if (isDashboardUnsupportedErr(err)) {
-            setDashboardProviderWarning(true);
+          if (isProviderMisconfiguredErr(err)) {
+            throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
           } else {
             console.warn("[dashboard] meta fetch failed", err);
+            toastErr("KPI metadata failed to load. Showing baseline values only.");
           }
           kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
         }
@@ -2349,10 +2341,6 @@
           const reportKey = document.getElementById("openDetailedReport").dataset.report || "kpi-main";
           const cfg = reportConfig()[reportKey];
           if (!cfg) return;
-          if (dashboardAdvancedUnsupported && reportKey !== "kpi-main") {
-            toastErr("דוחות מתקדמים אינם נתמכים ב-DB_PROVIDER=supabase. ניתן לעבוד עם KPI ומגמה בסיסיים.");
-            return;
-          }
           const sectionMap = {
             "kpi-main": "dashboardTiles",
             "trend-analysis": "section-trend-analysis",
@@ -2692,3 +2680,9 @@
     </script>
   </body>
 </html>
+
+
+
+
+
+

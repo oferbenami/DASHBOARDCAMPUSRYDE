@@ -1,8 +1,8 @@
 ﻿# API Stage 5 Contracts
 
 ## Infrastructure baseline
-- Database provider: `excel` (default), path in Drive via `EXCEL_DB_PATH`
-- Optional provider: `supabase`
+- Database provider: `excel` only
+- `EXCEL_DB_PATH` is required
 - Hosting: Vercel (Serverless API)
 
 ## Core APIs
@@ -44,4 +44,8 @@ All non-health endpoints require `Authorization: Bearer <sessionToken>`.
 ## Hardening
 - Global and auth-specific rate limiting is enabled.
 - Security headers are added to JSON, SSE, and export responses.
+
+## Deployment note
+- Before deploy/startup, verify `DB_PROVIDER=excel` and a valid writable `EXCEL_DB_PATH`.
+- If provider is misconfigured, API returns `503` with `code: "PROVIDER_MISCONFIGURED"`.
 
