@@ -551,6 +551,11 @@
       .bottom-tab.active { color: var(--accent); background: #f0f4fd; }
       .bottom-tab:hover:not(.active) { background: #f8fafc; }
 
+      .scope-btn { padding:.28rem .8rem;border:none;background:transparent;cursor:pointer;color:#555;border-left:1px solid var(--border);transition:background .15s,color .15s;font-size:0.82rem;line-height:1.4 }
+      .scope-btn:first-child { border-left:none }
+      .scope-btn.active { background:var(--accent,#1976d2);color:#fff;font-weight:600 }
+      .scope-btn:hover:not(.active) { background:#f0f4fd }
+
       /* ═══════════════════════════════
          MISC
       ═══════════════════════════════ */
@@ -580,6 +585,12 @@
       /* ═══════════════════════════════
          RESPONSIVE
       ═══════════════════════════════ */
+      /* ─── MOBILE TILE DASHBOARD ─── */
+      #mobileTileGrid { display: none; }
+      #mobileDetail   { display: none; }
+      #mobileFab      { display: none; }
+      #mobileFabPanel { display: none; }
+
       @media (max-width: 768px) {
         body { padding-bottom: var(--bottom-nav-h); }
         #bottomNav { display: block; }
@@ -591,6 +602,136 @@
         .chart-wrap { height: 210px; }
         .row-actions { flex-wrap: wrap; }
         .report-tile .tile-kpi { font-size: 1.1rem; }
+
+        /* Tile grid replaces desktop dashboard on mobile */
+        #panel-dashboard > .wrap { display: none; }
+        #mobileTileGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: repeat(3, 1fr);
+          position: fixed;
+          top: var(--header-h);
+          left: 0; right: 0;
+          bottom: var(--bottom-nav-h);
+          gap: 8px; padding: 8px;
+          z-index: 5;
+          background: var(--bg);
+        }
+        .m-tile {
+          background: var(--card);
+          border-radius: 14px;
+          padding: 14px 12px;
+          display: flex; flex-direction: column;
+          justify-content: space-between;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0,0,0,.07);
+          border: 1.5px solid var(--line);
+          transition: transform .12s, box-shadow .12s;
+          overflow: hidden; position: relative;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .m-tile:active { transform: scale(.96); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+        .m-tile-icon  { font-size: 1.3rem; line-height: 1; opacity: .75; }
+        .m-tile-label { font-size: .68rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
+        .m-tile-value { font-size: 1.8rem; font-weight: 800; color: #1a2840; line-height: 1.1; margin: 4px 0 0; }
+        .m-tile-sub   { font-size: .68rem; color: #6b7a99; margin-top: 2px; }
+        .m-tile.tile-green { border-color: #22c55e50; background: linear-gradient(145deg,#fff,#f0fdf4); }
+        .m-tile.tile-yellow{ border-color: #eab30850; background: linear-gradient(145deg,#fff,#fffbeb); }
+        .m-tile.tile-red   { border-color: #ef444450; background: linear-gradient(145deg,#fff,#fef2f2); }
+        .m-tile.tile-green  .m-tile-value { color: #16a34a; }
+        .m-tile.tile-yellow .m-tile-value { color: #b45309; }
+        .m-tile.tile-red    .m-tile-value { color: #b91c1c; }
+
+        /* Mobile detail overlay */
+        #mobileDetail {
+          display: flex !important;
+          flex-direction: column;
+          position: fixed;
+          inset: 0;
+          background: var(--bg);
+          z-index: 50;
+          transform: translateX(100%);
+          transition: transform .25s cubic-bezier(.4,0,.2,1);
+        }
+        #mobileDetail.open { transform: translateX(0); }
+        #mDetailHeader {
+          height: var(--header-h);
+          background: var(--card);
+          border-bottom: 1px solid var(--line);
+          display: flex; align-items: center;
+          padding: 0 10px; gap: 8px; flex-shrink: 0;
+        }
+        #mDetailBack {
+          font-size: 1.4rem; background: none; border: none;
+          cursor: pointer; color: var(--accent); padding: 4px 8px; line-height: 1;
+        }
+        #mDetailTitle { font-weight: 700; font-size: .95rem; flex: 1; text-align: center; }
+        #mDetailBody  { flex: 1; overflow: hidden; position: relative; }
+        .m-detail-section { display: none; flex-direction: column; height: 100%; padding: 8px; gap: 8px; }
+        .m-detail-section.open { display: flex; }
+        .m-kpi-row { display: flex; gap: 6px; flex-shrink: 0; }
+        .m-kpi-cell {
+          flex: 1; background: var(--card); border-radius: 10px;
+          padding: 8px 4px; text-align: center;
+        }
+        .m-kpi-label { font-size: .65rem; color: #6b7a99; }
+        .m-kpi-val   { font-size: 1rem; font-weight: 700; color: #1a2840; margin-top: 2px; }
+        .m-chart-box {
+          flex: 1; background: var(--card); border-radius: 10px;
+          padding: 8px; min-height: 0; position: relative;
+        }
+        .m-chart-box canvas { position: absolute; inset: 8px; }
+        .m-section-title { font-size: .7rem; font-weight: 700; color: #6b7a99; text-transform: uppercase; letter-spacing: .04em; flex-shrink: 0; padding: 0 2px; }
+        .m-targets-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+        .m-targets-table th { font-weight: 700; color: #6b7a99; padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+        .m-targets-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
+        .m-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+        .m-status-dot.green  { background: #22c55e; }
+        .m-status-dot.yellow { background: #eab308; }
+        .m-status-dot.red    { background: #ef4444; }
+        .m-benchmark-row { display: flex; align-items: center; gap: 6px; font-size: .8rem; padding: 4px 0; border-bottom: 1px solid var(--line); }
+        .m-benchmark-row:last-child { border: none; }
+        .m-benchmark-label { flex: 1; font-weight: 600; }
+        .m-benchmark-val   { min-width: 44px; text-align: left; }
+
+        /* FAB */
+        #mobileFab {
+          display: flex; align-items: center; justify-content: center;
+          position: fixed;
+          bottom: calc(var(--bottom-nav-h) + 10px);
+          right: 12px;
+          width: 44px; height: 44px;
+          border-radius: 50%;
+          background: var(--accent); color: #fff;
+          border: none; font-size: 1.1rem;
+          cursor: pointer; z-index: 20;
+          box-shadow: 0 4px 14px rgba(25,118,210,.35);
+        }
+        #mobileFabPanel {
+          display: block;
+          position: fixed;
+          bottom: calc(var(--bottom-nav-h) + 60px);
+          right: 12px;
+          background: var(--card);
+          border: 1px solid var(--line);
+          border-radius: 12px;
+          box-shadow: 0 6px 20px rgba(0,0,0,.15);
+          z-index: 21; overflow: hidden;
+          transform-origin: bottom right;
+          transform: scale(0);
+          transition: transform .18s cubic-bezier(.4,0,.2,1), opacity .18s;
+          opacity: 0;
+          pointer-events: none;
+        }
+        #mobileFabPanel.open { transform: scale(1); opacity: 1; pointer-events: auto; }
+        .m-fab-btn {
+          display: block; width: 100%;
+          padding: 11px 16px; border: none; background: none;
+          text-align: right; font-size: .85rem; cursor: pointer;
+          border-bottom: 1px solid var(--line); white-space: nowrap;
+        }
+        .m-fab-btn:last-child { border-bottom: none; }
+        .m-fab-btn:active { background: var(--bg); }
       }
       @media (max-width: 600px) {
         .wrap { padding: 10px; }
@@ -671,6 +812,47 @@
 
       <!-- ─── TAB: לוח בקרה ─── -->
       <div class="tab-panel active" id="panel-dashboard">
+
+        <!-- ══ MOBILE TILE GRID (visible only on ≤768px) ══ -->
+        <div id="mobileTileGrid">
+          <div class="m-tile" data-detail="passengers">
+            <div class="m-tile-icon">👥</div>
+            <div class="m-tile-label">נוסעים</div>
+            <div class="m-tile-value" id="mTileVal-passengers">—</div>
+            <div class="m-tile-sub"   id="mTileSub-passengers"></div>
+          </div>
+          <div class="m-tile" data-detail="rides">
+            <div class="m-tile-icon">🚌</div>
+            <div class="m-tile-label">נסיעות</div>
+            <div class="m-tile-value" id="mTileVal-rides">—</div>
+            <div class="m-tile-sub"   id="mTileSub-rides"></div>
+          </div>
+          <div class="m-tile" data-detail="quality">
+            <div class="m-tile-icon">⭐</div>
+            <div class="m-tile-label">איכות שירות</div>
+            <div class="m-tile-value" id="mTileVal-quality">—</div>
+            <div class="m-tile-sub"   id="mTileSub-quality"></div>
+          </div>
+          <div class="m-tile" data-detail="incidents">
+            <div class="m-tile-icon">⚠️</div>
+            <div class="m-tile-label">תקלות</div>
+            <div class="m-tile-value" id="mTileVal-incidents">—</div>
+            <div class="m-tile-sub"   id="mTileSub-incidents"></div>
+          </div>
+          <div class="m-tile" data-detail="targets">
+            <div class="m-tile-icon">🎯</div>
+            <div class="m-tile-label">עמידה ביעדים</div>
+            <div class="m-tile-value" id="mTileVal-targets">—</div>
+            <div class="m-tile-sub"   id="mTileSub-targets"></div>
+          </div>
+          <div class="m-tile" data-detail="trend">
+            <div class="m-tile-icon">📈</div>
+            <div class="m-tile-label">מגמה שבועית</div>
+            <div class="m-tile-value" id="mTileVal-trend">—</div>
+            <div class="m-tile-sub"   id="mTileSub-trend"></div>
+          </div>
+        </div><!-- /mobileTileGrid -->
+
         <div class="wrap">
           <div class="card">
             <div class="section-header">
@@ -700,11 +882,11 @@
               <div><label>עד תאריך</label><input id="kpiTo" type="date" /></div>
               <div>
                 <label>תצוגת נסיעות</label>
-                <select id="dashboardScope">
-                  <option value="total">כל הנסיעות</option>
-                  <option value="pickup">איסוף</option>
-                  <option value="dropoff">פיזור</option>
-                </select>
+                <div id="dashboardScopeToggle" style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:4px">
+                  <button type="button" class="scope-btn active" data-scope="total">סה"כ</button>
+                  <button type="button" class="scope-btn" data-scope="pickup">איסוף</button>
+                  <button type="button" class="scope-btn" data-scope="dropoff">פיזור</button>
+                </div>
               </div>
               <div style="display:flex;align-items:flex-end">
                 <button id="loadDashboard">טען נתונים</button>
@@ -1224,6 +1406,101 @@
         </div>
       </div>
 
+      <!-- ══ MOBILE DETAIL OVERLAY ══ -->
+      <div id="mobileDetail">
+        <div id="mDetailHeader">
+          <button id="mDetailBack">‹</button>
+          <span id="mDetailTitle"></span>
+          <div style="width:40px"></div>
+        </div>
+        <div id="mDetailBody">
+
+          <!-- Detail: Passengers -->
+          <div class="m-detail-section" id="mDetail-passengers">
+            <div class="m-kpi-row">
+              <div class="m-kpi-cell"><div class="m-kpi-label">נוסעים</div><div class="m-kpi-val" id="mKpi-pass-total">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">נסיעות</div><div class="m-kpi-val" id="mKpi-pass-rides">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">יעילות</div><div class="m-kpi-val" id="mKpi-pass-eff">—</div></div>
+            </div>
+            <div class="m-section-title">מגמת נוסעים</div>
+            <div class="m-chart-box"><canvas id="mChart-passengers"></canvas></div>
+            <div class="m-section-title">איסוף מול פיזור</div>
+            <div class="m-chart-box"><canvas id="mChart-pickdrop"></canvas></div>
+          </div>
+
+          <!-- Detail: Rides + Efficiency -->
+          <div class="m-detail-section" id="mDetail-rides">
+            <div class="m-kpi-row">
+              <div class="m-kpi-cell"><div class="m-kpi-label">נסיעות</div><div class="m-kpi-val" id="mKpi-rides-total">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">יעילות</div><div class="m-kpi-val" id="mKpi-rides-eff">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">נוסעים</div><div class="m-kpi-val" id="mKpi-rides-pass">—</div></div>
+            </div>
+            <div class="m-section-title">מגמת יעילות</div>
+            <div class="m-chart-box" style="flex:2"><canvas id="mChart-efficiency"></canvas></div>
+          </div>
+
+          <!-- Detail: Service Quality -->
+          <div class="m-detail-section" id="mDetail-quality">
+            <div class="m-kpi-row">
+              <div class="m-kpi-cell"><div class="m-kpi-label">איכות</div><div class="m-kpi-val" id="mKpi-qual-score">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">% תקלות</div><div class="m-kpi-val" id="mKpi-qual-issues">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">% נפגעו</div><div class="m-kpi-val" id="mKpi-qual-affected">—</div></div>
+            </div>
+            <div class="m-section-title">מגמת איכות שירות</div>
+            <div class="m-chart-box" style="flex:2"><canvas id="mChart-quality"></canvas></div>
+          </div>
+
+          <!-- Detail: Incidents -->
+          <div class="m-detail-section" id="mDetail-incidents">
+            <div class="m-kpi-row">
+              <div class="m-kpi-cell"><div class="m-kpi-label">תקלות</div><div class="m-kpi-val" id="mKpi-inc-total">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">% נסיעות</div><div class="m-kpi-val" id="mKpi-inc-rate">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">ממוצע איחור</div><div class="m-kpi-val" id="mKpi-inc-delay">—</div></div>
+            </div>
+            <div class="m-section-title">התפלגות לפי סוג</div>
+            <div class="m-chart-box" style="flex:2"><canvas id="mChart-incidentsPie"></canvas></div>
+          </div>
+
+          <!-- Detail: Targets -->
+          <div class="m-detail-section" id="mDetail-targets">
+            <div class="m-kpi-row">
+              <div class="m-kpi-cell" style="flex:2"><div class="m-kpi-label">עמידה ביעדים</div><div class="m-kpi-val" id="mKpi-tgt-score">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">ירוק</div><div class="m-kpi-val" id="mKpi-tgt-green">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">אדום</div><div class="m-kpi-val" id="mKpi-tgt-red">—</div></div>
+            </div>
+            <div class="m-section-title">יעד מול ביצוע</div>
+            <div style="flex:1;overflow-y:auto;border-radius:10px;background:var(--card);padding:4px">
+              <table class="m-targets-table" id="mTargetsTable">
+                <thead><tr><th>מדד</th><th>בפועל</th><th>יעד</th><th>סטטוס</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Detail: Weekly Trend / Benchmark -->
+          <div class="m-detail-section" id="mDetail-trend">
+            <div class="m-kpi-row">
+              <div class="m-kpi-cell"><div class="m-kpi-label">בפועל</div><div class="m-kpi-val" id="mKpi-trnd-actual">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">ממוצע שבועי</div><div class="m-kpi-val" id="mKpi-trnd-baseline">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">יעד</div><div class="m-kpi-val" id="mKpi-trnd-target">—</div></div>
+            </div>
+            <div class="m-section-title">השוואה מול ממוצע</div>
+            <div class="m-chart-box"><canvas id="mChart-benchmark"></canvas></div>
+            <div class="m-section-title">לפי סוג יום</div>
+            <div style="flex:1;overflow-y:auto;border-radius:10px;background:var(--card);padding:6px" id="mBenchmarkByDayType"></div>
+          </div>
+
+        </div><!-- /mDetailBody -->
+      </div><!-- /mobileDetail -->
+
+      <!-- FAB -->
+      <button id="mobileFab" title="תפריט מהיר">☰</button>
+      <div id="mobileFabPanel">
+        <button class="m-fab-btn" id="mFabPdf">⬇️ ייצוא PDF</button>
+        <button class="m-fab-btn" id="mFabExcel">⬇️ ייצוא Excel</button>
+        <button class="m-fab-btn" id="mFabRefresh">🔄 רענן נתונים</button>
+      </div>
+
       <!-- Mobile Bottom Navigation -->
       <nav id="bottomNav">
         <div class="bottom-nav-inner">
@@ -1475,6 +1752,7 @@
       let dashboardScope = "total";
       let selectedDashboardReport = "kpi-main";
       let lastDashboardData = null;
+      let lastAdvancedData  = null;
       let dashboardAdvancedUnsupported = false;
       const dashboardMetaCache = new Map();
       const KPI_METRICS = [
@@ -1500,7 +1778,7 @@
       function initDates() {
         document.getElementById("kpiFrom").value = toDateVal(weekAgo);
         document.getElementById("kpiTo").value = pickupDate;
-        document.getElementById("dashboardScope").value = dashboardScope;
+        document.querySelector(`#dashboardScopeToggle .scope-btn[data-scope="${dashboardScope}"]`)?.click();
         document.getElementById("entryDate").value = pickupDate;
         document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
         document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
@@ -1794,6 +2072,238 @@
           if (key === "load-efficiency") metricKey = "efficiency";
           el.textContent = formatMetric(metricKey, value, key === "benchmark" || key === "pickup-vs-dropoff");
         }
+      }
+
+      // ═══════════════════════════════
+      // MOBILE TILE DASHBOARD
+      // ═══════════════════════════════
+      const mobileCharts = {};
+      function upsertMobileChart(id, cfg) {
+        if (typeof Chart === "undefined") return;
+        if (mobileCharts[id]) { mobileCharts[id].destroy(); }
+        const el = document.getElementById(id);
+        if (!el) return;
+        mobileCharts[id] = new Chart(el, cfg);
+      }
+      function destroyAllMobileCharts() {
+        Object.keys(mobileCharts).forEach(id => { mobileCharts[id].destroy(); delete mobileCharts[id]; });
+      }
+
+      const M_LABELS = { passengers:"נוסעים", rides:"נסיעות", efficiency:"יעילות", serviceQuality:"איכות", issues:"תקלות", issuesRate:"% תקלות", affectedRate:"% נפגעו" };
+      const M_STATUS_COLOR = { green:"#22c55e", yellow:"#eab308", red:"#ef4444" };
+
+      function updateMobileTiles(summary, scope, kpiMeta, dashboardTrends, targetsVsActual) {
+        const s = summary[scope] || summary.total || {};
+        const pu = summary.pickup || {};
+        const do_ = summary.dropoff || {};
+
+        // helper: get active target value for metric
+        const tgtVal = (metricKey) => {
+          const t = resolveActiveTarget(kpiMeta.targets, metricKey, scope, document.getElementById("kpiTo")?.value || "");
+          return t ? Number(t.targetValue) : null;
+        };
+        const tgtDir = (metricKey) => {
+          const t = resolveActiveTarget(kpiMeta.targets, metricKey, scope, document.getElementById("kpiTo")?.value || "");
+          return t?.direction || defaultDirection(metricKey);
+        };
+
+        // Tile: passengers
+        const passVal = Number(s.passengers || 0);
+        const passTgt = tgtVal("passengers");
+        setMobileTile("passengers", fmt(passVal, 0),
+          passTgt ? `יעד: ${fmt(passTgt,0)}` : "",
+          passTgt ? statusColor("passengers", passVal, passTgt, tgtDir("passengers")) : "");
+
+        // Tile: rides
+        const ridesVal = Number(s.rides || 0);
+        const effVal   = Number(s.efficiency || 0);
+        setMobileTile("rides", fmt(ridesVal, 0),
+          `יעילות: ${fmt(effVal)} נוסע/נסיעה`, "");
+
+        // Tile: quality
+        const qualVal = Number(s.serviceQuality || 0);
+        const qualTgt = tgtVal("serviceQuality");
+        setMobileTile("quality", `${fmt(qualVal)}%`,
+          qualTgt ? `יעד: ${fmt(qualTgt)}%` : "",
+          currentThresholds.serviceQuality ? thresholdColor("serviceQuality", qualVal) : statusColor("serviceQuality", qualVal, qualTgt, tgtDir("serviceQuality")));
+
+        // Tile: incidents
+        const issVal  = Number(s.issues || 0);
+        const issRate = Number(s.issuesRate || 0);
+        setMobileTile("incidents", fmt(issVal, 0),
+          `${fmt(issRate)}% נסיעות עם תקלה`,
+          currentThresholds.issuesRate ? thresholdColor("issuesRate", issRate) : "");
+
+        // Tile: targets — count green/yellow/red
+        if (targetsVsActual && targetsVsActual.rows) {
+          const rows = targetsVsActual.rows;
+          const greenCount = rows.filter(r => r.status === "green").length;
+          setMobileTile("targets", `${greenCount}/${rows.length}`,
+            `${Math.round(greenCount/rows.length*100)}% עמידה ביעדים`,
+            greenCount === rows.length ? "tile-green" : greenCount >= rows.length / 2 ? "tile-yellow" : "tile-red");
+        } else {
+          setMobileTile("targets", "—", "אין נתוני יעד", "");
+        }
+
+        // Tile: trend (vs weekly baseline)
+        if (dashboardTrends && dashboardTrends.overlays) {
+          const base = Number(dashboardTrends.overlays.weeklyBaseline?.serviceQuality || 0);
+          const diff = qualVal - base;
+          const arrow = diff >= 0 ? "↑" : "↓";
+          const absDiff = Math.abs(diff).toFixed(1);
+          setMobileTile("trend", `${arrow} ${absDiff}%`,
+            `מול ממוצע שבועי (${fmt(base)}%)`,
+            diff >= 0 ? "tile-green" : "tile-red");
+        } else {
+          setMobileTile("trend", "—", "אין נתוני בסיס", "");
+        }
+      }
+
+      function setMobileTile(key, value, sub, colorClass) {
+        const valEl = document.getElementById(`mTileVal-${key}`);
+        const subEl = document.getElementById(`mTileSub-${key}`);
+        const tile  = document.querySelector(`.m-tile[data-detail="${key}"]`);
+        if (valEl) valEl.textContent = value;
+        if (subEl) subEl.textContent = sub;
+        if (tile) {
+          tile.classList.remove("tile-green", "tile-yellow", "tile-red");
+          if (colorClass) tile.classList.add(colorClass);
+        }
+      }
+
+      function thresholdColor(metricKey, value) {
+        const th = currentThresholds[metricKey];
+        if (!th) return "";
+        const v = Number(value);
+        if (v >= Number(th.greenMin || 0) && v <= Number(th.greenMax || Infinity)) return "tile-green";
+        if (v >= Number(th.yellowMin || 0) && v <= Number(th.yellowMax || Infinity)) return "tile-yellow";
+        return "tile-red";
+      }
+
+      function statusColor(metricKey, actual, target, direction) {
+        if (target === null || target === undefined) return "";
+        const gap = computeGap(actual, target, direction);
+        if (gap >= 0) return "tile-green";
+        if (gap >= -5) return "tile-yellow";
+        return "tile-red";
+      }
+
+      function openMobileDetail(topic) {
+        document.querySelectorAll(".m-detail-section").forEach(s => s.classList.remove("open"));
+        const sec = document.getElementById(`mDetail-${topic}`);
+        if (!sec) return;
+        const titles = { passengers:"נוסעים", rides:"נסיעות ויעילות", quality:"איכות שירות", incidents:"תקלות", targets:"יעדים מול ביצוע", trend:"מגמה שבועית" };
+        document.getElementById("mDetailTitle").textContent = titles[topic] || topic;
+        const detail = document.getElementById("mobileDetail");
+        detail.style.display = "flex";
+        requestAnimationFrame(() => detail.classList.add("open"));
+        sec.classList.add("open");
+
+        // Render charts for this section from cached data
+        const ldd = lastDashboardData || {};
+        const lad = lastAdvancedData  || {};
+        const s   = (ldd.summary || {})[ldd.scope || "total"] || (ldd.summary || {}).total || {};
+        const pu  = (ldd.summary || {}).pickup  || {};
+        const do_ = (ldd.summary || {}).dropoff || {};
+
+        destroyAllMobileCharts();
+
+        if (topic === "passengers" && lad.dashboardTrends) {
+          const pts = lad.dashboardTrends.points || [];
+          const labels = pts.map(p => p.serviceDate.slice(5));
+          document.getElementById("mKpi-pass-total").textContent = fmt(s.passengers, 0);
+          document.getElementById("mKpi-pass-rides").textContent = fmt(s.rides, 0);
+          document.getElementById("mKpi-pass-eff").textContent   = fmt(s.efficiency);
+          upsertMobileChart("mChart-passengers", { type:"line", data:{ labels, datasets:[{ label:"נוסעים", data:pts.map(p=>p.passengers), borderColor:"#1976d2", backgroundColor:"#1976d220", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+          upsertMobileChart("mChart-pickdrop", { type:"bar", data:{ labels:["נוסעים","נסיעות","יעילות"], datasets:[ { label:"איסוף", data:[pu.passengers,pu.rides,pu.efficiency], backgroundColor:"#42a5f5" }, { label:"פיזור", data:[do_.passengers,do_.rides,do_.efficiency], backgroundColor:"#ef9a9a" } ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+        }
+
+        if (topic === "rides" && lad.dashboardTrends) {
+          const pts = lad.dashboardTrends.points || [];
+          const labels = pts.map(p => p.serviceDate.slice(5));
+          document.getElementById("mKpi-rides-total").textContent = fmt(s.rides, 0);
+          document.getElementById("mKpi-rides-eff").textContent   = fmt(s.efficiency);
+          document.getElementById("mKpi-rides-pass").textContent  = fmt(s.passengers, 0);
+          upsertMobileChart("mChart-efficiency", { type:"line", data:{ labels, datasets:[{ label:"יעילות", data:pts.map(p=>p.efficiency), borderColor:"#7c3aed", backgroundColor:"#7c3aed15", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+        }
+
+        if (topic === "quality" && lad.dashboardTrends) {
+          const pts = lad.dashboardTrends.points || [];
+          const labels = pts.map(p => p.serviceDate.slice(5));
+          document.getElementById("mKpi-qual-score").textContent    = `${fmt(s.serviceQuality)}%`;
+          document.getElementById("mKpi-qual-issues").textContent   = `${fmt(s.issuesRate)}%`;
+          document.getElementById("mKpi-qual-affected").textContent = `${fmt(s.affectedRate)}%`;
+          const tgt = lad.dashboardTrends.overlays?.target?.serviceQuality;
+          const datasets = [{ label:"איכות", data:pts.map(p=>p.serviceQuality), borderColor:"#16a34a", backgroundColor:"#16a34a15", tension:.3, fill:true, pointRadius:2 }];
+          if (tgt) datasets.push({ label:"יעד", data:pts.map(()=>Number(tgt)), borderColor:"#dc2626", borderDash:[4,4], pointRadius:0, borderWidth:1.5 });
+          upsertMobileChart("mChart-quality", { type:"line", data:{ labels, datasets }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+        }
+
+        if (topic === "incidents" && lad.incidentsAnalysis) {
+          const ia = lad.incidentsAnalysis;
+          document.getElementById("mKpi-inc-total").textContent = fmt(s.issues, 0);
+          document.getElementById("mKpi-inc-rate").textContent  = `${fmt(s.issuesRate)}%`;
+          document.getElementById("mKpi-inc-delay").textContent = ia.avgDelayMinutes != null ? `${fmt(ia.avgDelayMinutes)} דק׳` : "—";
+          const byType = (ia.byType || []).slice(0, 6);
+          upsertMobileChart("mChart-incidentsPie", { type:"doughnut", data:{ labels:byType.map(t=>t.issueType), datasets:[{ data:byType.map(t=>t.count), backgroundColor:["#1976d2","#7c3aed","#ef4444","#eab308","#22c55e","#f97316"] }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9},boxWidth:10}}} } });
+        }
+
+        if (topic === "targets" && lad.targetsVsActual) {
+          const rows = lad.targetsVsActual.rows || [];
+          const green = rows.filter(r => r.status === "green").length;
+          document.getElementById("mKpi-tgt-score").textContent = `${green}/${rows.length}`;
+          document.getElementById("mKpi-tgt-green").textContent = green;
+          document.getElementById("mKpi-tgt-red").textContent   = rows.filter(r => r.status === "red").length;
+          const tbody = document.querySelector("#mTargetsTable tbody");
+          if (tbody) {
+            tbody.innerHTML = rows.map(r => {
+              const color = M_STATUS_COLOR[r.status] || "#999";
+              return `<tr><td>${M_LABELS[r.metricKey] || r.metricKey}</td><td>${formatMetric(r.metricKey, r.actual)}</td><td>${formatMetric(r.metricKey, r.target)}</td><td><span class="m-status-dot" style="background:${color}"></span></td></tr>`;
+            }).join("");
+          }
+        }
+
+        if (topic === "trend" && lad.benchmark) {
+          const bm = lad.benchmark;
+          const cur  = Number(bm.metrics?.serviceQuality?.current  || 0);
+          const base = Number(bm.metrics?.serviceQuality?.baseline || 0);
+          const tgt  = Number(bm.metrics?.serviceQuality?.target   || 0);
+          document.getElementById("mKpi-trnd-actual").textContent   = `${fmt(cur)}%`;
+          document.getElementById("mKpi-trnd-baseline").textContent = `${fmt(base)}%`;
+          document.getElementById("mKpi-trnd-target").textContent   = tgt ? `${fmt(tgt)}%` : "—";
+          upsertMobileChart("mChart-benchmark", { type:"bar", data:{ labels:["בפועל","ממוצע שבועי","יעד"], datasets:[{ data:[cur, base, tgt || null], backgroundColor:["#1976d2","#7c3aed","#22c55e"], borderRadius:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}},suggestedMin:0,suggestedMax:100} } } });
+          const dayTypes = bm.byDayType || [];
+          const dayLabels = { weekday:"א-ה", friday:"שישי", holiday_eve:"ערב חג", exception:"חריג" };
+          const bmDiv = document.getElementById("mBenchmarkByDayType");
+          if (bmDiv) bmDiv.innerHTML = dayTypes.map(d => `<div class="m-benchmark-row"><span class="m-benchmark-label">${dayLabels[d.dayType]||d.dayType}</span><span class="m-benchmark-val">${fmt(d.serviceQuality)}%</span><span class="m-benchmark-val" style="color:#6b7a99">${fmt(d.passengers,0)} נוסע</span></div>`).join("");
+        }
+      }
+
+      function closeMobileDetail() {
+        const detail = document.getElementById("mobileDetail");
+        detail.classList.remove("open");
+        setTimeout(() => { detail.style.display = "none"; destroyAllMobileCharts(); }, 260);
+      }
+
+      function wireMobileUI() {
+        // Tile taps
+        document.querySelectorAll(".m-tile").forEach(tile => {
+          tile.addEventListener("click", () => openMobileDetail(tile.dataset.detail));
+        });
+        // Back button
+        document.getElementById("mDetailBack").addEventListener("click", closeMobileDetail);
+        // FAB toggle
+        const fab = document.getElementById("mobileFab");
+        const fabPanel = document.getElementById("mobileFabPanel");
+        fab.addEventListener("click", (e) => {
+          e.stopPropagation();
+          fabPanel.classList.toggle("open");
+        });
+        document.addEventListener("click", () => fabPanel.classList.remove("open"));
+        // FAB actions
+        document.getElementById("mFabPdf").addEventListener("click", () => { document.getElementById("exportPdf").click(); fabPanel.classList.remove("open"); });
+        document.getElementById("mFabExcel").addEventListener("click", () => { document.getElementById("exportExcel").click(); fabPanel.classList.remove("open"); });
+        document.getElementById("mFabRefresh").addEventListener("click", () => { document.getElementById("loadDashboard").click(); fabPanel.classList.remove("open"); });
       }
 
       function upsertChart(canvasId, config) {
@@ -2196,7 +2706,7 @@
       async function loadDashboard() {
         const from = document.getElementById("kpiFrom").value;
         const to = document.getElementById("kpiTo").value;
-        dashboardScope = document.getElementById("dashboardScope").value || "total";
+        dashboardScope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
         setKpiLoading(true);
         try {
 
@@ -2291,7 +2801,9 @@
         }
 
         lastDashboardData = { summary, trends, scope: dashboardScope, kpiMeta };
+        lastAdvancedData = { dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff };
         updateTiles(summary, dashboardScope, kpiMeta);
+        updateMobileTiles(summary, dashboardScope, kpiMeta, dashboardTrends, targetsVsActual);
         renderDrilldownReport(selectedDashboardReport);
         if (dashboardTrends) renderTrendCharts(dashboardTrends);
         if (benchmark) renderBenchmark(benchmark);
@@ -2324,6 +2836,7 @@
       // WIRE UP BUTTONS
       // ═══════════════════════════════
       function wireButtons() {
+        wireMobileUI();
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
           async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
@@ -2369,13 +2882,14 @@
           document.getElementById("exportDailyManagerPdf"),
           async () => { await downloadDailyManagerPdf(); toastOk("דוח יומי ניהולי יוצא ל-PDF"); }
         );
-        document.getElementById("dashboardScope").addEventListener("change", async (e) => {
-          dashboardScope = e.target.value || "total";
-          try {
-            await loadDashboard();
-          } catch (err) {
-            toastErr(err.message || "שגיאה בטעינת הדשבורד");
-          }
+        document.querySelectorAll("#dashboardScopeToggle .scope-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (btn.classList.contains("active")) return;
+            document.querySelectorAll("#dashboardScopeToggle .scope-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            dashboardScope = btn.dataset.scope;
+            try { await loadDashboard(); } catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+          });
         });
 
         document.getElementById("exportExcel").onclick = withLoading(
