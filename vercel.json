@@ -4,6 +4,9 @@
   "buildCommand": "echo \"No build step required\"",
   "installCommand": "npm install --workspaces --include-workspace-root",
   "outputDirectory": "apps/web/src",
+  "env": {
+    "DB_PROVIDER": "sheets"
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.js" }
   ]

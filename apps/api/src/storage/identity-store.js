@@ -14,7 +14,6 @@ function assertExcelOnlyProvider() {
 }
 
 function backend() {
-  assertExcelOnlyProvider();
   const p = selectedProvider();
   if (p === "supabase") return supabaseStore;
   if (p === "sheets") return sheetsStore;

@@ -3097,22 +3097,19 @@
       }
 
       async function reloadDailySections() {
-        const [hasPickup, hasDropoff] = await Promise.all([
-          loadDailySection(pickupDate, "pickup", "pickup"),
-          loadDailySection(dropoffDate, "dropoff", "dropoff")
-        ]);
-        const notice = document.getElementById("existingDataNotice");
-        const btnSavePickup = document.getElementById("savePickup");
-        const btnSaveDropoff = document.getElementById("saveDropoff");
-        if (hasPickup || hasDropoff) {
-          notice.style.display = "flex";
-          btnSavePickup.disabled = true;
-          btnSaveDropoff.disabled = true;
-        } else {
-          notice.style.display = "none";
-          btnSavePickup.disabled = false;
-          btnSaveDropoff.disabled = false;
+        let hasPickup = false, hasDropoff = false;
+        try {
+          [hasPickup, hasDropoff] = await Promise.all([
+            loadDailySection(pickupDate, "pickup", "pickup"),
+            loadDailySection(dropoffDate, "dropoff", "dropoff")
+          ]);
+        } catch (e) {
+          return;
         }
+        const notice = document.getElementById("existingDataNotice");
+        document.getElementById("savePickup").disabled = hasPickup;
+        document.getElementById("saveDropoff").disabled = hasDropoff;
+        notice.style.display = (hasPickup || hasDropoff) ? "flex" : "none";
       }
 
       // ═══════════════════════════════

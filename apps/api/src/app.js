@@ -1559,11 +1559,6 @@ async function handleRequest(req, res) {
   }
 
   try {
-    if (providerName() !== "excel") {
-      providerMisconfigured(res);
-      return;
-    }
-
     if (req.method === "GET" && pathname === "/health") {
       const provider = providerName();
       sendJson(res, 200, {
