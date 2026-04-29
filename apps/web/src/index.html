@@ -1539,6 +1539,19 @@
         return localStorage.getItem(TOKEN_KEY) || "";
       }
 
+      async function hasValidSavedSession() {
+        const token = getToken();
+        if (!token) return false;
+        try {
+          const res = await fetch(`${getApiBase()}/auth/me`, {
+            headers: { authorization: `Bearer ${token}` }
+          });
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
+
       async function fetchConfig() {
         try {
           const res = await fetch(`${getApiBase()}/auth/config`);
@@ -3252,7 +3265,14 @@
         await fetchConfig();
         const savedToken = getToken();
         if (savedToken) {
-          enterApp(null);
+          const valid = await hasValidSavedSession();
+          if (valid) {
+            enterApp(null);
+          } else {
+            localStorage.removeItem(TOKEN_KEY);
+            document.getElementById("loginError").style.display = "none";
+            initGoogleLogin();
+          }
         } else {
           initGoogleLogin();
         }
