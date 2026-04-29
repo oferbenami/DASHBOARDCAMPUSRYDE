@@ -896,6 +896,7 @@
               <button id="exportExcel" class="secondary">⬇️ ייצוא Excel</button>
               <button id="exportPdf" class="secondary">⬇️ ייצוא PDF</button>
             </div>
+            <div id="dashboardProviderWarning" class="provider-warning"></div>
             <div class="grid cols-3" style="margin-top:14px">
               <div class="kpi" id="kpiCard-passengers">
                 <div class="name">מספר נוסעים</div>
@@ -1762,7 +1763,7 @@
       let selectedDashboardReport = "kpi-main";
       let lastDashboardData = null;
       let lastAdvancedData  = null;
-      let dashboardAdvancedUnsupported = false;
+      let dashboardDegraded = false;
       const dashboardMetaCache = new Map();
       const KPI_METRICS = [
         { key: "passengers", cardId: "kpiCard-passengers", valueId: "kpiPassengers", targetId: "kpiTarget-passengers", gapId: "kpiGap-passengers", deltaId: "kpiDelta-passengers" },
@@ -2325,8 +2326,14 @@
         dashboardCharts[canvasId] = new Chart(ctx, config);
       }
 
-      function setDashboardProviderWarning(visible) {
-        dashboardAdvancedUnsupported = Boolean(visible);
+      function setDashboardProviderWarning(visible, message = "") {
+        dashboardDegraded = Boolean(visible);
+        const warning = document.getElementById("dashboardProviderWarning");
+        if (!warning) return;
+        warning.style.display = visible ? "block" : "none";
+        warning.textContent = visible
+          ? (message || "חלק מהדוחות המתקדמים לא עודכנו כעת. מוצגים נתונים זמינים אחרונים.")
+          : "";
       }
 
       function isProviderMisconfiguredErr(err) {
@@ -2718,6 +2725,7 @@
         dashboardScope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
         setKpiLoading(true);
         try {
+        let baseDataFallback = false;
 
         let summary;
         let trends;
@@ -2733,7 +2741,8 @@
           } else if (hasCache) {
             summary = lastDashboardData.summary;
             trends = lastDashboardData.trends;
-            toastErr("חלק מנתוני הדשבורד לא נטענו. מוצגים הנתונים האחרונים.");
+            baseDataFallback = true;
+            setDashboardProviderWarning(true, "חלק מנתוני הדשבורד לא עודכנו כעת. מוצגים נתונים אחרונים.");
           } else {
             throw new Error("לא ניתן לטעון את נתוני לוח הבקרה כרגע. יש לנסות שוב בעוד רגע.");
           }
@@ -2756,14 +2765,55 @@
         if (providerMisconfigured) {
           throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
         }
+        const advancedEndpointNames = [
+          "/dashboard/trends",
+          "/dashboard/benchmark",
+          "/dashboard/alerts",
+          "/dashboard/incidents-analysis",
+          "/dashboard/operations-daily",
+          "/dashboard/targets-vs-actual",
+          "/dashboard/load-efficiency",
+          "/dashboard/pickup-vs-dropoff"
+        ];
         if (firstUnexpected) {
-          console.warn("[dashboard] advanced report fetch failed", firstUnexpected.reason);
-          toastErr("חלק מהדוחות המתקדמים לא נטענו כרגע.");
+          advancedResults.forEach((result, index) => {
+            if (result.status === "rejected" && !isProviderMisconfiguredErr(result.reason)) {
+              console.warn(`[dashboard] advanced endpoint failed: ${advancedEndpointNames[index]}`, result.reason);
+            }
+          });
         }
-        setDashboardProviderWarning(Boolean(firstUnexpected));
-        const [dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff] =
-          advancedResults.map((result) => (result.status === "fulfilled" ? result.value : null));
+        const advancedKeys = [
+          "dashboardTrends",
+          "benchmark",
+          "alerts",
+          "incidentsAnalysis",
+          "operationsDaily",
+          "targetsVsActual",
+          "loadEfficiency",
+          "pickupVsDropoff"
+        ];
+        const previousAdvanced = lastAdvancedData || {};
+        const mergedAdvanced = {};
+        advancedResults.forEach((result, index) => {
+          const key = advancedKeys[index];
+          if (result.status === "fulfilled") {
+            mergedAdvanced[key] = result.value;
+            return;
+          }
+          mergedAdvanced[key] = previousAdvanced[key] || null;
+        });
+        const {
+          dashboardTrends,
+          benchmark,
+          alerts,
+          incidentsAnalysis,
+          operationsDaily,
+          targetsVsActual,
+          loadEfficiency,
+          pickupVsDropoff
+        } = mergedAdvanced;
         let kpiMeta;
+        let metaFailed = false;
         try {
           kpiMeta = await loadDashboardMeta(to, dashboardScope);
         } catch (err) {
@@ -2771,10 +2821,11 @@
             throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
           } else {
             console.warn("[dashboard] meta fetch failed", err);
-            toastErr("KPI metadata failed to load. Showing baseline values only.");
+            metaFailed = true;
           }
           kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
         }
+        setDashboardProviderWarning(baseDataFallback || Boolean(firstUnexpected) || metaFailed);
 
         const scopedSummary = summary[dashboardScope] || summary.total;
         updateHeadlineDates(to);
@@ -3200,8 +3251,6 @@
     </script>
   </body>
 </html>
-
-
 
 
 

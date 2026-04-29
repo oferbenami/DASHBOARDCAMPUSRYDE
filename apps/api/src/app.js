@@ -1586,6 +1586,11 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (providerName() !== "excel") {
+      providerMisconfigured(res);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/auth/me") {
       await handleMe(req, res);
       return;
