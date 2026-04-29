@@ -1572,6 +1572,15 @@
         });
         const payload = await res.json().catch(() => ({}));
         if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem(TOKEN_KEY);
+            document.getElementById("appScreen").style.display = "none";
+            document.getElementById("loginScreen").style.display = "flex";
+            document.getElementById("loginError").textContent = "פג תוקף ההתחברות — אנא כנס מחדש.";
+            document.getElementById("loginError").style.display = "block";
+            fetchConfig().then(initGoogleLogin);
+            throw new Error("session-expired");
+          }
           const err = new Error(payload.error || `HTTP ${res.status}`);
           err.status = res.status;
           err.code = payload.code || null;
