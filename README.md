@@ -6,6 +6,7 @@ This repository contains the staged implementation for the campus transport dash
 - Initial database: Excel file in Drive-synced path
 - Deployment: Vercel (Web + API)
 - Future database target: Supabase (PostgreSQL)
+- Production runtime is currently locked to `DB_PROVIDER=excel`.
 
 ## Workspace layout
 - `apps/web`: Web UI shell (React + TypeScript placeholder)
@@ -23,3 +24,4 @@ npm run check:connections
 ```
 
 Connection and deployment steps are documented in `docs/runbooks/connection-setup.md`.
+Provider and production validation checklist is documented in `apps/api/README.md`.

@@ -50,3 +50,19 @@ All non-health endpoints require `Authorization: Bearer <sessionToken>`.
 - After deploy, call `GET /health` and verify `infra.database === "excel"`.
 - If provider is misconfigured, API returns `503` with `code: "PROVIDER_MISCONFIGURED"`.
 
+## Production checklist (Vercel)
+1. In Vercel Project Settings → Environment Variables, set:
+   - `DB_PROVIDER=excel`
+   - `EXCEL_DB_PATH=<writable path used by production runtime>`
+2. Verify there is no override in Preview/Branch environments that sets `DB_PROVIDER` to `sheets` or `supabase`.
+3. Redeploy the production deployment.
+4. Smoke test:
+   - `GET /health` returns `status: "ok"` and `infra.database: "excel"`.
+5. Functional check (with valid token):
+   - `GET /kpi/summary`
+   - `GET /dashboard/trends`
+   Both should return `200`.
+6. UI check:
+   - Dashboard loads without provider misconfiguration banner.
+   - Scope switch (`total/pickup/dropoff`) works without errors.
+
