@@ -1763,8 +1763,7 @@
       let selectedDashboardReport = "kpi-main";
       let lastDashboardData = null;
       let lastAdvancedData  = null;
-      let dashboardDegraded = false;
-      const dashboardMetaCache = new Map();
+            const dashboardMetaCache = new Map();
       const KPI_METRICS = [
         { key: "passengers", cardId: "kpiCard-passengers", valueId: "kpiPassengers", targetId: "kpiTarget-passengers", gapId: "kpiGap-passengers", deltaId: "kpiDelta-passengers" },
         { key: "rides", cardId: "kpiCard-rides", valueId: "kpiRides", targetId: "kpiTarget-rides", gapId: "kpiGap-rides", deltaId: "kpiDelta-rides" },
@@ -2327,8 +2326,7 @@
       }
 
       function setDashboardProviderWarning(visible, message = "") {
-        dashboardDegraded = Boolean(visible);
-        const warning = document.getElementById("dashboardProviderWarning");
+                const warning = document.getElementById("dashboardProviderWarning");
         if (!warning) return;
         warning.style.display = visible ? "block" : "none";
         warning.textContent = visible
@@ -2726,6 +2724,7 @@
         setKpiLoading(true);
         try {
         let baseDataFallback = false;
+        let bannerMessage = "";
 
         let summary;
         let trends;
@@ -2742,7 +2741,7 @@
             summary = lastDashboardData.summary;
             trends = lastDashboardData.trends;
             baseDataFallback = true;
-            setDashboardProviderWarning(true, "חלק מנתוני הדשבורד לא עודכנו כעת. מוצגים נתונים אחרונים.");
+            bannerMessage = "Part of dashboard base data was not refreshed. Showing last available data.";
           } else {
             throw new Error("לא ניתן לטעון את נתוני לוח הבקרה כרגע. יש לנסות שוב בעוד רגע.");
           }
@@ -2776,6 +2775,9 @@
           "/dashboard/pickup-vs-dropoff"
         ];
         if (firstUnexpected) {
+          if (!bannerMessage) {
+            bannerMessage = "Part of advanced reports was not refreshed. Showing last available data.";
+          }
           advancedResults.forEach((result, index) => {
             if (result.status === "rejected" && !isProviderMisconfiguredErr(result.reason)) {
               console.warn(`[dashboard] advanced endpoint failed: ${advancedEndpointNames[index]}`, result.reason);
@@ -2822,10 +2824,13 @@
           } else {
             console.warn("[dashboard] meta fetch failed", err);
             metaFailed = true;
+            if (!bannerMessage) {
+              bannerMessage = "KPI metadata was not refreshed. Showing baseline values.";
+            }
           }
           kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
         }
-        setDashboardProviderWarning(baseDataFallback || Boolean(firstUnexpected) || metaFailed);
+        setDashboardProviderWarning(baseDataFallback || Boolean(firstUnexpected) || metaFailed, bannerMessage);
 
         const scopedSummary = summary[dashboardScope] || summary.total;
         updateHeadlineDates(to);
@@ -3251,6 +3256,8 @@
     </script>
   </body>
 </html>
+
+
 
 
 
