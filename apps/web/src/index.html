@@ -2725,6 +2725,7 @@
         try {
         let baseDataFallback = false;
         let bannerMessage = "";
+        const providerMisconfiguredMessage = "המערכת לא זמינה עקב הגדרת שרת שגויה (DB_PROVIDER). יש לפנות למנהל המערכת.";
 
         let summary;
         let trends;
@@ -2736,12 +2737,13 @@
         } catch (err) {
           const hasCache = Boolean(lastDashboardData?.summary && lastDashboardData?.trends);
           if (isProviderMisconfiguredErr(err)) {
-            throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
+            setDashboardProviderWarning(true, providerMisconfiguredMessage);
+            return;
           } else if (hasCache) {
             summary = lastDashboardData.summary;
             trends = lastDashboardData.trends;
             baseDataFallback = true;
-            bannerMessage = "Part of dashboard base data was not refreshed. Showing last available data.";
+            bannerMessage = "חלק מנתוני הבסיס בלוח הבקרה לא עודכנו כעת. מוצגים הנתונים האחרונים הזמינים.";
           } else {
             throw new Error("לא ניתן לטעון את נתוני לוח הבקרה כרגע. יש לנסות שוב בעוד רגע.");
           }
@@ -2762,7 +2764,8 @@
         const providerMisconfigured = advancedResults.some((result) => result.status === "rejected" && isProviderMisconfiguredErr(result.reason));
         const firstUnexpected = advancedResults.find((result) => result.status === "rejected" && !isProviderMisconfiguredErr(result.reason));
         if (providerMisconfigured) {
-          throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
+          setDashboardProviderWarning(true, providerMisconfiguredMessage);
+          return;
         }
         const advancedEndpointNames = [
           "/dashboard/trends",
@@ -2776,7 +2779,7 @@
         ];
         if (firstUnexpected) {
           if (!bannerMessage) {
-            bannerMessage = "Part of advanced reports was not refreshed. Showing last available data.";
+            bannerMessage = "חלק מהדוחות המתקדמים לא עודכנו כעת. מוצגים נתונים אחרונים זמינים.";
           }
           advancedResults.forEach((result, index) => {
             if (result.status === "rejected" && !isProviderMisconfiguredErr(result.reason)) {
@@ -2820,12 +2823,13 @@
           kpiMeta = await loadDashboardMeta(to, dashboardScope);
         } catch (err) {
           if (isProviderMisconfiguredErr(err)) {
-            throw new Error("Server is configured for DB_PROVIDER=excel only. Please fix server configuration.");
+            setDashboardProviderWarning(true, providerMisconfiguredMessage);
+            return;
           } else {
             console.warn("[dashboard] meta fetch failed", err);
             metaFailed = true;
             if (!bannerMessage) {
-              bannerMessage = "KPI metadata was not refreshed. Showing baseline values.";
+              bannerMessage = "מטא-נתוני KPI לא עודכנו כעת. מוצגים ערכי בסיס זמינים.";
             }
           }
           kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };

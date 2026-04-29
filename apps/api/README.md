@@ -47,5 +47,6 @@ All non-health endpoints require `Authorization: Bearer <sessionToken>`.
 
 ## Deployment note
 - Before deploy/startup, verify `DB_PROVIDER=excel` and a valid writable `EXCEL_DB_PATH`.
+- After deploy, call `GET /health` and verify `infra.database === "excel"`.
 - If provider is misconfigured, API returns `503` with `code: "PROVIDER_MISCONFIGURED"`.
 
