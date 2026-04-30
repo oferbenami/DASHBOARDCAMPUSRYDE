@@ -1539,6 +1539,43 @@
         return localStorage.getItem(TOKEN_KEY) || "";
       }
 
+      function isIOSSafari() {
+        const ua = navigator.userAgent || "";
+        const isIOS = /iPad|iPhone|iPod/.test(ua);
+        const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+        return isIOS && isSafari;
+      }
+
+      async function reportClientError(stage, error, extra = {}) {
+        const payload = {
+          stage,
+          message: String(error?.message || error || "unknown"),
+          stack: error?.stack ? String(error.stack).slice(0, 4000) : null,
+          userAgent: navigator.userAgent || "",
+          path: location.pathname,
+          ts: new Date().toISOString(),
+          extra
+        };
+        console.warn("[client-error]", payload);
+        try {
+          await fetch(`${getApiBase()}/client-errors`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+            keepalive: true
+          });
+        } catch {}
+      }
+
+      function showFatalLoginError(message) {
+        localStorage.removeItem(TOKEN_KEY);
+        const app = document.getElementById("appScreen");
+        const login = document.getElementById("loginScreen");
+        if (app) app.style.display = "none";
+        if (login) login.style.display = "flex";
+        showLoginError(message || "אירעה שגיאה בטעינת האפליקציה. נסה להיכנס מחדש.");
+      }
+
       async function hasValidSavedSession() {
         const token = getToken();
         if (!token) return false;
@@ -1635,6 +1672,13 @@
 
       async function handleGoogleCredential(response) {
         try {
+          if (!response?.credential) {
+            await reportClientError("auth_google_missing_credential", new Error("Missing Google credential"), {
+              responseType: typeof response
+            });
+            showLoginError("התחברות Google נכשלה. נסה שוב.");
+            return;
+          }
           const data = await fetch(`${getApiBase()}/auth/google/callback`, {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -1647,8 +1691,9 @@
           }
 
           localStorage.setItem(TOKEN_KEY, data.session.token);
-          enterApp(data.user);
+          await enterApp(data.user);
         } catch (e) {
+          await reportClientError("auth_google_callback_failure", e);
           showLoginError("שגיאת רשת: " + e.message);
         }
       }
@@ -1669,12 +1714,14 @@
         }
 
         function setupGoogleButton() {
+          const useRedirect = isIOSSafari();
           google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleCredential,
             auto_select: false,
             cancel_on_tap_outside: true,
-            ux_mode: "popup"
+            ux_mode: useRedirect ? "redirect" : "popup",
+            login_uri: useRedirect ? `${getApiBase()}/auth/google/callback` : undefined
           });
           wrap.innerHTML = "";
           google.accounts.id.renderButton(wrap, {
@@ -1707,18 +1754,29 @@
       }
 
       async function enterApp(userFromLogin) {
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("appScreen").style.display = "block";
-
-        const isMobile = window.matchMedia("(max-width: 768px)").matches;
-        if (isMobile) {
-          document.getElementById("managementContent").style.display = "none";
-          document.getElementById("mobileManagementNote").style.display = "block";
-          document.getElementById("desktopMgmtTab").style.display = "none";
+        const loginScreen = document.getElementById("loginScreen");
+        const appScreen = document.getElementById("appScreen");
+        if (!loginScreen || !appScreen) {
+          throw new Error("missing auth/app containers");
         }
-
-        await loadUser(userFromLogin);
-        bootstrap();
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        try {
+          loginScreen.style.display = "none";
+          appScreen.style.display = "block";
+          if (isMobile) {
+            const managementContent = document.getElementById("managementContent");
+            const mobileManagementNote = document.getElementById("mobileManagementNote");
+            const desktopMgmtTab = document.getElementById("desktopMgmtTab");
+            if (managementContent) managementContent.style.display = "none";
+            if (mobileManagementNote) mobileManagementNote.style.display = "block";
+            if (desktopMgmtTab) desktopMgmtTab.style.display = "none";
+          }
+          await loadUser(userFromLogin);
+          await bootstrap();
+        } catch (err) {
+          await reportClientError("enter_app_bootstrap_failure", err, { isMobile });
+          showFatalLoginError("ההתחברות הושלמה אך טעינת האפליקציה נכשלה. נסה להיכנס מחדש.");
+        }
       }
 
       async function loadUser(fallback) {
@@ -3218,7 +3276,7 @@
 
       async function downloadDailyManagerPdf() {
         const serviceDate = document.getElementById("kpiTo").value;
-        const scope = document.getElementById("dashboardScope").value || "total";
+        const scope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
         const res = await fetch(`${getApiBase()}/dashboard/export/daily-pdf?serviceDate=${serviceDate}&scope=${scope}`, {
           headers: { authorization: `Bearer ${getToken()}` }
         });
@@ -3246,7 +3304,9 @@
           ]);
           toastOk("לוח הבקרה נטען בהצלחה");
         } catch (e) {
-          toastErr("שגיאה בטעינה: " + e.message);
+          await reportClientError("bootstrap_failure", e);
+          toastErr("שגיאת טעינה: " + e.message);
+          throw e;
         }
       }
 
@@ -3261,13 +3321,26 @@
       // INIT
       // ═══════════════════════════════
       (async function init() {
+        window.addEventListener("error", (event) => {
+          reportClientError("window_error", event.error || new Error(event.message || "window error"));
+          if (document.getElementById("appScreen")?.style.display !== "none") {
+            showFatalLoginError("אירעה שגיאה בלתי צפויה. נסה להיכנס מחדש.");
+          }
+        });
+        window.addEventListener("unhandledrejection", (event) => {
+          reportClientError("unhandled_rejection", event.reason || new Error("unhandled rejection"));
+          if (document.getElementById("appScreen")?.style.display !== "none") {
+            showFatalLoginError("אירעה שגיאה בלתי צפויה. נסה להיכנס מחדש.");
+          }
+        });
+
         initDates();
         await fetchConfig();
         const savedToken = getToken();
         if (savedToken) {
           const valid = await hasValidSavedSession();
           if (valid) {
-            enterApp(null);
+            await enterApp(null);
           } else {
             localStorage.removeItem(TOKEN_KEY);
             document.getElementById("loginError").style.display = "none";
@@ -3280,6 +3353,9 @@
     </script>
   </body>
 </html>
+
+
+
 
 
 

@@ -115,14 +115,42 @@ async function requireAuth(req, res) {
   return active;
 }
 
+function escapeForJsSingleQuoted(str) {
+  return String(str || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+async function readTextBody(req) {
+  if (typeof req.body === "string") return req.body;
+  if (req.body && typeof req.body === "object") return JSON.stringify(req.body);
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
+
 async function handleGoogleCallback(req, res) {
-  const body = await readJsonBody(req);
-  if (!body.idToken || typeof body.idToken !== "string") {
+  const contentType = String(req.headers["content-type"] || "").toLowerCase();
+  let idToken = null;
+  let redirectMode = false;
+
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    const raw = await readTextBody(req);
+    const params = new URLSearchParams(raw || "");
+    idToken = params.get("credential");
+    redirectMode = true;
+  } else {
+    const body = await readJsonBody(req);
+    idToken = body.idToken;
+  }
+
+  if (!idToken || typeof idToken !== "string") {
     badRequest(res, "idToken is required");
     return;
   }
 
-  const verified = await verifyGoogleIdToken(body.idToken);
+  const verified = await verifyGoogleIdToken(idToken);
   if (!verified.ok) {
     unauthorized(res, verified.reason);
     return;
@@ -142,6 +170,17 @@ async function handleGoogleCallback(req, res) {
     metadata: { provider: "google" }
   });
 
+  if (redirectMode) {
+    const token = escapeForJsSingleQuoted(session.sessionToken);
+    const html = `<!doctype html><html lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Redirecting…</title></head><body><script>try{localStorage.setItem('dr_session_token','${token}');window.location.replace('/');}catch(e){document.body.innerText='Login completed, please return to the app.';}</script></body></html>`;
+    res.writeHead(200, {
+      "content-type": "text/html; charset=utf-8",
+      ...securityHeaders()
+    });
+    res.end(html);
+    return;
+  }
+
   sendJson(res, 200, {
     user: {
       id: userWrite.user.id,
@@ -153,6 +192,15 @@ async function handleGoogleCallback(req, res) {
       expiresAt: session.expiresAt
     }
   });
+}
+
+async function handleClientError(req, res) {
+  const body = await readJsonBody(req).catch(() => ({}));
+  const stage = String(body?.stage || "unknown");
+  const message = String(body?.message || "unknown");
+  const userAgent = String(body?.userAgent || "");
+  console.warn("[client-errors]", { stage, message, userAgent });
+  sendJson(res, 202, { ok: true });
 }
 
 async function handleLogout(req, res) {
@@ -1583,6 +1631,11 @@ async function handleRequest(req, res) {
 
     if (req.method === "POST" && pathname === "/auth/logout") {
       await handleLogout(req, res);
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/client-errors") {
+      await handleClientError(req, res);
       return;
     }
 
