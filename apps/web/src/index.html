@@ -1531,6 +1531,7 @@
       const API_BASE_KEY = "dr_api_base";
       const TOKEN_KEY = "dr_session_token";
       let GOOGLE_CLIENT_ID = "";
+      let AUTH_CONFIG_DEBUG = null;
 
       function getApiBase() {
         return localStorage.getItem(API_BASE_KEY) || location.origin;
@@ -1595,6 +1596,7 @@
           if (res.ok) {
             const data = await res.json();
             GOOGLE_CLIENT_ID = data.googleClientId || "";
+            AUTH_CONFIG_DEBUG = data;
           }
         } catch {}
       }
@@ -1679,13 +1681,23 @@
             showLoginError("התחברות Google נכשלה. נסה שוב.");
             return;
           }
-          const data = await fetch(`${getApiBase()}/auth/google/callback`, {
+          const authRes = await fetch(`${getApiBase()}/auth/google/callback`, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ idToken: response.credential })
-          }).then(r => r.json());
+          });
+          const data = await authRes.json().catch(() => ({}));
 
-          if (!data.session || !data.session.token) {
+          if (!authRes.ok || !data.session || !data.session.token) {
+            const rawErr = String(data?.error || "").toLowerCase();
+            const isInvalidRequest = rawErr.includes("invalid") || rawErr.includes("audience") || rawErr.includes("client");
+            if (isInvalidRequest) {
+              await reportClientError("auth_google_invalid_request", new Error(data?.error || "google invalid request"), {
+                debug: AUTH_CONFIG_DEBUG
+              });
+              showLoginError("ההתחברות נחסמה עקב הגדרת Google לא תקינה. יש לפנות למנהל המערכת.");
+              return;
+            }
             showLoginError(data.error || "התחברות נכשלה. בדוק שאתה מורשה להיכנס למערכת.");
             return;
           }
@@ -1721,7 +1733,7 @@
             auto_select: false,
             cancel_on_tap_outside: true,
             ux_mode: useRedirect ? "redirect" : "popup",
-            login_uri: useRedirect ? `${getApiBase()}/auth/google/callback` : undefined
+            login_uri: useRedirect ? `${location.origin}/auth/google/callback` : undefined
           });
           wrap.innerHTML = "";
           google.accounts.id.renderButton(wrap, {

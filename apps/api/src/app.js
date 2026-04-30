@@ -1618,8 +1618,15 @@ async function handleRequest(req, res) {
     }
 
     if (req.method === "GET" && pathname === "/auth/config") {
+      const origin = String(req.headers.origin || "");
+      const host = String(req.headers.host || "");
+      const proto = String(req.headers["x-forwarded-proto"] || "https");
+      const effectiveOrigin = origin || `${proto}://${host}`;
       sendJson(res, 200, {
-        googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || ""
+        googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+        googleClientIdPresent: Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID),
+        effectiveOrigin,
+        effectiveLoginUri: `${effectiveOrigin}/auth/google/callback`
       });
       return;
     }
