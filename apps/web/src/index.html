@@ -3903,13 +3903,6 @@
         toastOk("לוח הבקרה נטען בהצלחה");
       }
 
-      // Auto-refresh every 10s
-      setInterval(() => {
-        if (getToken() && document.getElementById("appScreen").style.display !== "none") {
-          refreshDashboard("auto-interval", { silent: true }).catch(() => {});
-        }
-      }, 10000);
-
       // ═══════════════════════════════
       // INIT
       // ═══════════════════════════════
