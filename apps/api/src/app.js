@@ -543,7 +543,7 @@ function resolveDashboardScope(parsedUrl) {
 }
 
 function metricsList() {
-  return ["passengers", "rides", "efficiency", "serviceQuality", "issues", "issuesRate", "affectedRate"];
+  return ["passengers", "rides", "efficiency", "serviceQuality", "issues", "issuesRate", "affectedRate", "affectedPassengers"];
 }
 
 function pickScopePoint(point, scope) {
@@ -552,7 +552,7 @@ function pickScopePoint(point, scope) {
 }
 
 function defaultDirection(metricKey) {
-  if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate") {
+  if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate" || metricKey === "affectedPassengers") {
     return "at_most";
   }
   return "at_least";
@@ -1137,7 +1137,8 @@ async function handleDashboardTrends(req, res, parsedUrl) {
       serviceQuality: Number(scopedPoint.serviceQuality || 0),
       issues: Number(scopedPoint.issues || 0),
       issuesRate: Number(scopedPoint.issuesRate || 0),
-      affectedRate: Number(scopedPoint.affectedRate || 0)
+      affectedRate: Number(scopedPoint.affectedRate || 0),
+      affectedPassengers: Number(scopedPoint.affectedPassengers || 0)
     };
   });
 

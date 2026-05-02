@@ -284,6 +284,7 @@ function aggregateRows(rows) {
     rides: totals.rides,
     efficiency,
     issues: totals.issues,
+    affectedPassengers: totals.affected,
     issuesRate,
     affectedRate,
     serviceQuality: qualityScore(issuesRate, affectedRate)

@@ -1152,6 +1152,15 @@
                   <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-affectedRate" class="muted">—</strong></div>
                 </div>
               </div>
+              <div class="kpi" id="kpiCard-affectedPassengers">
+                <div class="name">מספר עובדים שחוו תקלה</div>
+                <div class="val loading-val" id="kpiAffectedPassengers">טוען...</div>
+                <div class="sub-grid">
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-affectedPassengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-affectedPassengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-affectedPassengers" class="muted">—</strong></div>
+                </div>
+              </div>
             </div>
 
             <hr class="divider" />
@@ -2075,7 +2084,8 @@
         { key: "issues", cardId: "kpiCard-issues", valueId: "kpiIssues", targetId: "kpiTarget-issues", gapId: "kpiGap-issues", deltaId: "kpiDelta-issues" },
         { key: "issuesRate", cardId: "kpiCard-issuesRate", valueId: "kpiIssuesRate", targetId: "kpiTarget-issuesRate", gapId: "kpiGap-issuesRate", deltaId: "kpiDelta-issuesRate" },
         { key: "serviceQuality", cardId: "kpiCard-quality", valueId: "kpiQuality", targetId: "kpiTarget-serviceQuality", gapId: "kpiGap-serviceQuality", deltaId: "kpiDelta-serviceQuality" },
-        { key: "affectedRate", cardId: "kpiCard-affectedRate", valueId: "kpiAffectedRate", targetId: "kpiTarget-affectedRate", gapId: "kpiGap-affectedRate", deltaId: "kpiDelta-affectedRate" }
+        { key: "affectedRate", cardId: "kpiCard-affectedRate", valueId: "kpiAffectedRate", targetId: "kpiTarget-affectedRate", gapId: "kpiGap-affectedRate", deltaId: "kpiDelta-affectedRate" },
+        { key: "affectedPassengers", cardId: "kpiCard-affectedPassengers", valueId: "kpiAffectedPassengers", targetId: "kpiTarget-affectedPassengers", gapId: "kpiGap-affectedPassengers", deltaId: "kpiDelta-affectedPassengers" }
       ];
       const METRIC_COLORS = {
         passengers: "#2563eb",
@@ -2084,7 +2094,8 @@
         serviceQuality: "#16a34a",
         issues: "#f59e0b",
         issuesRate: "#dc2626",
-        affectedRate: "#ea580c"
+        affectedRate: "#ea580c",
+        affectedPassengers: "#b45309"
       };
       const dashboardCharts = {};
 
@@ -2510,7 +2521,7 @@
       function fmt(n, digits = 2) { return Number(n || 0).toFixed(digits); }
 
       function setKpiLoading(loading) {
-        const ids = ["kpiPassengers","kpiRides","kpiEfficiency","kpiIssues","kpiIssuesRate","kpiQuality","kpiAffectedRate"];
+        const ids = ["kpiPassengers","kpiRides","kpiEfficiency","kpiIssues","kpiIssuesRate","kpiQuality","kpiAffectedRate","kpiAffectedPassengers"];
         for (const id of ids) {
           const el = document.getElementById(id);
           if (loading) { el.textContent = "טוען..."; el.classList.add("loading-val"); }
@@ -2526,7 +2537,7 @@
             deltaEl.textContent = "—";
           }
         });
-        ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality","kpiCard-affectedRate"]
+        ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality","kpiCard-affectedRate","kpiCard-affectedPassengers"]
           .forEach(id => {
             const c = document.getElementById(id);
             if (loading) c.classList.remove("kpi-green","kpi-yellow","kpi-red");
