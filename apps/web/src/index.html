@@ -4009,6 +4009,11 @@
         const tbody = document.getElementById(contractorTableBodyId(type));
         if (!tbody) return;
         const rows = contractorRowsState[type] || [];
+        if (!contractorOptions.length) {
+          tbody.innerHTML = `<tr><td colspan="8" style="color:#6b7893">לא קיימים מפעילים פעילים או שהפיצ'ר לא נתמך בסביבת נתונים זו.</td></tr>`;
+          updateOperationSummaryLive(type);
+          return;
+        }
         tbody.innerHTML = rows.map((row, idx) => `
           <tr data-row-index="${idx}">
             <td><select class="ctr-contractor">${makeContractorSelectOptionsHtml(row.contractorId)}</select></td>
@@ -4025,6 +4030,10 @@
       }
 
       function addContractorRow(type, row = null) {
+        if (!contractorOptions.length) {
+          toastErr("לא ניתן להוסיף שורת מפעיל: אין מפעילים פעילים זמינים");
+          return;
+        }
         contractorRowsState[type].push(row || {
           contractorId: "",
           ridesCount: 0,
@@ -4083,8 +4092,11 @@
         try {
           const res = await api("GET", "/contractors?activeOnly=true");
           contractorOptions = res.contractors || [];
-        } catch {
+        } catch (error) {
           contractorOptions = [];
+          if (String(error?.code || "") === "FEATURE_UNSUPPORTED" || String(error?.message || "").includes("supported only")) {
+            toastErr("פירוט לפי מפעילים זמין רק עם DB_PROVIDER=supabase");
+          }
         }
       }
 
@@ -4110,11 +4122,16 @@
       async function saveContractorMatrix(type) {
         const date = getOperationDateByType(type);
         const rows = contractorRowsState[type] || [];
+        const chosen = new Set();
         for (let idx = 0; idx < rows.length; idx += 1) {
           const live = contractorRowFromInput(type, idx);
           if (!live) continue;
           const contractorId = String(live.contractorId || "").trim();
           if (!contractorId) throw new Error(`יש לבחור מפעיל בשורת מטריצה ${idx + 1} (${type === "pickup" ? "איסוף" : "פיזור"})`);
+          if (chosen.has(contractorId)) {
+            throw new Error(`המפעיל נבחר יותר מפעם אחת בשורת ${type === "pickup" ? "איסוף" : "פיזור"}`);
+          }
+          chosen.add(contractorId);
           const payload = {
             ridesCount: parseNonNegativeInt(live.ridesCount),
             registeredPassengers: parseNonNegativeInt(live.registeredPassengers),
