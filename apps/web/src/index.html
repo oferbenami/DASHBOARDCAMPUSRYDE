@@ -323,32 +323,60 @@
         border: 1px solid #dbe4f3;
         background: linear-gradient(135deg, #f5f9ff 0%, #eef4ff 100%);
       }
-      .kpi-headline .headline-title {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #2a3b5f;
-        margin-bottom: 8px;
-      }
-      .kpi-headline .headline-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      .kpi-headline .headline-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 8px;
       }
-      .kpi-headline .headline-item {
-        background: #fff;
+      .kpi-headline .headline-title {
+        font-size: 0.86rem;
+        font-weight: 800;
+        color: #1f3a66;
+        background: #ffffff;
+        border: 1px solid #d3e0f5;
+        border-radius: 999px;
+        padding: 5px 12px;
+      }
+      .kpi-headline .headline-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
         border: 1px solid #dbe4f3;
-        border-radius: 8px;
-        padding: 8px 10px;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.78rem;
+        color: #4b5d7f;
       }
-      .kpi-headline .headline-item .label {
-        font-size: 0.72rem;
-        color: #6b7893;
-        margin-bottom: 2px;
-      }
-      .kpi-headline .headline-item .value {
-        font-size: 0.95rem;
-        font-weight: 700;
+      .kpi-headline .headline-chip strong {
+        font-size: 0.84rem;
         color: #1f2b43;
+      }
+      .dashboard-range-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dashboard-mode-toggle {
+        display: flex;
+        border: 1px solid #c8d2e2;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .dashboard-mode-btn {
+        width: auto;
+        padding: 7px 11px;
+        border: none;
+        background: #f8fbff;
+        color: #4a5a73;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .dashboard-mode-btn.active {
+        background: #1976d2;
+        color: #fff;
       }
       .section-subtitle {
         margin: 8px 0 6px;
@@ -575,10 +603,11 @@
       .scope-btn.active { background:var(--accent,#1976d2);color:#fff;font-weight:600 }
       .scope-btn:hover:not(.active) { background:#f0f4fd }
       .date-nav-btn {
-        padding: 0.15rem 0.5rem;
-        border: 1px solid #7f93b8;
-        background: #e8eefb;
-        color: #1f2b43;
+        width: auto;
+        padding: 0.25rem 0.62rem;
+        border: 1px solid #315f98;
+        background: #1f4f8a;
+        color: #ffffff;
         border-radius: 6px;
         cursor: pointer;
         font-weight: 800;
@@ -586,7 +615,7 @@
         min-width: 2rem;
         transition: background 0.15s, border-color 0.15s, transform 0.1s;
       }
-      .date-nav-btn:hover { background: #dbe7ff; border-color: #5f77a8; }
+      .date-nav-btn:hover { background: #173f73; border-color: #173f73; }
       .date-nav-btn:active { transform: translateY(1px); }
       .date-nav-btn:focus-visible {
         outline: 2px solid #1d4ed8;
@@ -665,6 +694,11 @@
         .chart-wrap { height: 210px; }
         .row-actions { flex-wrap: wrap; }
         .report-tile .tile-kpi { font-size: 1.1rem; }
+        .kpi-headline .headline-row { gap: 6px; }
+        .kpi-headline .headline-title { width: 100%; text-align: center; }
+        .dashboard-range-tools { width: 100%; }
+        .dashboard-mode-toggle { flex: 1; }
+        .dashboard-mode-btn { flex: 1; text-align: center; }
 
         /* Tile grid replaces desktop dashboard on mobile */
         #panel-dashboard > .wrap { display: none; }
@@ -976,6 +1010,7 @@
           <div class="hdr-dd-row">
             <button class="hdr-dd-btn" id="hDateToday">היום</button>
             <button class="hdr-dd-btn" id="hDateWeek">שבוע</button>
+            <button class="hdr-dd-btn" id="hDateMonth">חודש</button>
           </div>
           <div class="hdr-dd-row">
             <input type="date" id="hDateInput" class="hdr-date-input" title="בחר תאריך ספציפי">
@@ -1051,31 +1086,31 @@
               <h2 style="margin:0">לוח בקרה — KPI</h2>
             </div>
             <div class="kpi-headline">
-              <div class="headline-title">תמונת מצב תפעולית</div>
-              <div class="headline-grid">
-                <div class="headline-item">
-                  <div class="label">יום איסוף נוכחי</div>
-                  <div class="value" id="headlinePickupDate">—</div>
-                </div>
-                <div class="headline-item">
-                  <div class="label">יום פיזור קודם</div>
-                  <div class="value" id="headlineDropoffDate">—</div>
-                </div>
-                <div class="headline-item">
-                  <div class="label">תאריך מיקוד KPI</div>
-                  <div class="value" id="headlineFocusDate">—</div>
-                </div>
+              <div class="headline-row">
+                <span class="headline-title">תמונת מצב תפעולית</span>
+                <span class="headline-chip">איסוף: <strong id="headlinePickupDate">—</strong></span>
+                <span class="headline-chip">פיזור: <strong id="headlineDropoffDate">—</strong></span>
+                <span class="headline-chip">מיקוד KPI: <strong id="headlineFocusDate">—</strong></span>
+                <span class="headline-chip">טווח: <strong id="headlineRangeMode">יומי</strong></span>
               </div>
             </div>
 
             <div class="grid cols-4" style="margin-top:12px">
-              <div><label>מתאריך</label><input id="kpiFrom" type="date" /></div>
               <div>
-                <label>עד תאריך</label>
-                <div style="display:flex;align-items:center;gap:6px">
-                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
+                <label>תאריך מיקוד KPI</label>
+                <div class="dashboard-range-tools">
+                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
                   <input id="kpiTo" type="date" />
-                  <button id="kpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
+                  <button id="kpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">⇨</button>
+                </div>
+                <input id="kpiFrom" type="hidden" />
+              </div>
+              <div>
+                <label>מצב מיקוד KPI</label>
+                <div class="dashboard-mode-toggle" id="dashboardRangeModeToggle">
+                  <button id="kpiModeDay" type="button" class="dashboard-mode-btn active" data-range-mode="day">יומי</button>
+                  <button id="kpiModeWeek" type="button" class="dashboard-mode-btn" data-range-mode="week">שבועי</button>
+                  <button id="kpiModeMonth" type="button" class="dashboard-mode-btn" data-range-mode="month">חודשי</button>
                 </div>
               </div>
               <div>
@@ -2079,6 +2114,7 @@
       let pickupDate = toDateVal(today);
       let dropoffDate = toDateVal(yesterday);
       let dashboardScope = "total";
+      let dashboardRangeMode = "day";
       let selectedDashboardReport = "kpi-main";
       let dashboardRefreshPromise = null;
       let lastDashboardData = null;
@@ -2107,7 +2143,7 @@
       const dashboardCharts = {};
 
       function initDates() {
-        document.getElementById("kpiFrom").value = toDateVal(weekAgo);
+        document.getElementById("kpiFrom").value = pickupDate;
         document.getElementById("kpiTo").value = pickupDate;
         document.querySelector(`#dashboardScopeToggle .scope-btn[data-scope="${dashboardScope}"]`)?.click();
         syncOperationDateUI();
@@ -2137,17 +2173,30 @@
         const to = document.getElementById("kpiTo")?.value || "";
         const todayVal = toDateVal(new Date());
         const weekStart = to ? startOfWeekSunday(to) : "";
+        const monthStart = to ? `${to.slice(0, 8)}01` : "";
         let mode = "";
         if (from && to && from === to) {
           mode = to === todayVal ? "today" : "custom-day";
+          dashboardRangeMode = "day";
         } else if (from && to && from === weekStart) {
           mode = "week";
+          dashboardRangeMode = "week";
+        } else if (from && to && from === monthStart) {
+          mode = "month";
+          dashboardRangeMode = "month";
         }
         document.getElementById("hDateToday")?.classList.toggle("active", mode === "today");
         document.getElementById("hDateWeek")?.classList.toggle("active", mode === "week");
+        document.getElementById("hDateMonth")?.classList.toggle("active", mode === "month");
+        document.querySelectorAll("#dashboardRangeModeToggle .dashboard-mode-btn").forEach((btn) =>
+          btn.classList.toggle("active", btn.dataset.rangeMode === dashboardRangeMode)
+        );
+        const headlineRangeMode = document.getElementById("headlineRangeMode");
+        if (headlineRangeMode) {
+          headlineRangeMode.textContent = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
+        }
         const hDateInput = document.getElementById("hDateInput");
-        if (hDateInput && (mode === "today" || mode === "custom-day")) hDateInput.value = to;
-        else if (hDateInput && mode !== "week") hDateInput.value = "";
+        if (hDateInput) hDateInput.value = to;
       }
 
       function syncHeaderScopeButtons() {
@@ -2182,16 +2231,38 @@
         if (!fromInput || !toInput) return;
 
         if (mode === "today") {
+          dashboardRangeMode = "day";
           fromInput.value = todayVal;
           toInput.value = todayVal;
         } else if (mode === "week") {
+          dashboardRangeMode = "week";
           const ref = toInput.value || todayVal;
           fromInput.value = startOfWeekSunday(ref);
+          toInput.value = ref;
+        } else if (mode === "month") {
+          dashboardRangeMode = "month";
+          const ref = toInput.value || todayVal;
+          fromInput.value = `${ref.slice(0, 8)}01`;
           toInput.value = ref;
         }
 
         updateDashboardRangeButtons();
         await refreshDashboard("range-change");
+      }
+
+      function applyRangeModeFromFocusDate() {
+        const fromInput = document.getElementById("kpiFrom");
+        const toInput = document.getElementById("kpiTo");
+        if (!fromInput || !toInput || !toInput.value) return;
+        if (dashboardRangeMode === "week") {
+          fromInput.value = startOfWeekSunday(toInput.value);
+          return;
+        }
+        if (dashboardRangeMode === "month") {
+          fromInput.value = `${toInput.value.slice(0, 8)}01`;
+          return;
+        }
+        fromInput.value = toInput.value;
       }
 
       async function shiftDashboardFocusDate(daysDelta) {
@@ -2200,7 +2271,7 @@
         if (!toInput?.value || !fromInput) return;
         const shifted = shiftDateVal(toInput.value, daysDelta);
         toInput.value = shifted;
-        fromInput.value = shifted;
+        applyRangeModeFromFocusDate();
         const hDateInput = document.getElementById("hDateInput");
         if (hDateInput) hDateInput.value = shifted;
         updateDashboardRangeButtons();
@@ -2892,6 +2963,10 @@
           closeHdrPanels();
           try { await applyDashboardRange("week"); } catch {}
         });
+        document.getElementById("hDateMonth").addEventListener("click", async () => {
+          closeHdrPanels();
+          try { await applyDashboardRange("month"); } catch {}
+        });
 
         // Custom date input: user taps the date field, picks a date → load that day
         const hDateInput = document.getElementById("hDateInput");
@@ -2899,8 +2974,9 @@
         hDateInput.addEventListener("change", async () => {
           const val = hDateInput.value;
           if (!val) return;
-          document.getElementById("kpiFrom").value = val;
           document.getElementById("kpiTo").value = val;
+          dashboardRangeMode = "day";
+          applyRangeModeFromFocusDate();
           updateDashboardRangeButtons();
           closeHdrPanels();
           try { await refreshDashboard("header-date-change", { silent: true }); } catch {}
@@ -3585,15 +3661,22 @@
         );
         document.getElementById("kpiTo").addEventListener("change", async () => {
           const toInput = document.getElementById("kpiTo");
-          const fromInput = document.getElementById("kpiFrom");
-          if (!toInput?.value || !fromInput) return;
-          fromInput.value = toInput.value;
+          if (!toInput?.value) return;
+          applyRangeModeFromFocusDate();
           updateDashboardRangeButtons();
           try { await refreshDashboard("kpi-date-change"); }
           catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
         });
-        document.getElementById("kpiFrom").addEventListener("change", () => {
-          updateDashboardRangeButtons();
+        document.querySelectorAll("#dashboardRangeModeToggle .dashboard-mode-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const nextMode = btn.dataset.rangeMode;
+            if (!nextMode || dashboardRangeMode === nextMode) return;
+            dashboardRangeMode = nextMode;
+            applyRangeModeFromFocusDate();
+            updateDashboardRangeButtons();
+            try { await refreshDashboard("range-mode-change"); }
+            catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+          });
         });
         document.getElementById("kpiDatePrev").addEventListener("click", async () => {
           await shiftDashboardFocusDate(-1);
