@@ -651,6 +651,8 @@
       #mobileDetail   { display: none; }
       #mobileFab      { display: none; }
       #mobileFabPanel { display: none; }
+      .header-actions { display: none; }
+      #headerDatePanel, #headerExportPanel { display: none; }
 
       @media (max-width: 768px) {
         body { padding-bottom: var(--bottom-nav-h); }
@@ -799,6 +801,56 @@
         }
         .m-fab-btn:last-child { border-bottom: none; }
         .m-fab-btn:active { background: var(--bg); }
+
+        /* Header action buttons (replace FAB) */
+        .header-actions {
+          display: flex;
+          gap: 4px;
+          flex: 1;
+          justify-content: center;
+        }
+        .hdr-action-btn {
+          display: flex; align-items: center; justify-content: center;
+          width: 38px; height: 38px;
+          border-radius: 9px;
+          border: 1px solid var(--line);
+          background: none;
+          font-size: 1rem;
+          cursor: pointer;
+          color: var(--text);
+          transition: background 0.15s;
+          width: auto;
+          padding: 0 10px;
+        }
+        .hdr-action-btn:active, .hdr-action-btn.hdr-active { background: #e8f0fe; }
+
+        /* Header dropdown panels */
+        .hdr-dropdown {
+          position: absolute;
+          top: var(--header-h);
+          right: 0; left: 0;
+          background: var(--card);
+          border-bottom: 1px solid var(--line);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+          z-index: 101;
+          padding: 8px;
+          gap: 6px;
+        }
+        .hdr-dd-btn {
+          flex: 1;
+          padding: 10px 8px;
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          background: none;
+          font-size: 0.85rem;
+          cursor: pointer;
+          text-align: center;
+          white-space: nowrap;
+          width: auto;
+        }
+        .hdr-dd-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .hdr-dd-btn:active { background: #e8f0fe; }
+        #headerDatePanel.open, #headerExportPanel.open { display: flex; }
       }
       @media (max-width: 600px) {
         .wrap { padding: 10px; }
@@ -867,6 +919,13 @@
           </button>
         </nav>
 
+        <!-- Mobile header action buttons (visible on ≤768px, replaces FAB) -->
+        <div class="header-actions" id="headerActions">
+          <button class="hdr-action-btn" id="hBtnDate"    title="טווח תאריכים">📅</button>
+          <button class="hdr-action-btn" id="hBtnRefresh" title="רענן נתונים">🔄</button>
+          <button class="hdr-action-btn" id="hBtnExport"  title="ייצוא">⬇️</button>
+        </div>
+
         <!-- User info -->
         <div class="header-user">
           <div style="text-align:right">
@@ -874,6 +933,18 @@
             <div class="user-email" id="headerUserEmail"></div>
           </div>
           <button class="btn-logout" id="btnLogout">יציאה</button>
+        </div>
+
+        <!-- Date range dropdown panel -->
+        <div id="headerDatePanel" class="hdr-dropdown">
+          <button class="hdr-dd-btn" id="hDateToday">היום</button>
+          <button class="hdr-dd-btn" id="hDateWeek">מבט שבועי</button>
+          <button class="hdr-dd-btn" id="hDateCustom">יום אחר</button>
+        </div>
+        <!-- Export dropdown panel -->
+        <div id="headerExportPanel" class="hdr-dropdown">
+          <button class="hdr-dd-btn" id="hExportPdf">⬇️ ייצוא PDF</button>
+          <button class="hdr-dd-btn" id="hExportExcel">⬇️ ייצוא Excel</button>
         </div>
       </header>
 
@@ -1575,9 +1646,9 @@
         </div><!-- /mDetailBody -->
       </div><!-- /mobileDetail -->
 
-      <!-- FAB -->
-      <button id="mobileFab" title="תפריט מהיר">☰</button>
-      <div id="mobileFabPanel">
+      <!-- FAB (hidden — actions moved to header) -->
+      <button id="mobileFab" style="display:none" title="תפריט מהיר">☰</button>
+      <div id="mobileFabPanel" style="display:none">
         <button class="m-fab-btn" id="mFabPdf">⬇️ ייצוא PDF</button>
         <button class="m-fab-btn" id="mFabExcel">⬇️ ייצוא Excel</button>
         <button class="m-fab-btn" id="mFabRefresh">🔄 רענן נתונים</button>
@@ -2009,6 +2080,9 @@
         document.getElementById("dashRangeToday")?.classList.toggle("active", mode === "today");
         document.getElementById("dashRangeCustomDay")?.classList.toggle("active", mode === "custom-day");
         document.getElementById("dashRangeWeek")?.classList.toggle("active", mode === "week");
+        document.getElementById("hDateToday")?.classList.toggle("active", mode === "today");
+        document.getElementById("hDateCustom")?.classList.toggle("active", mode === "custom-day");
+        document.getElementById("hDateWeek")?.classList.toggle("active", mode === "week");
       }
 
       async function applyDashboardRange(mode) {
@@ -2551,24 +2625,61 @@
         });
         // Back button
         document.getElementById("mDetailBack").addEventListener("click", closeMobileDetail);
-        // FAB toggle
-        const fab = document.getElementById("mobileFab");
-        const fabPanel = document.getElementById("mobileFabPanel");
-        fab.addEventListener("click", (e) => {
+        // Header action buttons
+        const hBtnDate     = document.getElementById("hBtnDate");
+        const hBtnRefresh  = document.getElementById("hBtnRefresh");
+        const hBtnExport   = document.getElementById("hBtnExport");
+        const hDatePanel   = document.getElementById("headerDatePanel");
+        const hExportPanel = document.getElementById("headerExportPanel");
+
+        function closeHdrPanels() {
+          hDatePanel.classList.remove("open");
+          hExportPanel.classList.remove("open");
+          hBtnDate.classList.remove("hdr-active");
+          hBtnExport.classList.remove("hdr-active");
+        }
+
+        hBtnDate.addEventListener("click", (e) => {
           e.stopPropagation();
-          fabPanel.classList.toggle("open");
+          const wasOpen = hDatePanel.classList.contains("open");
+          closeHdrPanels();
+          if (!wasOpen) { hDatePanel.classList.add("open"); hBtnDate.classList.add("hdr-active"); }
         });
-        document.addEventListener("click", () => closeMobileFabPanel());
+
+        hBtnExport.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const wasOpen = hExportPanel.classList.contains("open");
+          closeHdrPanels();
+          if (!wasOpen) { hExportPanel.classList.add("open"); hBtnExport.classList.add("hdr-active"); }
+        });
+
+        hBtnRefresh.addEventListener("click", () => {
+          closeHdrPanels();
+          document.getElementById("loadDashboard").click();
+        });
+
+        document.getElementById("hDateToday").addEventListener("click", async () => {
+          closeHdrPanels();
+          try { await applyDashboardRange("today"); } catch {}
+        });
+        document.getElementById("hDateWeek").addEventListener("click", async () => {
+          closeHdrPanels();
+          try { await applyDashboardRange("week"); } catch {}
+        });
+        document.getElementById("hDateCustom").addEventListener("click", () => {
+          closeHdrPanels();
+          document.getElementById("dashRangeCustomDay").click();
+        });
+        document.getElementById("hExportPdf").addEventListener("click",   () => { closeHdrPanels(); document.getElementById("exportPdf").click(); });
+        document.getElementById("hExportExcel").addEventListener("click", () => { closeHdrPanels(); document.getElementById("exportExcel").click(); });
+
+        document.addEventListener("click", () => closeHdrPanels());
         document.querySelectorAll(".bottom-tab").forEach((btn) => {
           btn.addEventListener("click", () => {
-            closeMobileFabPanel();
+            closeHdrPanels();
             closeMobileDetail({ immediate: true });
           });
         });
-        // FAB actions
-        document.getElementById("mFabPdf").addEventListener("click", () => { document.getElementById("exportPdf").click(); closeMobileFabPanel(); });
-        document.getElementById("mFabExcel").addEventListener("click", () => { document.getElementById("exportExcel").click(); closeMobileFabPanel(); });
-        document.getElementById("mFabRefresh").addEventListener("click", () => { document.getElementById("loadDashboard").click(); closeMobileFabPanel(); });
       }
 
       function upsertChart(canvasId, config) {
