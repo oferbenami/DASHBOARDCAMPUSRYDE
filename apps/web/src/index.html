@@ -555,29 +555,6 @@
       .scope-btn:first-child { border-left:none }
       .scope-btn.active { background:var(--accent,#1976d2);color:#fff;font-weight:600 }
       .scope-btn:hover:not(.active) { background:#f0f4fd }
-      .dashboard-range-shortcuts {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
-      .dash-range-btn {
-        border: 1px solid #c6d6f2;
-        background: #f5f8ff;
-        color: #1f2b43;
-        border-radius: 999px;
-        padding: 6px 12px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-      }
-      .dash-range-btn:hover { background: #eaf1ff; border-color: #aac2eb; }
-      .dash-range-btn.active {
-        background: #1d4ed8;
-        border-color: #1d4ed8;
-        color: #fff;
-      }
       .date-nav-btn {
         padding: 0.15rem 0.5rem;
         border: 1px solid #7f93b8;
@@ -1053,11 +1030,6 @@
             <div class="section-header">
               <span class="section-icon">📊</span>
               <h2 style="margin:0">לוח בקרה — KPI</h2>
-            </div>
-            <div class="dashboard-range-shortcuts" id="dashboardRangeShortcuts">
-              <button type="button" class="dash-range-btn" id="dashRangeToday">היום</button>
-              <button type="button" class="dash-range-btn" id="dashRangeCustomDay">יום אחר</button>
-              <button type="button" class="dash-range-btn" id="dashRangeWeek">מבט שבועי</button>
             </div>
             <div class="kpi-headline">
               <div class="headline-title">תמונת מצב תפעולית</div>
@@ -2140,9 +2112,6 @@
         } else if (from && to && from === weekStart) {
           mode = "week";
         }
-        document.getElementById("dashRangeToday")?.classList.toggle("active", mode === "today");
-        document.getElementById("dashRangeCustomDay")?.classList.toggle("active", mode === "custom-day");
-        document.getElementById("dashRangeWeek")?.classList.toggle("active", mode === "week");
         document.getElementById("hDateToday")?.classList.toggle("active", mode === "today");
         document.getElementById("hDateWeek")?.classList.toggle("active", mode === "week");
         const hDateInput = document.getElementById("hDateInput");
@@ -3422,20 +3391,6 @@
           document.getElementById("loadDashboard"),
           async () => { await loadDashboard(); updateDashboardRangeButtons(); toastOk("לוח הבקרה עודכן"); }
         );
-        document.getElementById("dashRangeToday").addEventListener("click", async () => {
-          try { await applyDashboardRange("today"); }
-          catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
-        });
-        document.getElementById("dashRangeWeek").addEventListener("click", async () => {
-          try { await applyDashboardRange("week"); }
-          catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
-        });
-        document.getElementById("dashRangeCustomDay").addEventListener("click", () => {
-          const toInput = document.getElementById("kpiTo");
-          if (!toInput) return;
-          toInput.showPicker?.();
-          toInput.focus();
-        });
         document.getElementById("kpiTo").addEventListener("change", async () => {
           const toInput = document.getElementById("kpiTo");
           const fromInput = document.getElementById("kpiFrom");
@@ -3860,10 +3815,6 @@
     </script>
   </body>
 </html>
-
-
-
-
 
 
 

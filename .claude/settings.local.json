@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/oferi/Documents/Claude/Projects/dashboardcampus/**)",
+      "Bash(vercel env *)"
+    ]
+  }
+}

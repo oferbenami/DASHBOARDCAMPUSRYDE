@@ -43,5 +43,11 @@ module.exports = {
   createTarget: (...args) => backend().createTarget(...args),
   listThresholds: (...args) => backend().listThresholds(...args),
   upsertThreshold: (...args) => backend().upsertThreshold(...args),
-  getExportBundle: (...args) => backend().getExportBundle(...args)
+  getExportBundle: (...args) => backend().getExportBundle(...args),
+  listContractors: (...args) => backend().listContractors(...args),
+  createContractor: (...args) => backend().createContractor(...args),
+  updateContractor: (...args) => backend().updateContractor(...args),
+  listDailyMetricsContractor: (...args) => backend().listDailyMetricsContractor(...args),
+  upsertDailyMetricContractor: (...args) => backend().upsertDailyMetricContractor(...args),
+  getContractorsComparison: (...args) => backend().getContractorsComparison(...args)
 };

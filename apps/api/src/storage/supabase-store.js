@@ -80,6 +80,38 @@ function cleanDailyMetric(row) {
     registeredPassengers: Number(row.registered_passengers),
     issuesCount: Number(row.issues_count),
     affectedPassengers: Number(row.affected_passengers),
+    taxiCount: Number(row.taxi_count || 0),
+    largeVehicleCount: Number(row.large_vehicle_count || 0),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function cleanContractor(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    code: row.code,
+    active: row.active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function cleanDailyMetricContractor(row) {
+  return {
+    id: row.id,
+    serviceDate: row.service_date,
+    serviceType: row.service_type,
+    contractorId: row.contractor_id,
+    contractorName: row.contractors?.name || null,
+    contractorCode: row.contractors?.code || null,
+    ridesCount: Number(row.rides_count),
+    taxiCount: Number(row.taxi_count),
+    largeVehicleCount: Number(row.large_vehicle_count),
+    registeredPassengers: Number(row.registered_passengers),
+    issuesCount: Number(row.issues_count),
+    affectedPassengers: Number(row.affected_passengers),
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -97,6 +129,8 @@ function cleanIncident(row) {
     issueType: row.issue_type,
     description: row.description,
     delayMinutes: row.delay_minutes === null ? null : Number(row.delay_minutes),
+    contractorId: row.contractor_id || null,
+    contractorName: row.contractors?.name || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -373,6 +407,8 @@ async function upsertDailyMetric(input) {
           registered_passengers: input.registeredPassengers,
           issues_count: input.issuesCount,
           affected_passengers: input.affectedPassengers,
+          taxi_count: input.taxiCount ?? 0,
+          large_vehicle_count: input.largeVehicleCount ?? 0,
           updated_at: timestamp
         }
       }
@@ -391,6 +427,8 @@ async function upsertDailyMetric(input) {
       registered_passengers: input.registeredPassengers,
       issues_count: input.issuesCount,
       affected_passengers: input.affectedPassengers,
+      taxi_count: input.taxiCount ?? 0,
+      large_vehicle_count: input.largeVehicleCount ?? 0,
       created_at: timestamp,
       updated_at: timestamp
     }
@@ -426,6 +464,7 @@ async function createIncident(input) {
       issue_type: input.issueType,
       description: input.description,
       delay_minutes: input.delayMinutes ?? null,
+      contractor_id: input.contractorId || null,
       created_at: timestamp,
       updated_at: timestamp
     }
@@ -457,6 +496,7 @@ async function updateIncident(incidentId, input) {
         issue_type: input.issueType,
         description: input.description,
         delay_minutes: input.delayMinutes ?? null,
+        contractor_id: input.contractorId || null,
         updated_at: nowIso()
       }
     }
@@ -805,6 +845,133 @@ async function upsertThreshold(metricKey, input) {
   return { before, after: threshold, threshold };
 }
 
+// ─── Contractors ─────────────────────────────────────────────────────────────
+
+async function listContractors({ activeOnly = false } = {}) {
+  let path = "/rest/v1/contractors?select=*&order=name.asc";
+  if (activeOnly) path += "&active=eq.true";
+  const rows = await supabaseRequest(path, { method: "GET" });
+  return (rows || []).map(cleanContractor);
+}
+
+async function createContractor({ name, code }) {
+  const timestamp = nowIso();
+  const rows = await supabaseRequest("/rest/v1/contractors?select=*", {
+    method: "POST",
+    prefer: "return=representation",
+    body: { name, code, active: true, created_at: timestamp, updated_at: timestamp }
+  });
+  return cleanContractor(rows[0]);
+}
+
+async function updateContractor(id, { name, code, active }) {
+  const rows = await supabaseRequest(
+    `/rest/v1/contractors?id=eq.${encodeURIComponent(id)}&select=*`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: { name, code, active, updated_at: nowIso() }
+    }
+  );
+  return rows && rows[0] ? cleanContractor(rows[0]) : null;
+}
+
+// ─── Per-contractor daily metrics ─────────────────────────────────────────────
+
+async function listDailyMetricsContractor(serviceDate, serviceType) {
+  const type = normalizeServiceType(serviceType);
+  const rows = await supabaseRequest(
+    `/rest/v1/daily_metrics_contractor?select=*,contractors(name,code)&service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${type}&order=contractors(name).asc`,
+    { method: "GET" }
+  );
+  return (rows || []).map(cleanDailyMetricContractor);
+}
+
+async function upsertDailyMetricContractor(serviceDate, serviceType, contractorId, input) {
+  const type = normalizeServiceType(serviceType);
+  const timestamp = nowIso();
+  const existing = await supabaseRequest(
+    `/rest/v1/daily_metrics_contractor?select=*&service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${type}&contractor_id=eq.${encodeURIComponent(contractorId)}&limit=1`,
+    { method: "GET" }
+  );
+  const body = {
+    rides_count: input.ridesCount ?? 0,
+    taxi_count: input.taxiCount ?? 0,
+    large_vehicle_count: input.largeVehicleCount ?? 0,
+    registered_passengers: input.registeredPassengers ?? 0,
+    issues_count: input.issuesCount ?? 0,
+    affected_passengers: input.affectedPassengers ?? 0,
+    updated_at: timestamp
+  };
+  if (existing && existing.length > 0) {
+    const rows = await supabaseRequest(
+      `/rest/v1/daily_metrics_contractor?id=eq.${existing[0].id}&select=*,contractors(name,code)`,
+      { method: "PATCH", prefer: "return=representation", body }
+    );
+    return cleanDailyMetricContractor(rows[0]);
+  }
+  const rows = await supabaseRequest("/rest/v1/daily_metrics_contractor?select=*,contractors(name,code)", {
+    method: "POST",
+    prefer: "return=representation",
+    body: {
+      service_date: serviceDate,
+      service_type: type,
+      contractor_id: contractorId,
+      ...body,
+      created_at: timestamp
+    }
+  });
+  return cleanDailyMetricContractor(rows[0]);
+}
+
+// ─── Contractors comparison dashboard ────────────────────────────────────────
+
+async function getContractorsComparison({ dateFrom, dateTo, serviceType }) {
+  const contractors = await listContractors({ activeOnly: true });
+  if (!contractors.length) return { contractors: [], rows: [] };
+
+  let path = `/rest/v1/daily_metrics_contractor?select=*,contractors(name,code)`;
+  if (dateFrom) path += `&service_date=gte.${encodeURIComponent(dateFrom)}`;
+  if (dateTo)   path += `&service_date=lte.${encodeURIComponent(dateTo)}`;
+  if (serviceType) path += `&service_type=eq.${normalizeServiceType(serviceType)}`;
+  path += `&order=service_date.asc`;
+
+  const rows = await supabaseRequest(path, { method: "GET" });
+  const data = (rows || []).map(cleanDailyMetricContractor);
+
+  // Aggregate per contractor
+  const byContractor = {};
+  for (const row of data) {
+    const cid = row.contractorId;
+    if (!byContractor[cid]) {
+      byContractor[cid] = {
+        contractorId: cid,
+        name: row.contractorName,
+        code: row.contractorCode,
+        rides: 0, taxis: 0, largeVehicles: 0,
+        passengers: 0, issues: 0, affected: 0, days: 0
+      };
+    }
+    const c = byContractor[cid];
+    c.rides += row.ridesCount;
+    c.taxis += row.taxiCount;
+    c.largeVehicles += row.largeVehicleCount;
+    c.passengers += row.registeredPassengers;
+    c.issues += row.issuesCount;
+    c.affected += row.affectedPassengers;
+    c.days++;
+  }
+
+  const summaries = Object.values(byContractor).map(c => ({
+    ...c,
+    issuesRate: c.rides ? (c.issues / c.rides) * 100 : 0,
+    affectedRate: c.passengers ? (c.affected / c.passengers) * 100 : 0,
+    efficiency: c.rides ? c.passengers / c.rides : 0
+  }));
+
+  return { contractors, summaries, daily: data };
+}
+
 async function getExportBundle(filters) {
   const [summary, trends, drilldown, targets, thresholds, dayTypes] = await Promise.all([
     getKpiSummary(filters),
@@ -849,5 +1016,11 @@ module.exports = {
   createTarget,
   listThresholds,
   upsertThreshold,
-  getExportBundle
+  getExportBundle,
+  listContractors,
+  createContractor,
+  updateContractor,
+  listDailyMetricsContractor,
+  upsertDailyMetricContractor,
+  getContractorsComparison
 };

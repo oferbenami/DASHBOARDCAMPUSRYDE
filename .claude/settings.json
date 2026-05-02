@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v \"plugin\\\\|claude\\\\|status\\\\|reason\\\\|action\\\\|message\\\\|next\\\\|command\\\\|when\\\\|Install\\\\|Working\\\\|{$\\\\|}\\\\|\\\\\"$\\\\|\\\\[$\\\\|\\\\]$\")",
+      "Bash(vercel logs *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

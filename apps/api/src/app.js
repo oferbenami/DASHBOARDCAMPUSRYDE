@@ -27,7 +27,13 @@ const {
   createTarget,
   listThresholds,
   upsertThreshold,
-  getExportBundle
+  getExportBundle,
+  listContractors,
+  createContractor,
+  updateContractor,
+  listDailyMetricsContractor,
+  upsertDailyMetricContractor,
+  getContractorsComparison
 } = require("./storage/identity-store");
 const {
   isDateString,
@@ -1455,6 +1461,76 @@ async function handleUpsertThreshold(req, res, metricKey) {
     metadata: { metricKey }
   });
   sendJson(res, 200, { threshold: saved.threshold });
+}
+
+// ─── Contractors handlers ─────────────────────────────────────────────────────
+
+async function handleListContractors(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+  const activeOnly = parsedUrl.searchParams.get("activeOnly") === "true";
+  const contractors = await listContractors({ activeOnly });
+  sendJson(res, 200, { contractors });
+}
+
+async function handleCreateContractor(req, res) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+  const body = await readJsonBody(req);
+  const name = String(body.name || "").trim();
+  const code = String(body.code || "").trim();
+  if (!name || !code) { badRequest(res, "name and code are required"); return; }
+  const contractor = await createContractor({ name, code });
+  await appendAudit({ actorUserId: active.user.id, action: "CONTRACTOR_CREATED",
+    entityType: "contractors", entityId: contractor.id,
+    beforeData: null, afterData: contractor, metadata: { name, code } });
+  sendJson(res, 201, { contractor });
+}
+
+async function handleUpdateContractor(req, res, id) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+  const body = await readJsonBody(req);
+  const name = String(body.name || "").trim();
+  const code = String(body.code || "").trim();
+  const isActive = body.active !== false;
+  if (!name || !code) { badRequest(res, "name and code are required"); return; }
+  const contractor = await updateContractor(id, { name, code, active: isActive });
+  if (!contractor) { sendJson(res, 404, { error: "Contractor not found" }); return; }
+  sendJson(res, 200, { contractor });
+}
+
+async function handleListDailyMetricsContractor(req, res, date, serviceType) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+  const rows = await listDailyMetricsContractor(date, serviceType);
+  sendJson(res, 200, { rows });
+}
+
+async function handleUpsertDailyMetricContractor(req, res, date, serviceType, contractorId) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+  const body = await readJsonBody(req);
+  const input = {
+    ridesCount: Number(body.ridesCount || 0),
+    taxiCount: Number(body.taxiCount || 0),
+    largeVehicleCount: Number(body.largeVehicleCount || 0),
+    registeredPassengers: Number(body.registeredPassengers || 0),
+    issuesCount: Number(body.issuesCount || 0),
+    affectedPassengers: Number(body.affectedPassengers || 0)
+  };
+  const row = await upsertDailyMetricContractor(date, serviceType, contractorId, input);
+  sendJson(res, 200, { row });
+}
+
+async function handleContractorsComparison(req, res, parsedUrl) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+  const dateFrom = parsedUrl.searchParams.get("from") || null;
+  const dateTo = parsedUrl.searchParams.get("to") || null;
+  const serviceType = parsedUrl.searchParams.get("serviceType") || null;
+  const result = await getContractorsComparison({ dateFrom, dateTo, serviceType });
+  sendJson(res, 200, result);
 }
 
 async function handleKpiStream(req, res, parsedUrl) {
