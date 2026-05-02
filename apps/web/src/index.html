@@ -1070,7 +1070,14 @@
 
             <div class="grid cols-4" style="margin-top:12px">
               <div><label>מתאריך</label><input id="kpiFrom" type="date" /></div>
-              <div><label>עד תאריך</label><input id="kpiTo" type="date" /></div>
+              <div>
+                <label>עד תאריך</label>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
+                  <input id="kpiTo" type="date" />
+                  <button id="kpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
+                </div>
+              </div>
               <div>
                 <label>תצוגת נסיעות</label>
                 <div id="dashboardScopeToggle" style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:4px">
@@ -2185,6 +2192,19 @@
 
         updateDashboardRangeButtons();
         await refreshDashboard("range-change");
+      }
+
+      async function shiftDashboardFocusDate(daysDelta) {
+        const toInput = document.getElementById("kpiTo");
+        const fromInput = document.getElementById("kpiFrom");
+        if (!toInput?.value || !fromInput) return;
+        const shifted = shiftDateVal(toInput.value, daysDelta);
+        toInput.value = shifted;
+        fromInput.value = shifted;
+        const hDateInput = document.getElementById("hDateInput");
+        if (hDateInput) hDateInput.value = shifted;
+        updateDashboardRangeButtons();
+        await refreshDashboard(daysDelta > 0 ? "kpi-date-next" : "kpi-date-prev");
       }
 
       // ═══════════════════════════════
@@ -3574,6 +3594,12 @@
         });
         document.getElementById("kpiFrom").addEventListener("change", () => {
           updateDashboardRangeButtons();
+        });
+        document.getElementById("kpiDatePrev").addEventListener("click", async () => {
+          await shiftDashboardFocusDate(-1);
+        });
+        document.getElementById("kpiDateNext").addEventListener("click", async () => {
+          await shiftDashboardFocusDate(1);
         });
         document.querySelectorAll(".report-tile").forEach((tile) => {
           tile.addEventListener("click", () => {
