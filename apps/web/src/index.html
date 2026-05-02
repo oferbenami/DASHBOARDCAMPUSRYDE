@@ -555,6 +555,29 @@
       .scope-btn:first-child { border-left:none }
       .scope-btn.active { background:var(--accent,#1976d2);color:#fff;font-weight:600 }
       .scope-btn:hover:not(.active) { background:#f0f4fd }
+      .date-nav-btn {
+        padding: 0.15rem 0.5rem;
+        border: 1px solid #7f93b8;
+        background: #e8eefb;
+        color: #1f2b43;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 800;
+        line-height: 1.1;
+        min-width: 2rem;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      }
+      .date-nav-btn:hover { background: #dbe7ff; border-color: #5f77a8; }
+      .date-nav-btn:active { transform: translateY(1px); }
+      .date-nav-btn:focus-visible {
+        outline: 2px solid #1d4ed8;
+        outline-offset: 1px;
+      }
+      #dashboardMainBackTop {
+        display: none;
+        margin: 8px 0 12px;
+      }
+      #dashboardMainBackTop.show { display: inline-block; }
 
       /* ═══════════════════════════════
          MISC
@@ -650,10 +673,16 @@
           inset: 0;
           background: var(--bg);
           z-index: 50;
+          pointer-events: none;
+          visibility: hidden;
           transform: translateX(100%);
           transition: transform .25s cubic-bezier(.4,0,.2,1);
         }
-        #mobileDetail.open { transform: translateX(0); }
+        #mobileDetail.open {
+          transform: translateX(0);
+          pointer-events: auto;
+          visibility: visible;
+        }
         #mDetailHeader {
           height: var(--header-h);
           background: var(--card);
@@ -965,6 +994,7 @@
 
             <hr class="divider" />
             <h3>קוביות דוחות ו-Drilldown</h3>
+            <button id="dashboardMainBackTop" type="button" class="secondary">חזרה ללוח הבקרה הראשי</button>
             <div class="grid cols-3" id="dashboardTiles">
               <button type="button" class="report-tile active" data-report="kpi-main">
                 <div class="tile-title">שכבת KPI ראשית</div>
@@ -1232,9 +1262,9 @@
             <div class="grid cols-2">
               <div class="card">
                 <div style="display:flex;align-items:center;gap:0.4rem">
-                  <button id="dropoffDatePrev" type="button" title="יום קודם" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">←</button>
+                  <button id="dropoffDatePrev" type="button" class="date-nav-btn" title="יום קודם">←</button>
                   <h2 id="dropoffTitle" style="margin:0">פיזור</h2>
-                  <button id="dropoffDateNext" type="button" title="יום הבא" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">→</button>
+                  <button id="dropoffDateNext" type="button" class="date-nav-btn" title="יום הבא">→</button>
                 </div>
                 <div class="grid cols-2">
                   <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
@@ -1247,9 +1277,9 @@
 
               <div class="card">
                 <div style="display:flex;align-items:center;gap:0.4rem">
-                  <button id="pickupDatePrev" type="button" title="יום קודם" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">←</button>
+                  <button id="pickupDatePrev" type="button" class="date-nav-btn" title="יום קודם">←</button>
                   <h2 id="pickupTitle" style="margin:0">איסוף</h2>
-                  <button id="pickupDateNext" type="button" title="יום הבא" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">→</button>
+                  <button id="pickupDateNext" type="button" class="date-nav-btn" title="יום הבא">→</button>
                 </div>
                 <div class="grid cols-2">
                   <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
@@ -1834,6 +1864,8 @@
       let currentTab = "dashboard";
 
       function showTab(id) {
+        closeMobileDetail({ immediate: true });
+        closeMobileFabPanel();
         currentTab = id;
         document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
@@ -2401,10 +2433,29 @@
         }
       }
 
-      function closeMobileDetail() {
+      function closeMobileDetail(options = {}) {
+        const immediate = Boolean(options.immediate);
         const detail = document.getElementById("mobileDetail");
+        if (!detail) return;
         detail.classList.remove("open");
-        setTimeout(() => { detail.style.display = "none"; destroyAllMobileCharts(); }, 260);
+        detail.style.pointerEvents = "none";
+        detail.style.visibility = "hidden";
+        if (immediate) {
+          detail.style.display = "none";
+          destroyAllMobileCharts();
+          return;
+        }
+        setTimeout(() => {
+          if (!detail.classList.contains("open")) {
+            detail.style.display = "none";
+            destroyAllMobileCharts();
+          }
+        }, 260);
+      }
+
+      function closeMobileFabPanel() {
+        const fabPanel = document.getElementById("mobileFabPanel");
+        if (fabPanel) fabPanel.classList.remove("open");
       }
 
       function wireMobileUI() {
@@ -2421,11 +2472,17 @@
           e.stopPropagation();
           fabPanel.classList.toggle("open");
         });
-        document.addEventListener("click", () => fabPanel.classList.remove("open"));
+        document.addEventListener("click", () => closeMobileFabPanel());
+        document.querySelectorAll(".bottom-tab").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            closeMobileFabPanel();
+            closeMobileDetail({ immediate: true });
+          });
+        });
         // FAB actions
-        document.getElementById("mFabPdf").addEventListener("click", () => { document.getElementById("exportPdf").click(); fabPanel.classList.remove("open"); });
-        document.getElementById("mFabExcel").addEventListener("click", () => { document.getElementById("exportExcel").click(); fabPanel.classList.remove("open"); });
-        document.getElementById("mFabRefresh").addEventListener("click", () => { document.getElementById("loadDashboard").click(); fabPanel.classList.remove("open"); });
+        document.getElementById("mFabPdf").addEventListener("click", () => { document.getElementById("exportPdf").click(); closeMobileFabPanel(); });
+        document.getElementById("mFabExcel").addEventListener("click", () => { document.getElementById("exportExcel").click(); closeMobileFabPanel(); });
+        document.getElementById("mFabRefresh").addEventListener("click", () => { document.getElementById("loadDashboard").click(); closeMobileFabPanel(); });
       }
 
       function upsertChart(canvasId, config) {
@@ -2825,6 +2882,13 @@
 
         const openBtn = document.getElementById("openDetailedReport");
         openBtn.dataset.report = reportKey;
+        updateDashboardMainBackVisibility();
+      }
+
+      function updateDashboardMainBackVisibility() {
+        const btn = document.getElementById("dashboardMainBackTop");
+        if (!btn) return;
+        btn.classList.toggle("show", selectedDashboardReport !== "kpi-main");
       }
 
       // ═══════════════════════════════
@@ -3021,6 +3085,7 @@
           btn.classList.toggle("active", btn.dataset.report === selectedDashboardReport)
         );
         renderDrilldownReport(selectedDashboardReport);
+        updateDashboardMainBackVisibility();
         const main = document.getElementById("dashboardTiles");
         if (main) {
           main.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3060,6 +3125,9 @@
       function wireButtons() {
         wireMobileUI();
         wireDashboardBackButtons();
+        const topBack = document.getElementById("dashboardMainBackTop");
+        if (topBack) topBack.addEventListener("click", goToDashboardMain);
+        updateDashboardMainBackVisibility();
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
           async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
@@ -3071,6 +3139,7 @@
               btn.classList.toggle("active", btn.dataset.report === selectedDashboardReport)
             );
             renderDrilldownReport(selectedDashboardReport);
+            updateDashboardMainBackVisibility();
           });
         });
         document.getElementById("openDetailedReport").onclick = () => {
