@@ -2024,12 +2024,16 @@
       function showTab(id) {
         closeMobileDetail({ immediate: true });
         closeMobileFabPanel();
+        const previous = currentTab;
         currentTab = id;
         document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
         document.querySelectorAll(".bottom-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
         const panel = document.getElementById("panel-" + id);
         if (panel) panel.classList.add("active");
+        if (id === "dashboard" && previous !== "dashboard" && getToken()) {
+          refreshDashboard("tab-return", { silent: true }).catch(() => {});
+        }
       }
 
       // ═══════════════════════════════
@@ -2060,6 +2064,7 @@
       let dropoffDate = toDateVal(yesterday);
       let dashboardScope = "total";
       let selectedDashboardReport = "kpi-main";
+      let dashboardRefreshPromise = null;
       let lastDashboardData = null;
       let lastAdvancedData  = null;
             const dashboardMetaCache = new Map();
@@ -2127,6 +2132,31 @@
         else if (hDateInput && mode !== "week") hDateInput.value = "";
       }
 
+      function syncHeaderScopeButtons() {
+        const scope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
+        document.querySelectorAll(".hdr-dd-scope").forEach((b) =>
+          b.classList.toggle("active", b.dataset.scope === scope)
+        );
+      }
+
+      async function refreshDashboard(reason = "manual", options = {}) {
+        const silent = Boolean(options.silent);
+        if (dashboardRefreshPromise) return dashboardRefreshPromise;
+        dashboardRefreshPromise = (async () => {
+          await loadDashboard();
+          updateDashboardRangeButtons();
+          syncHeaderScopeButtons();
+        })();
+        try {
+          await dashboardRefreshPromise;
+        } catch (err) {
+          if (!silent) toastErr(err.message || "שגיאה בטעינת הדשבורד");
+          throw err;
+        } finally {
+          dashboardRefreshPromise = null;
+        }
+      }
+
       async function applyDashboardRange(mode) {
         const todayVal = toDateVal(new Date());
         const fromInput = document.getElementById("kpiFrom");
@@ -2143,7 +2173,7 @@
         }
 
         updateDashboardRangeButtons();
-        await loadDashboard();
+        await refreshDashboard("range-change");
       }
 
       // ═══════════════════════════════
@@ -2204,7 +2234,8 @@
           serviceQuality: "איכות שירות",
           issues: "תקלות",
           issuesRate: "% נסיעות עם תקלה",
-          affectedRate: "% נוסעים שנפגעו"
+          affectedRate: "% נוסעים שנפגעו",
+          affectedPassengers: "מספר נוסעים שחוו תקלה ליום"
         };
         return labels[metricKey] || metricKey;
       }
@@ -2215,12 +2246,13 @@
         { metricKey: "issues", description: "מודד את מספר התקלות הכולל שנרשם בתקופת המדידה." },
         { metricKey: "issuesRate", description: "מודד את אחוז הנסיעות עם תקלה מתוך כלל הנסיעות." },
         { metricKey: "serviceQuality", description: "מודד את איכות השירות הכוללת באחוזים." },
-        { metricKey: "affectedRate", description: "מודד את אחוז הנוסעים שהושפעו מתקלות." }
+        { metricKey: "affectedRate", description: "מודד את אחוז הנוסעים שהושפעו מתקלות." },
+        { metricKey: "affectedPassengers", description: "מודד את מספר הנוסעים שהושפעו מתקלות ביום השירות." }
       ];
       const managedRowsByMetric = new Map();
 
       function managedDefaultThreshold(metricKey) {
-        if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate") {
+        if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate" || metricKey === "affectedPassengers") {
           return { greenMin: 0, greenMax: 2, yellowMin: 2, yellowMax: 5, redMin: 5, redMax: 100 };
         }
         return { greenMin: 95, greenMax: 100, yellowMin: 90, yellowMax: 95, redMin: 0, redMax: 90 };
@@ -2374,7 +2406,7 @@
       }
 
       function defaultDirection(metricKey) {
-        if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate") return "at_most";
+        if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate" || metricKey === "affectedPassengers") return "at_most";
         return "at_least";
       }
 
@@ -2840,7 +2872,7 @@
           document.getElementById("kpiTo").value = val;
           updateDashboardRangeButtons();
           closeHdrPanels();
-          try { await loadDashboard(); } catch {}
+          try { await refreshDashboard("header-date-change", { silent: true }); } catch {}
         });
 
         // Scope buttons in date panel
@@ -3518,7 +3550,7 @@
         updateDashboardMainBackVisibility();
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
-          async () => { await loadDashboard(); updateDashboardRangeButtons(); toastOk("לוח הבקרה עודכן"); }
+          async () => { await refreshDashboard("manual-load"); toastOk("לוח הבקרה עודכן"); }
         );
         document.getElementById("kpiTo").addEventListener("change", async () => {
           const toInput = document.getElementById("kpiTo");
@@ -3526,7 +3558,7 @@
           if (!toInput?.value || !fromInput) return;
           fromInput.value = toInput.value;
           updateDashboardRangeButtons();
-          try { await loadDashboard(); }
+          try { await refreshDashboard("kpi-date-change"); }
           catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
         });
         document.getElementById("kpiFrom").addEventListener("change", () => {
@@ -3580,7 +3612,7 @@
             document.querySelectorAll("#dashboardScopeToggle .scope-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             dashboardScope = btn.dataset.scope;
-            try { await loadDashboard(); updateDashboardRangeButtons(); } catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+            try { await refreshDashboard("scope-change"); } catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
           });
         });
 
@@ -3851,7 +3883,7 @@
 
         const [dailyResult, dashboardResult] = await Promise.allSettled([
           reloadDailySections(),
-          loadDashboard()
+          refreshDashboard("bootstrap", { silent: true })
         ]);
 
         if (dailyResult.status === "rejected") {
@@ -3874,7 +3906,7 @@
       // Auto-refresh every 10s
       setInterval(() => {
         if (getToken() && document.getElementById("appScreen").style.display !== "none") {
-          loadDashboard().catch(() => {});
+          refreshDashboard("auto-interval", { silent: true }).catch(() => {});
         }
       }, 10000);
 
