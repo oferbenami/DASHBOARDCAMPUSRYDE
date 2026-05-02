@@ -18,10 +18,15 @@ This repository contains the staged implementation for the campus transport dash
 
 ## Quick checks
 ```bash
+npm run build
+npm run build:web
 npm run check
 npm --workspace @dashboardryde/api test
 npm run check:connections
 ```
+
+`npm run build` at the repository root currently builds Web only (`@dashboardryde/web`).
+API/Mobile build pipelines are not part of the root build at this stage.
 
 Connection and deployment steps are documented in `docs/runbooks/connection-setup.md`.
 Provider and production validation checklist is documented in `apps/api/README.md`.

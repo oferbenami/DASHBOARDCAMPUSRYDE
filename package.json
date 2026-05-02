@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "npm run build -w @dashboardryde/web",
+    "build:web": "npm run build -w @dashboardryde/web",
     "validate:foundation": "node scripts/validate-foundation.mjs",
     "check": "npm run validate:foundation",
     "check:connections": "node scripts/check-connections.mjs",
