@@ -660,7 +660,11 @@
         .header-tabs { display: none; }
         #toastContainer { bottom: calc(var(--bottom-nav-h) + 12px); }
         .user-email { display: none; }
-        .header-brand-icon { display: none; }
+        .user-name  { display: none; }
+        .header-brand-text { display: none; }
+        .header-brand-icon { display: flex; font-size: 1.4rem; }
+        #appHeader { padding: 0 10px; gap: 8px; }
+        .btn-logout { padding: 5px 10px; font-size: 0.78rem; width: auto; }
         .chart-grid { grid-template-columns: 1fr; }
         .chart-wrap { height: 210px; }
         .row-actions { flex-wrap: wrap; }
@@ -811,18 +815,22 @@
         }
         .hdr-action-btn {
           display: flex; align-items: center; justify-content: center;
-          width: 38px; height: 38px;
+          height: 36px;
           border-radius: 9px;
           border: 1px solid var(--line);
           background: none;
-          font-size: 1rem;
           cursor: pointer;
           color: var(--text);
           transition: background 0.15s;
           width: auto;
           padding: 0 10px;
         }
-        .hdr-action-btn:active, .hdr-action-btn.hdr-active { background: #e8f0fe; }
+        .hdr-action-btn svg { pointer-events: none; }
+        .hdr-action-btn:active, .hdr-action-btn.hdr-active {
+          background: #e8f0fe;
+          border-color: var(--accent);
+          color: var(--accent);
+        }
 
         /* Header dropdown panels */
         .hdr-dropdown {
@@ -831,25 +839,51 @@
           right: 0; left: 0;
           background: var(--card);
           border-bottom: 1px solid var(--line);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.14);
           z-index: 101;
-          padding: 8px;
+          padding: 10px;
+          gap: 8px;
+          flex-direction: column;
+        }
+        .hdr-dd-row {
+          display: flex;
           gap: 6px;
+          width: 100%;
         }
         .hdr-dd-btn {
           flex: 1;
-          padding: 10px 8px;
+          display: flex; align-items: center; justify-content: center; gap: 4px;
+          padding: 9px 6px;
           border: 1px solid var(--line);
-          border-radius: 8px;
-          background: none;
-          font-size: 0.85rem;
+          border-radius: 9px;
+          background: var(--bg);
+          color: var(--text);
+          font-size: 0.84rem;
+          font-weight: 500;
           cursor: pointer;
           text-align: center;
           white-space: nowrap;
           width: auto;
+          transition: background 0.12s, border-color 0.12s;
         }
-        .hdr-dd-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-        .hdr-dd-btn:active { background: #e8f0fe; }
+        .hdr-dd-btn:active { background: #dde8fb; }
+        .hdr-dd-btn.active {
+          background: var(--accent);
+          color: #fff;
+          border-color: var(--accent);
+          font-weight: 600;
+        }
+        .hdr-date-input {
+          width: 100%;
+          border: 1px solid var(--line);
+          border-radius: 9px;
+          padding: 8px 10px;
+          font-size: 0.85rem;
+          color: var(--text);
+          background: var(--bg);
+          direction: rtl;
+          text-align: right;
+        }
         #headerDatePanel.open, #headerExportPanel.open { display: flex; }
       }
       @media (max-width: 600px) {
@@ -900,7 +934,7 @@
       <header id="appHeader">
         <a class="header-brand" href="#" onclick="return false;">
           <span class="header-brand-icon">🚌</span>
-          DashboardRyde
+          <span class="header-brand-text">DashboardRyde</span>
         </a>
 
         <!-- Desktop tabs in header -->
@@ -921,9 +955,15 @@
 
         <!-- Mobile header action buttons (visible on ≤768px, replaces FAB) -->
         <div class="header-actions" id="headerActions">
-          <button class="hdr-action-btn" id="hBtnDate"    title="טווח תאריכים">📅</button>
-          <button class="hdr-action-btn" id="hBtnRefresh" title="רענן נתונים">🔄</button>
-          <button class="hdr-action-btn" id="hBtnExport"  title="ייצוא">⬇️</button>
+          <button class="hdr-action-btn" id="hBtnDate" title="טווח תאריכים">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </button>
+          <button class="hdr-action-btn" id="hBtnRefresh" title="רענן נתונים">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+          <button class="hdr-action-btn" id="hBtnExport" title="ייצוא">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
         </div>
 
         <!-- User info -->
@@ -937,14 +977,31 @@
 
         <!-- Date range dropdown panel -->
         <div id="headerDatePanel" class="hdr-dropdown">
-          <button class="hdr-dd-btn" id="hDateToday">היום</button>
-          <button class="hdr-dd-btn" id="hDateWeek">מבט שבועי</button>
-          <button class="hdr-dd-btn" id="hDateCustom">יום אחר</button>
+          <div class="hdr-dd-row">
+            <button class="hdr-dd-btn" id="hDateToday">היום</button>
+            <button class="hdr-dd-btn" id="hDateWeek">שבוע</button>
+          </div>
+          <div class="hdr-dd-row">
+            <input type="date" id="hDateInput" class="hdr-date-input" title="בחר תאריך ספציפי">
+          </div>
+          <div class="hdr-dd-row">
+            <button class="hdr-dd-btn hdr-dd-scope" id="hScopeTotal"   data-scope="total">סה"כ</button>
+            <button class="hdr-dd-btn hdr-dd-scope" id="hScopePickup"  data-scope="pickup">איסוף</button>
+            <button class="hdr-dd-btn hdr-dd-scope" id="hScopeDropoff" data-scope="dropoff">פיזור</button>
+          </div>
         </div>
         <!-- Export dropdown panel -->
         <div id="headerExportPanel" class="hdr-dropdown">
-          <button class="hdr-dd-btn" id="hExportPdf">⬇️ ייצוא PDF</button>
-          <button class="hdr-dd-btn" id="hExportExcel">⬇️ ייצוא Excel</button>
+          <div class="hdr-dd-row">
+            <button class="hdr-dd-btn" id="hExportPdf">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              PDF
+            </button>
+            <button class="hdr-dd-btn" id="hExportExcel">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              Excel
+            </button>
+          </div>
         </div>
       </header>
 
@@ -1403,6 +1460,12 @@
                 </div>
                 <button id="savePickup" style="margin-top:10px">שמור איסוף</button>
               </div>
+            </div>
+            <div style="margin-top:12px">
+              <button id="saveBoth" class="good" style="display:flex;align-items:center;justify-content:center;gap:8px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                שמור איסוף + פיזור
+              </button>
             </div>
           </div>
         </div>
@@ -2081,8 +2144,10 @@
         document.getElementById("dashRangeCustomDay")?.classList.toggle("active", mode === "custom-day");
         document.getElementById("dashRangeWeek")?.classList.toggle("active", mode === "week");
         document.getElementById("hDateToday")?.classList.toggle("active", mode === "today");
-        document.getElementById("hDateCustom")?.classList.toggle("active", mode === "custom-day");
         document.getElementById("hDateWeek")?.classList.toggle("active", mode === "week");
+        const hDateInput = document.getElementById("hDateInput");
+        if (hDateInput && (mode === "today" || mode === "custom-day")) hDateInput.value = to;
+        else if (hDateInput && mode !== "week") hDateInput.value = "";
       }
 
       async function applyDashboardRange(mode) {
@@ -2666,10 +2731,38 @@
           closeHdrPanels();
           try { await applyDashboardRange("week"); } catch {}
         });
-        document.getElementById("hDateCustom").addEventListener("click", () => {
+
+        // Custom date input: user taps the date field, picks a date → load that day
+        const hDateInput = document.getElementById("hDateInput");
+        hDateInput.addEventListener("click", (e) => e.stopPropagation());
+        hDateInput.addEventListener("change", async () => {
+          const val = hDateInput.value;
+          if (!val) return;
+          document.getElementById("kpiFrom").value = val;
+          document.getElementById("kpiTo").value = val;
+          updateDashboardRangeButtons();
           closeHdrPanels();
-          document.getElementById("dashRangeCustomDay").click();
+          try { await loadDashboard(); } catch {}
         });
+
+        // Scope buttons in date panel
+        function updateHdrScopeButtons() {
+          const scope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
+          document.querySelectorAll(".hdr-dd-scope").forEach(b =>
+            b.classList.toggle("active", b.dataset.scope === scope)
+          );
+        }
+        document.querySelectorAll(".hdr-dd-scope").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const scopeBtn = document.querySelector(`#dashboardScopeToggle .scope-btn[data-scope="${btn.dataset.scope}"]`);
+            if (scopeBtn && !scopeBtn.classList.contains("active")) scopeBtn.click();
+            updateHdrScopeButtons();
+          });
+        });
+        // Sync scope buttons when panel opens
+        hBtnDate.addEventListener("click", () => updateHdrScopeButtons(), true);
+
         document.getElementById("hExportPdf").addEventListener("click",   () => { closeHdrPanels(); document.getElementById("exportPdf").click(); });
         document.getElementById("hExportExcel").addEventListener("click", () => { closeHdrPanels(); document.getElementById("exportExcel").click(); });
 
@@ -3466,6 +3559,16 @@
             await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff"));
             await loadDashboard();
             toastOk("נתוני פיזור נשמרו");
+          }
+        );
+
+        document.getElementById("saveBoth").onclick = withLoading(
+          document.getElementById("saveBoth"),
+          async () => {
+            await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup"));
+            await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff"));
+            await loadDashboard();
+            toastOk("נתוני איסוף ופיזור נשמרו");
           }
         );
 
