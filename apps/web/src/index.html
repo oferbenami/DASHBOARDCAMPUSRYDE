@@ -480,6 +480,25 @@
       tr:last-child td { border-bottom: none; }
       tr:hover td { background: #f8fafc; }
       #trendTable td, #trendTable th { font-size: 0.82rem; }
+      .mgmt-table-wrap { overflow-x: auto; margin-top: 10px; }
+      .mgmt-table { min-width: 1200px; }
+      .mgmt-table th { white-space: nowrap; font-size: 0.76rem; }
+      .mgmt-table td { vertical-align: middle; font-size: 0.78rem; }
+      .mgmt-table .metric-cell strong { display: block; color: #1f2b43; }
+      .mgmt-table .metric-help { color: #6b7893; font-size: 0.72rem; margin-top: 4px; line-height: 1.3; }
+      .mgmt-table .compact-input,
+      .mgmt-table .compact-select {
+        width: 100%;
+        min-width: 90px;
+        font-size: 0.78rem;
+        padding: 6px 7px;
+      }
+      .mgmt-table .save-one-btn {
+        width: auto;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+      }
 
       /* ═══════════════════════════════
          TOASTS
@@ -1548,47 +1567,37 @@
           <div class="info-box" id="mobileManagementNote" style="display:none">
             ניהול יעדים וספי צבעים זמין בגישה ממחשב בלבד.
           </div>
-          <div class="grid cols-2" id="managementContent">
+          <div id="managementContent">
             <div class="card">
-              <h3>🎯 יעד ביצוע</h3>
-              <div class="grid cols-2">
-                <div><label>מפתח מדד</label><input id="targetMetricKey" value="serviceQuality" /></div>
-                <div><label>היקף</label><input id="targetScopeKey" value="total" /></div>
-                <div>
-                  <label>כיוון</label>
-                  <select id="targetDirection">
-                    <option value="at_least">לפחות</option>
-                    <option value="at_most">לכל היותר</option>
-                  </select>
-                </div>
-                <div><label>ערך יעד</label><input id="targetValue" type="number" value="98" /></div>
-                <div><label>בתוקף מ-</label><input id="targetFrom" type="date" /></div>
-                <div><label>בתוקף עד</label><input id="targetTo" type="date" /></div>
+              <div class="section-header">
+                <span class="section-icon">🎯</span>
+                <h2 style="margin:0">ניהול יעדים וספי צבע לכל המדדים</h2>
               </div>
-              <div class="row-actions" style="margin-top:12px">
-                <button id="saveTarget">💾 שמור יעד</button>
-                <button id="loadTargets" class="secondary">טען יעדים</button>
+              <div class="row-actions" style="margin-top:10px">
+                <button id="reloadManagedTargets" class="secondary">טען יעדים מנוהלים</button>
               </div>
-              <div id="targetsCount" style="margin-top:10px;font-size:0.82rem;color:#4a5a73">יעדים: 0</div>
-            </div>
-
-            <div class="card">
-              <h3>🎨 ספי צבע</h3>
-              <div class="grid cols-2">
-                <div><label>מפתח מדד</label><input id="thresholdMetricKey" value="serviceQuality" /></div>
-                <div style="grid-column:span 1"></div>
-                <div><label>ירוק מ-</label><input id="thGreenMin" type="number" value="95" /></div>
-                <div><label>ירוק עד</label><input id="thGreenMax" type="number" value="100" /></div>
-                <div><label>צהוב מ-</label><input id="thYellowMin" type="number" value="90" /></div>
-                <div><label>צהוב עד</label><input id="thYellowMax" type="number" value="95" /></div>
-                <div><label>אדום מ-</label><input id="thRedMin" type="number" value="0" /></div>
-                <div><label>אדום עד</label><input id="thRedMax" type="number" value="90" /></div>
+              <div id="managedTargetsCount" style="margin-top:8px;font-size:0.82rem;color:#4a5a73">יעדים מנוהלים: 0</div>
+              <div class="mgmt-table-wrap">
+                <table class="mgmt-table">
+                  <thead>
+                    <tr>
+                      <th>מדד</th>
+                      <th>יעד מספרי</th>
+                      <th>כיוון יעד</th>
+                      <th>בתוקף מ-</th>
+                      <th>בתוקף עד</th>
+                      <th>ירוק מ-</th>
+                      <th>ירוק עד</th>
+                      <th>צהוב מ-</th>
+                      <th>צהוב עד</th>
+                      <th>אדום מ-</th>
+                      <th>אדום עד</th>
+                      <th>פעולה</th>
+                    </tr>
+                  </thead>
+                  <tbody id="managedTargetsRows"></tbody>
+                </table>
               </div>
-              <div class="row-actions" style="margin-top:12px">
-                <button id="saveThreshold">💾 שמור ספים</button>
-                <button id="loadThresholds" class="secondary">טען ספים</button>
-              </div>
-              <div id="thresholdsCount" style="margin-top:10px;font-size:0.82rem;color:#4a5a73">ספים: 0</div>
             </div>
           </div>
         </div>
@@ -2083,7 +2092,6 @@
         document.getElementById("filter_date").value = pickupDate;
         document.getElementById("drillFrom").value = toDateVal(weekAgo);
         document.getElementById("drillTo").value = pickupDate;
-        document.getElementById("targetFrom").value = pickupDate;
         updateHeadlineDates(pickupDate);
         updateDashboardRangeButtons();
       }
@@ -2199,6 +2207,127 @@
           affectedRate: "% נוסעים שנפגעו"
         };
         return labels[metricKey] || metricKey;
+      }
+      const MANAGED_KPI_CATALOG = [
+        { metricKey: "passengers", description: "מודד את סך הנוסעים ששורת השירות טיפלה בהם." },
+        { metricKey: "rides", description: "מודד את כמות הנסיעות שבוצעו בפועל ביום השירות." },
+        { metricKey: "efficiency", description: "מודד יעילות תפעולית: יחס נוסעים לכל נסיעה." },
+        { metricKey: "issues", description: "מודד את מספר התקלות הכולל שנרשם בתקופת המדידה." },
+        { metricKey: "issuesRate", description: "מודד את אחוז הנסיעות עם תקלה מתוך כלל הנסיעות." },
+        { metricKey: "serviceQuality", description: "מודד את איכות השירות הכוללת באחוזים." },
+        { metricKey: "affectedRate", description: "מודד את אחוז הנוסעים שהושפעו מתקלות." }
+      ];
+      const managedRowsByMetric = new Map();
+
+      function managedDefaultThreshold(metricKey) {
+        if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate") {
+          return { greenMin: 0, greenMax: 2, yellowMin: 2, yellowMax: 5, redMin: 5, redMax: 100 };
+        }
+        return { greenMin: 95, greenMax: 100, yellowMin: 90, yellowMax: 95, redMin: 0, redMax: 90 };
+      }
+
+      function resolveManagedTarget(metricKey, targets, focusDate) {
+        return resolveActiveTarget(targets || [], metricKey, "total", focusDate);
+      }
+
+      function managedNumber(v, fallback = 0) {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : fallback;
+      }
+
+      function managedValInput(row, cls = "compact-input") {
+        return row.querySelector(`.${cls}`);
+      }
+
+      async function loadManagedTargetsTable() {
+        const todayVal = toDateVal(new Date());
+        const [targetsRes, thresholdsRes] = await Promise.all([
+          api("GET", "/management/targets"),
+          api("GET", "/management/thresholds")
+        ]);
+        const targets = targetsRes.targets || [];
+        const thresholds = thresholdsRes.thresholds || [];
+        const thresholdMap = {};
+        for (const th of thresholds) thresholdMap[th.metricKey] = th;
+
+        const tbody = document.getElementById("managedTargetsRows");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        managedRowsByMetric.clear();
+
+        for (const item of MANAGED_KPI_CATALOG) {
+          const metricKey = item.metricKey;
+          const target = resolveManagedTarget(metricKey, targets, todayVal);
+          const defaultDir = defaultDirection(metricKey);
+          const threshold = thresholdMap[metricKey] || managedDefaultThreshold(metricKey);
+
+          const tr = document.createElement("tr");
+          tr.dataset.metricKey = metricKey;
+          tr.innerHTML = `
+            <td class="metric-cell">
+              <strong>${metricLabel(metricKey)}</strong>
+              <div class="metric-help">${item.description}</div>
+            </td>
+            <td><input class="compact-input managed-target-value" type="number" step="0.01" value="${target ? Number(target.targetValue) : ""}" /></td>
+            <td>
+              <select class="compact-select managed-target-direction">
+                <option value="at_least"${(target?.direction || defaultDir) === "at_least" ? " selected" : ""}>לפחות</option>
+                <option value="at_most"${(target?.direction || defaultDir) === "at_most" ? " selected" : ""}>לכל היותר</option>
+              </select>
+            </td>
+            <td><input class="compact-input managed-target-from" type="date" value="${target?.effectiveFrom || todayVal}" /></td>
+            <td><input class="compact-input managed-target-to" type="date" value="${target?.effectiveTo || ""}" /></td>
+            <td><input class="compact-input managed-th-green-min" type="number" step="0.01" value="${managedNumber(threshold.greenMin)}" /></td>
+            <td><input class="compact-input managed-th-green-max" type="number" step="0.01" value="${managedNumber(threshold.greenMax)}" /></td>
+            <td><input class="compact-input managed-th-yellow-min" type="number" step="0.01" value="${managedNumber(threshold.yellowMin)}" /></td>
+            <td><input class="compact-input managed-th-yellow-max" type="number" step="0.01" value="${managedNumber(threshold.yellowMax)}" /></td>
+            <td><input class="compact-input managed-th-red-min" type="number" step="0.01" value="${managedNumber(threshold.redMin)}" /></td>
+            <td><input class="compact-input managed-th-red-max" type="number" step="0.01" value="${managedNumber(threshold.redMax)}" /></td>
+            <td><button type="button" class="save-one-btn managed-save-row">שמור יעד+ספים</button></td>
+          `;
+          tbody.appendChild(tr);
+          managedRowsByMetric.set(metricKey, tr);
+        }
+        document.getElementById("managedTargetsCount").textContent = `יעדים מנוהלים: ${MANAGED_KPI_CATALOG.length}`;
+      }
+
+      async function saveManagedRow(metricKey) {
+        const row = managedRowsByMetric.get(metricKey);
+        if (!row) return;
+        const btn = row.querySelector(".managed-save-row");
+        const orig = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          const targetValueRaw = row.querySelector(".managed-target-value").value;
+          const targetFrom = row.querySelector(".managed-target-from").value;
+          if (!targetFrom) throw new Error("יש לבחור תאריך תחולה");
+          if (targetValueRaw === "") throw new Error("יש להזין יעד מספרי");
+
+          await api("POST", "/management/targets", {
+            metricKey,
+            scopeKey: "total",
+            direction: row.querySelector(".managed-target-direction").value,
+            targetValue: Number(targetValueRaw),
+            effectiveFrom: targetFrom,
+            effectiveTo: row.querySelector(".managed-target-to").value || null
+          });
+          await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, {
+            greenMin: Number(row.querySelector(".managed-th-green-min").value || 0),
+            greenMax: Number(row.querySelector(".managed-th-green-max").value || 0),
+            yellowMin: Number(row.querySelector(".managed-th-yellow-min").value || 0),
+            yellowMax: Number(row.querySelector(".managed-th-yellow-max").value || 0),
+            redMin: Number(row.querySelector(".managed-th-red-min").value || 0),
+            redMax: Number(row.querySelector(".managed-th-red-max").value || 0)
+          });
+          await loadThresholdsForKPI();
+          toastOk(`נשמר בהצלחה: ${metricLabel(metricKey)}`);
+        } catch (err) {
+          toastErr(err.message || `שמירה נכשלה עבור ${metricLabel(metricKey)}`);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
       }
 
       function dayTypeLabel(dayType) {
@@ -3601,56 +3730,20 @@
           }
         );
 
-        document.getElementById("saveTarget").onclick = withLoading(
-          document.getElementById("saveTarget"),
+        document.getElementById("reloadManagedTargets").onclick = withLoading(
+          document.getElementById("reloadManagedTargets"),
           async () => {
-            await api("POST", "/management/targets", {
-              metricKey: document.getElementById("targetMetricKey").value,
-              scopeKey: document.getElementById("targetScopeKey").value,
-              direction: document.getElementById("targetDirection").value,
-              targetValue: Number(document.getElementById("targetValue").value || 0),
-              effectiveFrom: document.getElementById("targetFrom").value,
-              effectiveTo: document.getElementById("targetTo").value || null
-            });
-            toastOk("יעד נשמר");
+            await loadManagedTargetsTable();
+            toastOk("יעדים מנוהלים נטענו");
           }
         );
-
-        document.getElementById("loadTargets").onclick = withLoading(
-          document.getElementById("loadTargets"),
-          async () => {
-            const metricKey = document.getElementById("targetMetricKey").value;
-            const data = await api("GET", `/management/targets?metricKey=${encodeURIComponent(metricKey)}`);
-            document.getElementById("targetsCount").textContent = `יעדים: ${data.targets.length}`;
-            toastOk("יעדים נטענו");
-          }
-        );
-
-        document.getElementById("saveThreshold").onclick = withLoading(
-          document.getElementById("saveThreshold"),
-          async () => {
-            const metricKey = document.getElementById("thresholdMetricKey").value;
-            await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, {
-              greenMin: Number(document.getElementById("thGreenMin").value || 0),
-              greenMax: Number(document.getElementById("thGreenMax").value || 0),
-              yellowMin: Number(document.getElementById("thYellowMin").value || 0),
-              yellowMax: Number(document.getElementById("thYellowMax").value || 0),
-              redMin: Number(document.getElementById("thRedMin").value || 0),
-              redMax: Number(document.getElementById("thRedMax").value || 0)
-            });
-            await loadThresholdsForKPI();
-            toastOk("ספי צבע נשמרו");
-          }
-        );
-
-        document.getElementById("loadThresholds").onclick = withLoading(
-          document.getElementById("loadThresholds"),
-          async () => {
-            await loadThresholdsForKPI();
-            document.getElementById("thresholdsCount").textContent = `ספים: ${Object.keys(currentThresholds).length}`;
-            toastOk("ספים נטענו");
-          }
-        );
+        document.getElementById("managedTargetsRows").addEventListener("click", async (e) => {
+          const btn = e.target.closest(".managed-save-row");
+          if (!btn) return;
+          const row = btn.closest("tr");
+          if (!row?.dataset.metricKey) return;
+          await saveManagedRow(row.dataset.metricKey);
+        });
       }
 
       // ═══════════════════════════════
@@ -3749,6 +3842,12 @@
           hasFailures = true;
           await reportClientError("bootstrap_thresholds_failure", e);
         }
+        try {
+          await loadManagedTargetsTable();
+        } catch (e) {
+          hasFailures = true;
+          await reportClientError("bootstrap_managed_targets_failure", e);
+        }
 
         const [dailyResult, dashboardResult] = await Promise.allSettled([
           reloadDailySections(),
@@ -3815,8 +3914,3 @@
     </script>
   </body>
 </html>
-
-
-
-
-
