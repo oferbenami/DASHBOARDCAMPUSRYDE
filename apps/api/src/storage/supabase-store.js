@@ -1,4 +1,4 @@
-﻿const crypto = require("node:crypto");
+const crypto = require("node:crypto");
 
 function requireEnv(name) {
   const value = process.env[name];
@@ -36,11 +36,70 @@ async function supabaseRequest(path, options) {
     return null;
   }
 
-  return response.json();
+  const raw = await response.text();
+  if (!raw || !raw.trim()) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(
+      `Supabase response JSON parse failed (${response.status}) on ${path}: ${error.message}`
+    );
+  }
 }
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function normalizeServiceType(serviceType) {
+  const normalized = String(serviceType || "").toLowerCase();
+  if (normalized !== "pickup" && normalized !== "dropoff") {
+    throw new Error("serviceType must be pickup or dropoff");
+  }
+  return normalized;
+}
+
+function parseJson(value) {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+function cleanDailyMetric(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    serviceDate: row.service_date,
+    serviceType: row.service_type,
+    ridesCount: Number(row.rides_count),
+    registeredPassengers: Number(row.registered_passengers),
+    issuesCount: Number(row.issues_count),
+    affectedPassengers: Number(row.affected_passengers),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function cleanIncident(row) {
+  return {
+    id: row.id,
+    serviceDate: row.service_date,
+    serviceType: row.service_type,
+    origin: row.origin,
+    destination: row.destination,
+    shiftTime: row.shift_time,
+    passengersCount: Number(row.passengers_count),
+    issueType: row.issue_type,
+    description: row.description,
+    delayMinutes: row.delay_minutes === null ? null : Number(row.delay_minutes),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
 }
 
 function toUserModel(row) {
@@ -66,23 +125,67 @@ function toSessionModel(row) {
   };
 }
 
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function safePercent(numerator, denominator) {
+  if (!denominator) return 0;
+  return (numerator / denominator) * 100;
+}
+
+function qualityScore(issuesRate, affectedRate) {
+  return 100 - 0.5 * issuesRate - 0.5 * affectedRate;
+}
+
+function aggregateRows(rows) {
+  const totals = rows.reduce(
+    (acc, row) => {
+      acc.passengers += toNumber(row.registeredPassengers);
+      acc.rides += toNumber(row.ridesCount);
+      acc.issues += toNumber(row.issuesCount);
+      acc.affected += toNumber(row.affectedPassengers);
+      return acc;
+    },
+    { passengers: 0, rides: 0, issues: 0, affected: 0 }
+  );
+
+  const efficiency = totals.rides ? totals.passengers / totals.rides : 0;
+  const issuesRate = safePercent(totals.issues, totals.rides);
+  const affectedRate = safePercent(totals.affected, totals.passengers);
+
+  return {
+    passengers: totals.passengers,
+    rides: totals.rides,
+    efficiency,
+    issues: totals.issues,
+    issuesRate,
+    affectedRate,
+    serviceQuality: qualityScore(issuesRate, affectedRate)
+  };
+}
+
+function filterByDateRange(rows, dateFrom, dateTo) {
+  return rows.filter((row) => {
+    if (dateFrom && row.serviceDate < dateFrom) return false;
+    if (dateTo && row.serviceDate > dateTo) return false;
+    return true;
+  });
+}
+
 async function findUserByGoogleSubOrEmail(googleSub, email) {
   const bySub = await supabaseRequest(
     `/rest/v1/users?select=*&google_sub=eq.${encodeURIComponent(googleSub)}&limit=1`,
     { method: "GET" }
   );
-  if (bySub.length > 0) {
-    return bySub[0];
-  }
+  if (bySub.length > 0) return bySub[0];
 
   const byEmail = await supabaseRequest(
     `/rest/v1/users?select=*&email=eq.${encodeURIComponent(email)}&limit=1`,
     { method: "GET" }
   );
-  if (byEmail.length > 0) {
-    return byEmail[0];
-  }
-
+  if (byEmail.length > 0) return byEmail[0];
   return null;
 }
 
@@ -151,12 +254,9 @@ async function revokeSession(token) {
     {
       method: "PATCH",
       prefer: "return=representation",
-      body: {
-        revoked_at: nowIso()
-      }
+      body: { revoked_at: nowIso() }
     }
   );
-
   return rows.length > 0;
 }
 
@@ -165,33 +265,24 @@ async function getActiveSession(token) {
     `/rest/v1/sessions?select=*&session_token=eq.${encodeURIComponent(token)}&revoked_at=is.null&limit=1`,
     { method: "GET" }
   );
-
-  if (sessions.length === 0) {
-    return null;
-  }
+  if (sessions.length === 0) return null;
 
   const session = toSessionModel(sessions[0]);
-  if (new Date(session.expiresAt).getTime() <= Date.now()) {
-    return null;
-  }
+  if (new Date(session.expiresAt).getTime() <= Date.now()) return null;
 
-  const users = await supabaseRequest(`/rest/v1/users?select=*&id=eq.${encodeURIComponent(session.userId)}&limit=1`, {
-    method: "GET"
-  });
+  const users = await supabaseRequest(
+    `/rest/v1/users?select=*&id=eq.${encodeURIComponent(session.userId)}&limit=1`,
+    { method: "GET" }
+  );
+  if (users.length === 0 || !users[0].is_active) return null;
 
-  if (users.length === 0 || !users[0].is_active) {
-    return null;
-  }
-
-  return {
-    session,
-    user: toUserModel(users[0])
-  };
+  return { session, user: toUserModel(users[0]) };
 }
 
 async function appendAudit(entry) {
   await supabaseRequest("/rest/v1/audit_log", {
     method: "POST",
+    prefer: "return=minimal",
     body: {
       actor_user_id: entry.actorUserId || null,
       action: entry.action,
@@ -208,29 +299,15 @@ async function listAudit(filters) {
   const params = new URLSearchParams();
   params.set("select", "*");
   params.set("order", "created_at.desc");
+  params.set("limit", String(Math.min(Math.max(Number(filters.limit || 100), 1), 500)));
 
-  const limit = Math.min(Math.max(Number(filters.limit || 100), 1), 500);
-  params.set("limit", String(limit));
+  if (filters.actorUserId) params.set("actor_user_id", `eq.${filters.actorUserId}`);
+  if (filters.entityType) params.set("entity_type", `eq.${filters.entityType}`);
+  if (filters.action) params.set("action", `eq.${filters.action}`);
+  if (filters.dateFrom) params.append("created_at", `gte.${filters.dateFrom}`);
+  if (filters.dateTo) params.append("created_at", `lte.${filters.dateTo}`);
 
-  if (filters.actorUserId) {
-    params.set("actor_user_id", `eq.${filters.actorUserId}`);
-  }
-  if (filters.entityType) {
-    params.set("entity_type", `eq.${filters.entityType}`);
-  }
-  if (filters.action) {
-    params.set("action", `eq.${filters.action}`);
-  }
-  if (filters.dateFrom) {
-    params.append("created_at", `gte.${filters.dateFrom}`);
-  }
-  if (filters.dateTo) {
-    params.append("created_at", `lte.${filters.dateTo}`);
-  }
-
-  const rows = await supabaseRequest(`/rest/v1/audit_log?${params.toString()}`, {
-    method: "GET"
-  });
+  const rows = await supabaseRequest(`/rest/v1/audit_log?${params.toString()}`, { method: "GET" });
 
   return rows.map((row) => ({
     id: row.id,
@@ -245,6 +322,511 @@ async function listAudit(filters) {
   }));
 }
 
+async function getDailyMetricsByDate(serviceDate) {
+  const rows = await supabaseRequest(
+    `/rest/v1/daily_metrics?select=*&service_date=eq.${encodeURIComponent(serviceDate)}`,
+    { method: "GET" }
+  );
+  const pickup = cleanDailyMetric(rows.find((row) => row.service_type === "pickup"));
+  const dropoff = cleanDailyMetric(rows.find((row) => row.service_type === "dropoff"));
+
+  const dayTypes = await supabaseRequest(
+    `/rest/v1/day_types?select=*&service_date=eq.${encodeURIComponent(serviceDate)}&limit=1`,
+    { method: "GET" }
+  );
+  const dayType = dayTypes[0] || null;
+
+  return {
+    serviceDate,
+    pickup,
+    dropoff,
+    dayType: dayType
+      ? {
+          serviceDate: dayType.service_date,
+          dayType: dayType.day_type,
+          reason: dayType.reason,
+          isPartial: Boolean(dayType.is_partial),
+          noActivity: Boolean(dayType.no_activity),
+          updatedAt: dayType.updated_at
+        }
+      : null
+  };
+}
+
+async function upsertDailyMetric(input) {
+  const serviceType = normalizeServiceType(input.serviceType);
+  const existingRows = await supabaseRequest(
+    `/rest/v1/daily_metrics?select=*&service_date=eq.${encodeURIComponent(input.serviceDate)}&service_type=eq.${serviceType}&limit=1`,
+    { method: "GET" }
+  );
+  const timestamp = nowIso();
+
+  if (existingRows.length > 0) {
+    const before = cleanDailyMetric(existingRows[0]);
+    const updated = await supabaseRequest(
+      `/rest/v1/daily_metrics?id=eq.${existingRows[0].id}&select=*`,
+      {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: {
+          rides_count: input.ridesCount,
+          registered_passengers: input.registeredPassengers,
+          issues_count: input.issuesCount,
+          affected_passengers: input.affectedPassengers,
+          updated_at: timestamp
+        }
+      }
+    );
+    const metric = cleanDailyMetric(updated[0]);
+    return { before, after: metric, metric };
+  }
+
+  const inserted = await supabaseRequest("/rest/v1/daily_metrics?select=*", {
+    method: "POST",
+    prefer: "return=representation",
+    body: {
+      service_date: input.serviceDate,
+      service_type: serviceType,
+      rides_count: input.ridesCount,
+      registered_passengers: input.registeredPassengers,
+      issues_count: input.issuesCount,
+      affected_passengers: input.affectedPassengers,
+      created_at: timestamp,
+      updated_at: timestamp
+    }
+  });
+
+  const metric = cleanDailyMetric(inserted[0]);
+  return { before: null, after: metric, metric };
+}
+
+async function listIncidents(filters) {
+  const params = new URLSearchParams();
+  params.set("select", "*");
+  params.set("order", "created_at.desc");
+  if (filters.serviceDate) params.set("service_date", `eq.${filters.serviceDate}`);
+  if (filters.serviceType) params.set("service_type", `eq.${normalizeServiceType(filters.serviceType)}`);
+
+  const rows = await supabaseRequest(`/rest/v1/incidents?${params.toString()}`, { method: "GET" });
+  return rows.map(cleanIncident);
+}
+
+async function createIncident(input) {
+  const timestamp = nowIso();
+  const rows = await supabaseRequest("/rest/v1/incidents?select=*", {
+    method: "POST",
+    prefer: "return=representation",
+    body: {
+      service_date: input.serviceDate,
+      service_type: normalizeServiceType(input.serviceType),
+      origin: input.origin,
+      destination: input.destination,
+      shift_time: input.shiftTime,
+      passengers_count: input.passengersCount,
+      issue_type: input.issueType,
+      description: input.description,
+      delay_minutes: input.delayMinutes ?? null,
+      created_at: timestamp,
+      updated_at: timestamp
+    }
+  });
+  const incident = cleanIncident(rows[0]);
+  return { before: null, after: incident, incident };
+}
+
+async function updateIncident(incidentId, input) {
+  const existing = await supabaseRequest(
+    `/rest/v1/incidents?select=*&id=eq.${encodeURIComponent(incidentId)}&limit=1`,
+    { method: "GET" }
+  );
+  if (existing.length === 0) return null;
+  const before = cleanIncident(existing[0]);
+
+  const rows = await supabaseRequest(
+    `/rest/v1/incidents?id=eq.${encodeURIComponent(incidentId)}&select=*`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: {
+        service_date: input.serviceDate,
+        service_type: normalizeServiceType(input.serviceType),
+        origin: input.origin,
+        destination: input.destination,
+        shift_time: input.shiftTime,
+        passengers_count: input.passengersCount,
+        issue_type: input.issueType,
+        description: input.description,
+        delay_minutes: input.delayMinutes ?? null,
+        updated_at: nowIso()
+      }
+    }
+  );
+  const incident = cleanIncident(rows[0]);
+  return { before, after: incident, incident };
+}
+
+async function recalculateIncidents(serviceDate, serviceType) {
+  const normalizedType = normalizeServiceType(serviceType);
+  const incidents = await supabaseRequest(
+    `/rest/v1/incidents?select=passengers_count&service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${normalizedType}`,
+    { method: "GET" }
+  );
+  const existingRows = await supabaseRequest(
+    `/rest/v1/daily_metrics?select=*&service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${normalizedType}&limit=1`,
+    { method: "GET" }
+  );
+  if (existingRows.length === 0) {
+    throw new Error("daily metric row must exist before recalculation");
+  }
+
+  const before = cleanDailyMetric(existingRows[0]);
+  const affectedPassengers = incidents.reduce((sum, row) => sum + Number(row.passengers_count || 0), 0);
+  const rows = await supabaseRequest(
+    `/rest/v1/daily_metrics?id=eq.${existingRows[0].id}&select=*`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: {
+        issues_count: incidents.length,
+        affected_passengers: affectedPassengers,
+        updated_at: nowIso()
+      }
+    }
+  );
+
+  const metric = cleanDailyMetric(rows[0]);
+  return { before, after: metric, metric, incidentsCount: incidents.length };
+}
+
+async function upsertDayType(input) {
+  const existingRows = await supabaseRequest(
+    `/rest/v1/day_types?select=*&service_date=eq.${encodeURIComponent(input.serviceDate)}&limit=1`,
+    { method: "GET" }
+  );
+  const timestamp = nowIso();
+
+  if (existingRows.length > 0) {
+    const existing = existingRows[0];
+    const before = {
+      serviceDate: existing.service_date,
+      dayType: existing.day_type,
+      reason: existing.reason,
+      isPartial: Boolean(existing.is_partial),
+      noActivity: Boolean(existing.no_activity),
+      updatedAt: existing.updated_at
+    };
+    const rows = await supabaseRequest(
+      `/rest/v1/day_types?id=eq.${existing.id}&select=*`,
+      {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: {
+          day_type: input.dayType,
+          reason: input.reason,
+          is_partial: Boolean(input.isPartial),
+          no_activity: Boolean(input.noActivity),
+          updated_at: timestamp
+        }
+      }
+    );
+    const row = rows[0];
+    const dayType = {
+      serviceDate: row.service_date,
+      dayType: row.day_type,
+      reason: row.reason,
+      isPartial: Boolean(row.is_partial),
+      noActivity: Boolean(row.no_activity),
+      updatedAt: row.updated_at
+    };
+    return { before, after: dayType, dayType };
+  }
+
+  const rows = await supabaseRequest("/rest/v1/day_types?select=*", {
+    method: "POST",
+    prefer: "return=representation",
+    body: {
+      service_date: input.serviceDate,
+      day_type: input.dayType,
+      reason: input.reason,
+      is_partial: Boolean(input.isPartial),
+      no_activity: Boolean(input.noActivity),
+      created_at: timestamp,
+      updated_at: timestamp
+    }
+  });
+  const row = rows[0];
+  const dayType = {
+    serviceDate: row.service_date,
+    dayType: row.day_type,
+    reason: row.reason,
+    isPartial: Boolean(row.is_partial),
+    noActivity: Boolean(row.no_activity),
+    updatedAt: row.updated_at
+  };
+  return { before: null, after: dayType, dayType };
+}
+
+async function listDayTypes(filters) {
+  const params = new URLSearchParams();
+  params.set("select", "*");
+  params.set("order", "service_date.desc");
+  if (filters.dateFrom) params.append("service_date", `gte.${filters.dateFrom}`);
+  if (filters.dateTo) params.append("service_date", `lte.${filters.dateTo}`);
+
+  const rows = await supabaseRequest(`/rest/v1/day_types?${params.toString()}`, { method: "GET" });
+  return rows.map((row) => ({
+    serviceDate: row.service_date,
+    dayType: row.day_type,
+    reason: row.reason,
+    isPartial: Boolean(row.is_partial),
+    noActivity: Boolean(row.no_activity),
+    updatedAt: row.updated_at
+  }));
+}
+
+async function getKpiSummary(filters) {
+  const params = new URLSearchParams();
+  params.set("select", "*");
+  if (filters.dateFrom) params.append("service_date", `gte.${filters.dateFrom}`);
+  if (filters.dateTo) params.append("service_date", `lte.${filters.dateTo}`);
+  const rowsRaw = await supabaseRequest(`/rest/v1/daily_metrics?${params.toString()}`, { method: "GET" });
+  const rows = rowsRaw.map(cleanDailyMetric);
+  const pickup = rows.filter((row) => row.serviceType === "pickup");
+  const dropoff = rows.filter((row) => row.serviceType === "dropoff");
+
+  return {
+    range: { dateFrom: filters.dateFrom || null, dateTo: filters.dateTo || null },
+    pickup: aggregateRows(pickup),
+    dropoff: aggregateRows(dropoff),
+    total: aggregateRows(rows)
+  };
+}
+
+async function getKpiTrends(filters) {
+  const params = new URLSearchParams();
+  params.set("select", "*");
+  params.set("order", "service_date.asc");
+  if (filters.dateFrom) params.append("service_date", `gte.${filters.dateFrom}`);
+  if (filters.dateTo) params.append("service_date", `lte.${filters.dateTo}`);
+  const rowsRaw = await supabaseRequest(`/rest/v1/daily_metrics?${params.toString()}`, { method: "GET" });
+  const rows = rowsRaw.map(cleanDailyMetric);
+
+  const grouped = new Map();
+  for (const row of rows) {
+    if (!grouped.has(row.serviceDate)) grouped.set(row.serviceDate, []);
+    grouped.get(row.serviceDate).push(row);
+  }
+
+  const points = [...grouped.entries()].map(([serviceDate, groupedRows]) => ({
+    serviceDate,
+    pickup: aggregateRows(groupedRows.filter((row) => row.serviceType === "pickup")),
+    dropoff: aggregateRows(groupedRows.filter((row) => row.serviceType === "dropoff")),
+    total: aggregateRows(groupedRows)
+  }));
+
+  return {
+    range: { dateFrom: filters.dateFrom || null, dateTo: filters.dateTo || null },
+    points
+  };
+}
+
+async function getKpiDrilldown(filters) {
+  const metricsParams = new URLSearchParams();
+  metricsParams.set("select", "*");
+  if (filters.dateFrom) metricsParams.append("service_date", `gte.${filters.dateFrom}`);
+  if (filters.dateTo) metricsParams.append("service_date", `lte.${filters.dateTo}`);
+  if (filters.serviceType) metricsParams.set("service_type", `eq.${normalizeServiceType(filters.serviceType)}`);
+
+  const incidentsParams = new URLSearchParams();
+  incidentsParams.set("select", "*");
+  if (filters.dateFrom) incidentsParams.append("service_date", `gte.${filters.dateFrom}`);
+  if (filters.dateTo) incidentsParams.append("service_date", `lte.${filters.dateTo}`);
+  if (filters.serviceType) incidentsParams.set("service_type", `eq.${normalizeServiceType(filters.serviceType)}`);
+
+  const [metricsRaw, incidentsRaw] = await Promise.all([
+    supabaseRequest(`/rest/v1/daily_metrics?${metricsParams.toString()}`, { method: "GET" }),
+    supabaseRequest(`/rest/v1/incidents?${incidentsParams.toString()}`, { method: "GET" })
+  ]);
+
+  const dailyRows = metricsRaw.map(cleanDailyMetric);
+  const incidents = incidentsRaw.map(cleanIncident);
+
+  return {
+    filters: {
+      dateFrom: filters.dateFrom || null,
+      dateTo: filters.dateTo || null,
+      serviceType: filters.serviceType ? normalizeServiceType(filters.serviceType) : null,
+      metricKey: filters.metricKey || null
+    },
+    summary: aggregateRows(dailyRows),
+    dailyRows,
+    incidents
+  };
+}
+
+async function listTargets(filters) {
+  const params = new URLSearchParams();
+  params.set("select", "*");
+  params.set("order", "effective_from.desc");
+  if (filters.metricKey) params.set("metric_key", `eq.${filters.metricKey}`);
+  if (filters.scopeKey) params.set("scope_key", `eq.${filters.scopeKey}`);
+
+  const rows = await supabaseRequest(`/rest/v1/targets_history?${params.toString()}`, { method: "GET" });
+  return rows.map((row) => ({
+    id: row.id,
+    metricKey: row.metric_key,
+    scopeKey: row.scope_key,
+    direction: row.direction,
+    targetValue: Number(row.target_value),
+    effectiveFrom: row.effective_from,
+    effectiveTo: row.effective_to || null,
+    updatedAt: row.updated_at
+  }));
+}
+
+async function createTarget(input) {
+  const timestamp = nowIso();
+  const rows = await supabaseRequest("/rest/v1/targets_history?select=*", {
+    method: "POST",
+    prefer: "return=representation",
+    body: {
+      metric_key: input.metricKey,
+      scope_key: input.scopeKey,
+      direction: input.direction,
+      target_value: input.targetValue,
+      effective_from: input.effectiveFrom,
+      effective_to: input.effectiveTo || null,
+      created_at: timestamp,
+      updated_at: timestamp
+    }
+  });
+
+  const row = rows[0];
+  const target = {
+    id: row.id,
+    metricKey: row.metric_key,
+    scopeKey: row.scope_key,
+    direction: row.direction,
+    targetValue: Number(row.target_value),
+    effectiveFrom: row.effective_from,
+    effectiveTo: row.effective_to || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+  return { before: null, after: { ...target }, target };
+}
+
+async function listThresholds(filters) {
+  const params = new URLSearchParams();
+  params.set("select", "*");
+  params.set("order", "metric_key.asc");
+  if (filters && filters.metricKey) params.set("metric_key", `eq.${filters.metricKey}`);
+  const rows = await supabaseRequest(`/rest/v1/kpi_thresholds?${params.toString()}`, { method: "GET" });
+
+  return rows.map((row) => ({
+    metricKey: row.metric_key,
+    greenMin: Number(row.green_min),
+    greenMax: Number(row.green_max),
+    yellowMin: Number(row.yellow_min),
+    yellowMax: Number(row.yellow_max),
+    redMin: Number(row.red_min),
+    redMax: Number(row.red_max),
+    updatedAt: row.updated_at
+  }));
+}
+
+async function upsertThreshold(metricKey, input) {
+  const existingRows = await supabaseRequest(
+    `/rest/v1/kpi_thresholds?select=*&metric_key=eq.${encodeURIComponent(metricKey)}&limit=1`,
+    { method: "GET" }
+  );
+  const before = existingRows[0]
+    ? {
+        metricKey: existingRows[0].metric_key,
+        greenMin: Number(existingRows[0].green_min),
+        greenMax: Number(existingRows[0].green_max),
+        yellowMin: Number(existingRows[0].yellow_min),
+        yellowMax: Number(existingRows[0].yellow_max),
+        redMin: Number(existingRows[0].red_min),
+        redMax: Number(existingRows[0].red_max),
+        updatedAt: existingRows[0].updated_at
+      }
+    : null;
+
+  const timestamp = nowIso();
+  let row;
+  if (existingRows.length === 0) {
+    const inserted = await supabaseRequest("/rest/v1/kpi_thresholds?select=*", {
+      method: "POST",
+      prefer: "return=representation",
+      body: {
+        metric_key: metricKey,
+        green_min: input.greenMin,
+        green_max: input.greenMax,
+        yellow_min: input.yellowMin,
+        yellow_max: input.yellowMax,
+        red_min: input.redMin,
+        red_max: input.redMax,
+        created_at: timestamp,
+        updated_at: timestamp
+      }
+    });
+    row = inserted[0];
+  } else {
+    const updated = await supabaseRequest(
+      `/rest/v1/kpi_thresholds?metric_key=eq.${encodeURIComponent(metricKey)}&select=*`,
+      {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: {
+          green_min: input.greenMin,
+          green_max: input.greenMax,
+          yellow_min: input.yellowMin,
+          yellow_max: input.yellowMax,
+          red_min: input.redMin,
+          red_max: input.redMax,
+          updated_at: timestamp
+        }
+      }
+    );
+    row = updated[0];
+  }
+
+  const threshold = {
+    metricKey: row.metric_key,
+    greenMin: Number(row.green_min),
+    greenMax: Number(row.green_max),
+    yellowMin: Number(row.yellow_min),
+    yellowMax: Number(row.yellow_max),
+    redMin: Number(row.red_min),
+    redMax: Number(row.red_max),
+    updatedAt: row.updated_at
+  };
+  return { before, after: threshold, threshold };
+}
+
+async function getExportBundle(filters) {
+  const [summary, trends, drilldown, targets, thresholds, dayTypes] = await Promise.all([
+    getKpiSummary(filters),
+    getKpiTrends(filters),
+    getKpiDrilldown(filters),
+    listTargets({}),
+    listThresholds({}),
+    listDayTypes(filters)
+  ]);
+
+  return {
+    generatedAt: nowIso(),
+    range: { dateFrom: filters.dateFrom || null, dateTo: filters.dateTo || null },
+    summary,
+    trends,
+    drilldown,
+    targets,
+    thresholds,
+    dayTypes
+  };
+}
+
 module.exports = {
   upsertUser,
   createSession,
@@ -252,52 +834,20 @@ module.exports = {
   getActiveSession,
   appendAudit,
   listAudit,
-  getDailyMetricsByDate: async () => {
-    throw new Error("Stage 3 daily operations are not implemented for supabase provider yet");
-  },
-  upsertDailyMetric: async () => {
-    throw new Error("Stage 3 daily operations are not implemented for supabase provider yet");
-  },
-  listIncidents: async () => {
-    throw new Error("Stage 3 incidents are not implemented for supabase provider yet");
-  },
-  createIncident: async () => {
-    throw new Error("Stage 3 incidents are not implemented for supabase provider yet");
-  },
-  updateIncident: async () => {
-    throw new Error("Stage 3 incidents are not implemented for supabase provider yet");
-  },
-  recalculateIncidents: async () => {
-    throw new Error("Stage 3 incidents are not implemented for supabase provider yet");
-  },
-  upsertDayType: async () => {
-    throw new Error("Stage 3 day types are not implemented for supabase provider yet");
-  },
-  getKpiSummary: async () => {
-    throw new Error("Stage 4 KPI engine is not implemented for supabase provider yet");
-  },
-  getKpiTrends: async () => {
-    throw new Error("Stage 4 KPI engine is not implemented for supabase provider yet");
-  },
-  getKpiDrilldown: async () => {
-    throw new Error("Stage 5 drilldown is not implemented for supabase provider yet");
-  },
-  listDayTypes: async () => {
-    throw new Error("Stage 5 day types list is not implemented for supabase provider yet");
-  },
-  listTargets: async () => {
-    throw new Error("Stage 5 targets management is not implemented for supabase provider yet");
-  },
-  createTarget: async () => {
-    throw new Error("Stage 5 targets management is not implemented for supabase provider yet");
-  },
-  listThresholds: async () => {
-    throw new Error("Stage 5 thresholds management is not implemented for supabase provider yet");
-  },
-  upsertThreshold: async () => {
-    throw new Error("Stage 5 thresholds management is not implemented for supabase provider yet");
-  },
-  getExportBundle: async () => {
-    throw new Error("Stage 6 export is not implemented for supabase provider yet");
-  }
+  getDailyMetricsByDate,
+  upsertDailyMetric,
+  listIncidents,
+  createIncident,
+  updateIncident,
+  recalculateIncidents,
+  upsertDayType,
+  listDayTypes,
+  getKpiSummary,
+  getKpiTrends,
+  getKpiDrilldown,
+  listTargets,
+  createTarget,
+  listThresholds,
+  upsertThreshold,
+  getExportBundle
 };

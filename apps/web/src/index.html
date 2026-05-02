@@ -1231,7 +1231,11 @@
             </div>
             <div class="grid cols-2">
               <div class="card">
-                <h2 id="dropoffTitle">פיזור</h2>
+                <div style="display:flex;align-items:center;gap:0.4rem">
+                  <button id="dropoffDatePrev" type="button" title="יום קודם" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">←</button>
+                  <h2 id="dropoffTitle" style="margin:0">פיזור</h2>
+                  <button id="dropoffDateNext" type="button" title="יום הבא" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">→</button>
+                </div>
                 <div class="grid cols-2">
                   <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
                   <div><label>נוסעים רשומים</label><input id="dropoff_registered" type="number" min="0" /></div>
@@ -1242,7 +1246,11 @@
               </div>
 
               <div class="card">
-                <h2 id="pickupTitle">איסוף</h2>
+                <div style="display:flex;align-items:center;gap:0.4rem">
+                  <button id="pickupDatePrev" type="button" title="יום קודם" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">←</button>
+                  <h2 id="pickupTitle" style="margin:0">איסוף</h2>
+                  <button id="pickupDateNext" type="button" title="יום הבא" style="padding:0.15rem 0.45rem;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer">→</button>
+                </div>
                 <div class="grid cols-2">
                   <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
                   <div><label>נוסעים רשומים</label><input id="pickup_registered" type="number" min="0" /></div>
@@ -1531,6 +1539,7 @@
       const API_BASE_KEY = "dr_api_base";
       const TOKEN_KEY = "dr_session_token";
       let GOOGLE_CLIENT_ID = "";
+      let GOOGLE_LOGIN_URI = "";
       let AUTH_CONFIG_DEBUG = null;
 
       function getApiBase() {
@@ -1595,7 +1604,8 @@
           const res = await fetch(`${getApiBase()}/auth/config`);
           if (res.ok) {
             const data = await res.json();
-            GOOGLE_CLIENT_ID = data.googleClientId || "";
+            GOOGLE_CLIENT_ID = String(data.googleClientId || "").trim();
+            GOOGLE_LOGIN_URI = data.effectiveLoginUri || "";
             AUTH_CONFIG_DEBUG = data;
           }
         } catch {}
@@ -1693,7 +1703,9 @@
             const isInvalidRequest = rawErr.includes("invalid") || rawErr.includes("audience") || rawErr.includes("client");
             if (isInvalidRequest) {
               await reportClientError("auth_google_invalid_request", new Error(data?.error || "google invalid request"), {
-                debug: AUTH_CONFIG_DEBUG
+                debug: AUTH_CONFIG_DEBUG,
+                expectedLoginUri: GOOGLE_LOGIN_URI || null,
+                currentOrigin: location.origin
               });
               showLoginError("ההתחברות נחסמה עקב הגדרת Google לא תקינה. יש לפנות למנהל המערכת.");
               return;
@@ -1727,13 +1739,14 @@
 
         function setupGoogleButton() {
           const useRedirect = isIOSSafari();
+          const loginUri = GOOGLE_LOGIN_URI || `${location.origin}/auth/google/callback`;
           google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleCredential,
             auto_select: false,
             cancel_on_tap_outside: true,
             ux_mode: useRedirect ? "redirect" : "popup",
-            login_uri: useRedirect ? `${location.origin}/auth/google/callback` : undefined
+            login_uri: useRedirect ? loginUri : undefined
           });
           wrap.innerHTML = "";
           google.accounts.id.renderButton(wrap, {
@@ -1840,6 +1853,12 @@
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
       }
 
+      function shiftDateVal(dateVal, daysDelta) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        d.setDate(d.getDate() + daysDelta);
+        return toDateVal(d);
+      }
+
       let pickupDate = toDateVal(today);
       let dropoffDate = toDateVal(yesterday);
       let dashboardScope = "total";
@@ -1871,15 +1890,26 @@
         document.getElementById("kpiFrom").value = toDateVal(weekAgo);
         document.getElementById("kpiTo").value = pickupDate;
         document.querySelector(`#dashboardScopeToggle .scope-btn[data-scope="${dashboardScope}"]`)?.click();
-        document.getElementById("entryDate").value = pickupDate;
-        document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
-        document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
+        syncOperationDateUI();
         document.getElementById("incident_date").value = pickupDate;
         document.getElementById("filter_date").value = pickupDate;
         document.getElementById("drillFrom").value = toDateVal(weekAgo);
         document.getElementById("drillTo").value = pickupDate;
         document.getElementById("targetFrom").value = pickupDate;
         updateHeadlineDates(pickupDate);
+      }
+
+      function syncOperationDateUI() {
+        document.getElementById("entryDate").value = pickupDate;
+        document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
+        document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
+      }
+
+      async function shiftOperationDates(daysDelta) {
+        pickupDate = shiftDateVal(pickupDate, daysDelta);
+        dropoffDate = shiftDateVal(dropoffDate, daysDelta);
+        syncOperationDateUI();
+        await reloadDailySections();
       }
 
       // ═══════════════════════════════
@@ -2984,11 +3014,52 @@
         };
       }
 
+      function goToDashboardMain() {
+        showTab("dashboard");
+        selectedDashboardReport = "kpi-main";
+        document.querySelectorAll(".report-tile").forEach((btn) =>
+          btn.classList.toggle("active", btn.dataset.report === selectedDashboardReport)
+        );
+        renderDrilldownReport(selectedDashboardReport);
+        const main = document.getElementById("dashboardTiles");
+        if (main) {
+          main.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      function wireDashboardBackButtons() {
+        const sectionIds = [
+          "section-trend-analysis",
+          "section-benchmark",
+          "section-critical-control",
+          "section-root-cause",
+          "section-operations-daily",
+          "section-targets-vs-actual",
+          "section-load-efficiency",
+          "section-pickup-vs-dropoff"
+        ];
+        for (const id of sectionIds) {
+          const heading = document.getElementById(id);
+          if (!heading || heading.dataset.backWired === "1") continue;
+          heading.dataset.backWired = "1";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "secondary";
+          btn.textContent = "חזרה ללוח הבקרה הראשי";
+          btn.style.marginRight = "10px";
+          btn.style.padding = "4px 10px";
+          btn.style.fontSize = "0.8rem";
+          btn.addEventListener("click", goToDashboardMain);
+          heading.insertAdjacentElement("afterend", btn);
+        }
+      }
+
       // ═══════════════════════════════
       // WIRE UP BUTTONS
       // ═══════════════════════════════
       function wireButtons() {
         wireMobileUI();
+        wireDashboardBackButtons();
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
           async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
@@ -3061,9 +3132,21 @@
           const d = new Date(newPickup + "T12:00:00");
           d.setDate(d.getDate() - 1);
           dropoffDate = toDateVal(d);
-          document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
-          document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
+          syncOperationDateUI();
           await reloadDailySections();
+        });
+
+        document.getElementById("pickupDatePrev").addEventListener("click", async () => {
+          await shiftOperationDates(-1);
+        });
+        document.getElementById("pickupDateNext").addEventListener("click", async () => {
+          await shiftOperationDates(1);
+        });
+        document.getElementById("dropoffDatePrev").addEventListener("click", async () => {
+          await shiftOperationDates(-1);
+        });
+        document.getElementById("dropoffDateNext").addEventListener("click", async () => {
+          await shiftOperationDates(1);
         });
 
         document.getElementById("btnConfirmUpdate").onclick = () => {
@@ -3308,18 +3391,35 @@
       async function bootstrap() {
         initDates();
         wireButtons();
+        let hasFailures = false;
+
         try {
           await loadThresholdsForKPI();
-          await Promise.all([
-            reloadDailySections(),
-            loadDashboard()
-          ]);
-          toastOk("לוח הבקרה נטען בהצלחה");
         } catch (e) {
-          await reportClientError("bootstrap_failure", e);
-          toastErr("שגיאת טעינה: " + e.message);
-          throw e;
+          hasFailures = true;
+          await reportClientError("bootstrap_thresholds_failure", e);
         }
+
+        const [dailyResult, dashboardResult] = await Promise.allSettled([
+          reloadDailySections(),
+          loadDashboard()
+        ]);
+
+        if (dailyResult.status === "rejected") {
+          hasFailures = true;
+          await reportClientError("bootstrap_daily_sections_failure", dailyResult.reason);
+        }
+        if (dashboardResult.status === "rejected") {
+          hasFailures = true;
+          await reportClientError("bootstrap_dashboard_failure", dashboardResult.reason);
+        }
+
+        if (hasFailures) {
+          toastErr("ההתחברות בוצעה, אך חלק מהנתונים לא נטענו. אפשר לרענן ולנסות שוב.");
+          return;
+        }
+
+        toastOk("לוח הבקרה נטען בהצלחה");
       }
 
       // Auto-refresh every 10s

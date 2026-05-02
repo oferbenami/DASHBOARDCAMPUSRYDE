@@ -28,13 +28,25 @@ vercel env add GOOGLE_OAUTH_CLIENT_ID
 vercel env add GOOGLE_OAUTH_CLIENT_SECRET
 ```
 
-## 5) Deploy
+## 5) Configure Google OAuth (required for mobile Safari redirect)
+In Google Cloud Console, open the OAuth 2.0 client used by production and set:
+- Authorized JavaScript origins: `https://<prod-domain>`
+- Authorized redirect URIs: `https://<prod-domain>/auth/google/callback`
+
+Notes:
+- The redirect URI must match exactly (scheme, host, and path).
+- If you use multiple production domains, add each one explicitly.
+
+## 6) Deploy
 ```bash
 vercel --prod
 ```
 
-## 6) Smoke tests
+## 7) Smoke tests
 - `GET /api/health`
+- `GET /auth/config` should return:
+  - `googleClientIdPresent: true`
+  - `effectiveLoginUri: https://<prod-domain>/auth/google/callback`
 - `PUT /api/daily-metrics/{date}/pickup`
 - `POST /api/incidents`
 - `POST /api/incidents/recalculate`

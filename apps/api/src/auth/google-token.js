@@ -17,7 +17,7 @@ async function verifyGoogleIdToken(idToken) {
     return { ok: false, reason: "Google account email is not verified" };
   }
 
-  const expectedClientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const expectedClientId = String(process.env.GOOGLE_OAUTH_CLIENT_ID || "").trim();
   if (expectedClientId && payload.aud !== expectedClientId) {
     return { ok: false, reason: "Token audience does not match configured client id" };
   }

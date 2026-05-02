@@ -5,8 +5,26 @@
   "installCommand": "npm install --workspaces --include-workspace-root",
   "outputDirectory": "apps/web/src",
   "env": {
-    "DB_PROVIDER": "excel"
+    "DB_PROVIDER": "supabase"
   },
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "dashboarscampusryde-oferiris-4658s-projects.vercel.app" }
+      ],
+      "destination": "https://dashboarscampusryde.vercel.app/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "dashboarscampusryde-oferiris-4658-oferiris-4658s-projects.vercel.app" }
+      ],
+      "destination": "https://dashboarscampusryde.vercel.app/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.js" }
   ]

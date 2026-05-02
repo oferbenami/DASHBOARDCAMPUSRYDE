@@ -134,15 +134,31 @@ async function handleGoogleCallback(req, res) {
   const contentType = String(req.headers["content-type"] || "").toLowerCase();
   let idToken = null;
   let redirectMode = false;
+  const raw = await readTextBody(req).catch(() => "");
+  let parsedJson = null;
+  if (raw && raw.trim().startsWith("{")) {
+    try {
+      parsedJson = JSON.parse(raw);
+    } catch {}
+  }
+  const formParams = new URLSearchParams(raw || "");
+  const url = new URL(req.url, `https://${req.headers.host || "localhost"}`);
+  const queryParams = url.searchParams;
 
   if (contentType.includes("application/x-www-form-urlencoded")) {
-    const raw = await readTextBody(req);
-    const params = new URLSearchParams(raw || "");
-    idToken = params.get("credential");
+    idToken = formParams.get("credential") || formParams.get("id_token");
     redirectMode = true;
-  } else {
-    const body = await readJsonBody(req);
-    idToken = body.idToken;
+  }
+
+  if (!idToken && parsedJson && typeof parsedJson === "object") {
+    idToken = parsedJson.idToken || parsedJson.credential || parsedJson.id_token || null;
+  }
+
+  if (!idToken) {
+    idToken = queryParams.get("credential") || queryParams.get("id_token");
+    if (idToken) {
+      redirectMode = true;
+    }
   }
 
   if (!idToken || typeof idToken !== "string") {
@@ -172,7 +188,7 @@ async function handleGoogleCallback(req, res) {
 
   if (redirectMode) {
     const token = escapeForJsSingleQuoted(session.sessionToken);
-    const html = `<!doctype html><html lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Redirecting…</title></head><body><script>try{localStorage.setItem('dr_session_token','${token}');window.location.replace('/');}catch(e){document.body.innerText='Login completed, please return to the app.';}</script></body></html>`;
+    const html = `<!doctype html><html lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Redirecting…</title></head><body><script>try{localStorage.setItem('dr_session_token','${token}');localStorage.setItem('dr_api_base',window.location.origin);window.location.replace('/');}catch(e){document.body.innerText='Login completed, please return to the app.';}</script></body></html>`;
     res.writeHead(200, {
       "content-type": "text/html; charset=utf-8",
       ...securityHeaders()
@@ -199,7 +215,8 @@ async function handleClientError(req, res) {
   const stage = String(body?.stage || "unknown");
   const message = String(body?.message || "unknown");
   const userAgent = String(body?.userAgent || "");
-  console.warn("[client-errors]", { stage, message, userAgent });
+  const debug = body?.extra?.debug || null;
+  console.warn("[client-errors]", { stage, message, userAgent, debug });
   sendJson(res, 202, { ok: true });
 }
 
@@ -1622,9 +1639,10 @@ async function handleRequest(req, res) {
       const host = String(req.headers.host || "");
       const proto = String(req.headers["x-forwarded-proto"] || "https");
       const effectiveOrigin = origin || `${proto}://${host}`;
+      const googleClientId = String(process.env.GOOGLE_OAUTH_CLIENT_ID || "").trim();
       sendJson(res, 200, {
-        googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
-        googleClientIdPresent: Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID),
+        googleClientId,
+        googleClientIdPresent: Boolean(googleClientId),
         effectiveOrigin,
         effectiveLoginUri: `${effectiveOrigin}/auth/google/callback`
       });
@@ -1643,11 +1661,6 @@ async function handleRequest(req, res) {
 
     if (req.method === "POST" && pathname === "/client-errors") {
       await handleClientError(req, res);
-      return;
-    }
-
-    if (providerName() !== "excel") {
-      providerMisconfigured(res);
       return;
     }
 

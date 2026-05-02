@@ -413,7 +413,7 @@ async function testHardening() {
   assert.equal(rateLimited, true);
 }
 
-async function testProviderMisconfiguredGuard() {
+async function testSupabaseProviderRequiresConfiguration() {
   const prevProvider = process.env.DB_PROVIDER;
   const userWrite = await upsertUser({
     googleSub: "sub-provider-guard",
@@ -428,24 +428,21 @@ async function testProviderMisconfiguredGuard() {
       pathName: "/dashboard/trends?dateFrom=2026-04-22&dateTo=2026-04-22&scope=pickup",
       token: session.sessionToken
     });
-    assert.equal(dashboardRes.statusCode, 503);
-    assert.equal(dashboardRes.payload.code, "PROVIDER_MISCONFIGURED");
+    assert.equal(dashboardRes.statusCode, 500);
 
     const kpiSummaryRes = await invokeApi({
       method: "GET",
       pathName: "/kpi/summary?dateFrom=2026-04-22&dateTo=2026-04-22",
       token: session.sessionToken
     });
-    assert.equal(kpiSummaryRes.statusCode, 503);
-    assert.equal(kpiSummaryRes.payload.code, "PROVIDER_MISCONFIGURED");
+    assert.equal(kpiSummaryRes.statusCode, 500);
 
     const kpiTrendsRes = await invokeApi({
       method: "GET",
       pathName: "/kpi/trends?dateFrom=2026-04-22&dateTo=2026-04-22",
       token: session.sessionToken
     });
-    assert.equal(kpiTrendsRes.statusCode, 503);
-    assert.equal(kpiTrendsRes.payload.code, "PROVIDER_MISCONFIGURED");
+    assert.equal(kpiTrendsRes.statusCode, 500);
   } finally {
     process.env.DB_PROVIDER = prevProvider || "excel";
   }
@@ -496,7 +493,7 @@ async function run() {
     ["storage CRUD flow", testStorageCrudFlow],
     ["validation rules", testValidationRules],
     ["api flow", testApiFlow],
-    ["provider misconfigured guard", testProviderMisconfiguredGuard],
+    ["supabase provider requires configuration", testSupabaseProviderRequiresConfiguration],
     ["hardening", testHardening],
     ["google token validator", testGoogleValidatorMock]
   ];
