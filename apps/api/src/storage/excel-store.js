@@ -757,6 +757,10 @@ async function getExportBundle(filters) {
   };
 }
 
+function unsupportedContractorsFeature() {
+  throw new Error("Contractors matrix is supported only with DB_PROVIDER=supabase");
+}
+
 module.exports = {
   upsertUser,
   createSession,
@@ -779,5 +783,11 @@ module.exports = {
   createTarget,
   listThresholds,
   upsertThreshold,
-  getExportBundle
+  getExportBundle,
+  listContractors: unsupportedContractorsFeature,
+  createContractor: unsupportedContractorsFeature,
+  updateContractor: unsupportedContractorsFeature,
+  listDailyMetricsContractor: unsupportedContractorsFeature,
+  upsertDailyMetricContractor: unsupportedContractorsFeature,
+  getContractorsComparison: unsupportedContractorsFeature
 };

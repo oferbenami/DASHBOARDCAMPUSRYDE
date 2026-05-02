@@ -1485,6 +1485,21 @@
                   <div><label>תקלות</label><input id="dropoff_issues" type="number" min="0" /></div>
                   <div><label>נוסעים מושפעים</label><input id="dropoff_affected" type="number" min="0" /></div>
                 </div>
+                <div class="card" style="margin-top:10px;padding:10px;background:#f8fbff">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <strong style="font-size:0.85rem">פירוט לפי מפעילים</strong>
+                    <button id="addDropoffContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">הוסף שורה</button>
+                  </div>
+                  <div class="table-wrap" style="margin-top:8px">
+                    <table>
+                      <thead>
+                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th>נסיעות מונית</th><th>נסיעות רכב גדול</th><th></th></tr>
+                      </thead>
+                      <tbody id="dropoffContractorRows"></tbody>
+                    </table>
+                  </div>
+                  <div id="dropoffSummaryBox" class="info-box" style="margin-top:8px"></div>
+                </div>
                 <button id="saveDropoff" style="margin-top:10px">שמור פיזור</button>
               </div>
 
@@ -1499,6 +1514,21 @@
                   <div><label>נוסעים רשומים</label><input id="pickup_registered" type="number" min="0" /></div>
                   <div><label>תקלות</label><input id="pickup_issues" type="number" min="0" /></div>
                   <div><label>נוסעים מושפעים</label><input id="pickup_affected" type="number" min="0" /></div>
+                </div>
+                <div class="card" style="margin-top:10px;padding:10px;background:#f8fbff">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <strong style="font-size:0.85rem">פירוט לפי מפעילים</strong>
+                    <button id="addPickupContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">הוסף שורה</button>
+                  </div>
+                  <div class="table-wrap" style="margin-top:8px">
+                    <table>
+                      <thead>
+                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th>נסיעות מונית</th><th>נסיעות רכב גדול</th><th></th></tr>
+                      </thead>
+                      <tbody id="pickupContractorRows"></tbody>
+                    </table>
+                  </div>
+                  <div id="pickupSummaryBox" class="info-box" style="margin-top:8px"></div>
                 </div>
                 <button id="savePickup" style="margin-top:10px">שמור איסוף</button>
               </div>
@@ -2119,6 +2149,8 @@
       let dashboardRefreshPromise = null;
       let lastDashboardData = null;
       let lastAdvancedData  = null;
+      let contractorOptions = [];
+      const contractorRowsState = { pickup: [], dropoff: [] };
             const dashboardMetaCache = new Map();
       const KPI_METRICS = [
         { key: "passengers", cardId: "kpiCard-passengers", valueId: "kpiPassengers", targetId: "kpiTarget-passengers", gapId: "kpiGap-passengers", deltaId: "kpiDelta-passengers" },
@@ -3780,11 +3812,35 @@
           document.getElementById("existingDataNotice").style.display = "none";
         };
 
+        document.getElementById("addPickupContractorRow").addEventListener("click", () => addContractorRow("pickup"));
+        document.getElementById("addDropoffContractorRow").addEventListener("click", () => addContractorRow("dropoff"));
+        document.getElementById("pickupContractorRows").addEventListener("click", (e) => {
+          const btn = e.target.closest(".contractor-remove-row");
+          if (!btn) return;
+          removeContractorRow("pickup", Number(btn.dataset.rowIndex));
+        });
+        document.getElementById("dropoffContractorRows").addEventListener("click", (e) => {
+          const btn = e.target.closest(".contractor-remove-row");
+          if (!btn) return;
+          removeContractorRow("dropoff", Number(btn.dataset.rowIndex));
+        });
+        document.getElementById("pickupContractorRows").addEventListener("input", () => updateOperationSummaryLive("pickup"));
+        document.getElementById("dropoffContractorRows").addEventListener("input", () => updateOperationSummaryLive("dropoff"));
+        ["pickup_rides","pickup_registered","pickup_issues","pickup_affected"].forEach((id) => {
+          document.getElementById(id).addEventListener("input", () => updateOperationSummaryLive("pickup"));
+        });
+        ["dropoff_rides","dropoff_registered","dropoff_issues","dropoff_affected"].forEach((id) => {
+          document.getElementById(id).addEventListener("input", () => updateOperationSummaryLive("dropoff"));
+        });
+
         document.getElementById("savePickup").onclick = withLoading(
           document.getElementById("savePickup"),
           async () => {
+            validateMainSectionRequired("pickup");
             await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup"));
+            await saveContractorMatrix("pickup");
             await loadDashboard();
+            await reloadDailySections();
             toastOk("נתוני איסוף נשמרו");
           }
         );
@@ -3792,8 +3848,11 @@
         document.getElementById("saveDropoff").onclick = withLoading(
           document.getElementById("saveDropoff"),
           async () => {
+            validateMainSectionRequired("dropoff");
             await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff"));
+            await saveContractorMatrix("dropoff");
             await loadDashboard();
+            await reloadDailySections();
             toastOk("נתוני פיזור נשמרו");
           }
         );
@@ -3801,9 +3860,14 @@
         document.getElementById("saveBoth").onclick = withLoading(
           document.getElementById("saveBoth"),
           async () => {
+            validateMainSectionRequired("pickup");
+            validateMainSectionRequired("dropoff");
             await api("PUT", `/daily-metrics/${pickupDate}/pickup`, sectionBody("pickup"));
             await api("PUT", `/daily-metrics/${dropoffDate}/dropoff`, sectionBody("dropoff"));
+            await saveContractorMatrix("pickup");
+            await saveContractorMatrix("dropoff");
             await loadDashboard();
+            await reloadDailySections();
             toastOk("נתוני איסוף ופיזור נשמרו");
           }
         );
@@ -3901,6 +3965,174 @@
       // ═══════════════════════════════
       // SECTION DATA
       // ═══════════════════════════════
+      function getOperationDateByType(type) {
+        return type === "pickup" ? pickupDate : dropoffDate;
+      }
+
+      function contractorTableBodyId(type) {
+        return type === "pickup" ? "pickupContractorRows" : "dropoffContractorRows";
+      }
+
+      function contractorSummaryBoxId(type) {
+        return type === "pickup" ? "pickupSummaryBox" : "dropoffSummaryBox";
+      }
+
+      function makeContractorSelectOptionsHtml(selectedId = "") {
+        const options = contractorOptions
+          .map((c) => `<option value="${c.id}"${String(c.id) === String(selectedId) ? " selected" : ""}>${c.name}</option>`)
+          .join("");
+        return `<option value="">בחר מפעיל</option>${options}`;
+      }
+
+      function parseNonNegativeInt(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) return null;
+        return n;
+      }
+
+      function contractorRowFromInput(type, index) {
+        const tbody = document.getElementById(contractorTableBodyId(type));
+        const tr = tbody?.querySelector(`tr[data-row-index="${index}"]`);
+        if (!tr) return null;
+        return {
+          contractorId: tr.querySelector(".ctr-contractor")?.value || "",
+          ridesCount: tr.querySelector(".ctr-rides")?.value || "",
+          registeredPassengers: tr.querySelector(".ctr-registered")?.value || "",
+          issuesCount: tr.querySelector(".ctr-issues")?.value || "",
+          affectedPassengers: tr.querySelector(".ctr-affected")?.value || "",
+          taxiCount: tr.querySelector(".ctr-taxi")?.value || "",
+          largeVehicleCount: tr.querySelector(".ctr-large")?.value || ""
+        };
+      }
+
+      function renderContractorRows(type) {
+        const tbody = document.getElementById(contractorTableBodyId(type));
+        if (!tbody) return;
+        const rows = contractorRowsState[type] || [];
+        tbody.innerHTML = rows.map((row, idx) => `
+          <tr data-row-index="${idx}">
+            <td><select class="ctr-contractor">${makeContractorSelectOptionsHtml(row.contractorId)}</select></td>
+            <td><input class="ctr-rides" type="number" min="0" value="${Number(row.ridesCount || 0)}" /></td>
+            <td><input class="ctr-registered" type="number" min="0" value="${Number(row.registeredPassengers || 0)}" /></td>
+            <td><input class="ctr-issues" type="number" min="0" value="${Number(row.issuesCount || 0)}" /></td>
+            <td><input class="ctr-affected" type="number" min="0" value="${Number(row.affectedPassengers || 0)}" /></td>
+            <td><input class="ctr-taxi" type="number" min="0" value="${Number(row.taxiCount || 0)}" /></td>
+            <td><input class="ctr-large" type="number" min="0" value="${Number(row.largeVehicleCount || 0)}" /></td>
+            <td><button type="button" class="danger contractor-remove-row" data-type="${type}" data-row-index="${idx}" style="width:auto;padding:4px 8px">הסר</button></td>
+          </tr>
+        `).join("");
+        updateOperationSummaryLive(type);
+      }
+
+      function addContractorRow(type, row = null) {
+        contractorRowsState[type].push(row || {
+          contractorId: "",
+          ridesCount: 0,
+          registeredPassengers: 0,
+          issuesCount: 0,
+          affectedPassengers: 0,
+          taxiCount: 0,
+          largeVehicleCount: 0
+        });
+        renderContractorRows(type);
+      }
+
+      function removeContractorRow(type, rowIndex) {
+        contractorRowsState[type] = contractorRowsState[type].filter((_, idx) => idx !== rowIndex);
+        renderContractorRows(type);
+      }
+
+      function summarizeContractorRows(type) {
+        const rows = contractorRowsState[type] || [];
+        return rows.reduce((acc, row, idx) => {
+          const live = contractorRowFromInput(type, idx) || row;
+          acc.ridesCount += Number(live.ridesCount || 0);
+          acc.registeredPassengers += Number(live.registeredPassengers || 0);
+          acc.issuesCount += Number(live.issuesCount || 0);
+          acc.affectedPassengers += Number(live.affectedPassengers || 0);
+          acc.taxiCount += Number(live.taxiCount || 0);
+          acc.largeVehicleCount += Number(live.largeVehicleCount || 0);
+          return acc;
+        }, { ridesCount: 0, registeredPassengers: 0, issuesCount: 0, affectedPassengers: 0, taxiCount: 0, largeVehicleCount: 0 });
+      }
+
+      function updateOperationSummaryLive(type) {
+        const box = document.getElementById(contractorSummaryBoxId(type));
+        if (!box) return;
+        const prefix = type;
+        const main = {
+          ridesCount: Number(document.getElementById(`${prefix}_rides`)?.value || 0),
+          registeredPassengers: Number(document.getElementById(`${prefix}_registered`)?.value || 0),
+          issuesCount: Number(document.getElementById(`${prefix}_issues`)?.value || 0),
+          affectedPassengers: Number(document.getElementById(`${prefix}_affected`)?.value || 0)
+        };
+        const matrix = summarizeContractorRows(type);
+        const gaps = {
+          rides: main.ridesCount - matrix.ridesCount,
+          registered: main.registeredPassengers - matrix.registeredPassengers,
+          issues: main.issuesCount - matrix.issuesCount,
+          affected: main.affectedPassengers - matrix.affectedPassengers
+        };
+        const matched = Object.values(gaps).every((v) => v === 0);
+        box.style.borderColor = matched ? "#86efac" : "#fde68a";
+        box.style.background = matched ? "#f0fdf4" : "#fffbeb";
+        box.innerHTML = `סטטוס: <strong>${matched ? "תואם" : "פער"}</strong> | ראשי: נסיעות ${main.ridesCount}, נוסעים ${main.registeredPassengers}, תקלות ${main.issuesCount}, מושפעים ${main.affectedPassengers} | מטריצה: נסיעות ${matrix.ridesCount}, נוסעים ${matrix.registeredPassengers}, תקלות ${matrix.issuesCount}, מושפעים ${matrix.affectedPassengers} | פער: נסיעות ${gaps.rides}, נוסעים ${gaps.registered}, תקלות ${gaps.issues}, מושפעים ${gaps.affected}`;
+      }
+
+      async function loadContractorsForOperations() {
+        try {
+          const res = await api("GET", "/contractors?activeOnly=true");
+          contractorOptions = res.contractors || [];
+        } catch {
+          contractorOptions = [];
+        }
+      }
+
+      async function loadContractorMatrix(type) {
+        const date = getOperationDateByType(type);
+        try {
+          const res = await api("GET", `/daily-metrics-contractor/${date}/${type}`);
+          contractorRowsState[type] = (res.rows || []).map((row) => ({
+            contractorId: row.contractorId,
+            ridesCount: Number(row.ridesCount || 0),
+            registeredPassengers: Number(row.registeredPassengers || 0),
+            issuesCount: Number(row.issuesCount || 0),
+            affectedPassengers: Number(row.affectedPassengers || 0),
+            taxiCount: Number(row.taxiCount || 0),
+            largeVehicleCount: Number(row.largeVehicleCount || 0)
+          }));
+        } catch {
+          contractorRowsState[type] = [];
+        }
+        renderContractorRows(type);
+      }
+
+      async function saveContractorMatrix(type) {
+        const date = getOperationDateByType(type);
+        const rows = contractorRowsState[type] || [];
+        for (let idx = 0; idx < rows.length; idx += 1) {
+          const live = contractorRowFromInput(type, idx);
+          if (!live) continue;
+          const contractorId = String(live.contractorId || "").trim();
+          if (!contractorId) throw new Error(`יש לבחור מפעיל בשורת מטריצה ${idx + 1} (${type === "pickup" ? "איסוף" : "פיזור"})`);
+          const payload = {
+            ridesCount: parseNonNegativeInt(live.ridesCount),
+            registeredPassengers: parseNonNegativeInt(live.registeredPassengers),
+            issuesCount: parseNonNegativeInt(live.issuesCount),
+            affectedPassengers: parseNonNegativeInt(live.affectedPassengers),
+            taxiCount: parseNonNegativeInt(live.taxiCount),
+            largeVehicleCount: parseNonNegativeInt(live.largeVehicleCount)
+          };
+          for (const [field, val] of Object.entries(payload)) {
+            if (val === null) throw new Error(`ערך לא תקין בשורת מטריצה ${idx + 1} עבור ${field}`);
+          }
+          if (payload.affectedPassengers > payload.registeredPassengers) {
+            throw new Error(`נוסעים מושפעים לא יכולים לעלות על נוסעים רשומים בשורת מטריצה ${idx + 1}`);
+          }
+          await api("PUT", `/daily-metrics-contractor/${date}/${type}/${contractorId}`, payload);
+        }
+      }
+
       function sectionBody(prefix) {
         return {
           ridesCount: Number(document.getElementById(`${prefix}_rides`).value || 0),
@@ -3908,6 +4140,17 @@
           issuesCount: Number(document.getElementById(`${prefix}_issues`).value || 0),
           affectedPassengers: Number(document.getElementById(`${prefix}_affected`).value || 0)
         };
+      }
+
+      function validateMainSectionRequired(prefix) {
+        const requiredIds = ["rides", "registered", "issues", "affected"];
+        const missing = requiredIds.some((field) => {
+          const v = document.getElementById(`${prefix}_${field}`)?.value;
+          return v === "" || v === null || v === undefined;
+        });
+        if (missing) {
+          throw new Error(`יש למלא את כל שדות החובה ב${prefix === "pickup" ? "איסוף" : "פיזור"}`);
+        }
       }
 
       async function loadDailySection(date, type, prefix) {
@@ -3929,9 +4172,12 @@
       async function reloadDailySections() {
         let hasPickup = false, hasDropoff = false;
         try {
+          await loadContractorsForOperations();
           [hasPickup, hasDropoff] = await Promise.all([
             loadDailySection(pickupDate, "pickup", "pickup"),
-            loadDailySection(dropoffDate, "dropoff", "dropoff")
+            loadDailySection(dropoffDate, "dropoff", "dropoff"),
+            loadContractorMatrix("pickup"),
+            loadContractorMatrix("dropoff")
           ]);
         } catch (e) {
           return;
@@ -3940,6 +4186,8 @@
         document.getElementById("savePickup").disabled = hasPickup;
         document.getElementById("saveDropoff").disabled = hasDropoff;
         notice.style.display = (hasPickup || hasDropoff) ? "flex" : "none";
+        updateOperationSummaryLive("pickup");
+        updateOperationSummaryLive("dropoff");
       }
 
       // ═══════════════════════════════

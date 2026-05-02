@@ -66,6 +66,13 @@ function providerMisconfigured(res) {
   });
 }
 
+function providerFeatureUnsupported(res, message) {
+  sendJson(res, 503, {
+    error: message || "This feature is supported only with DB_PROVIDER=supabase",
+    code: "FEATURE_UNSUPPORTED"
+  });
+}
+
 function clientIp(req) {
   return (
     req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
@@ -1762,6 +1769,39 @@ async function handleRequest(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/contractors") {
+      await handleListContractors(req, res, parsedUrl);
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/contractors") {
+      await handleCreateContractor(req, res);
+      return;
+    }
+
+    const updateContractorMatch = pathname.match(/^\/contractors\/([a-zA-Z0-9-]+)$/);
+    if (req.method === "PUT" && updateContractorMatch) {
+      await handleUpdateContractor(req, res, updateContractorMatch[1]);
+      return;
+    }
+
+    const contractorDailyMatch = pathname.match(/^\/daily-metrics-contractor\/(\d{4}-\d{2}-\d{2})\/(pickup|dropoff)$/);
+    if (req.method === "GET" && contractorDailyMatch) {
+      await handleListDailyMetricsContractor(req, res, contractorDailyMatch[1], contractorDailyMatch[2]);
+      return;
+    }
+
+    const upsertContractorDailyMatch = pathname.match(/^\/daily-metrics-contractor\/(\d{4}-\d{2}-\d{2})\/(pickup|dropoff)\/([a-zA-Z0-9-]+)$/);
+    if (req.method === "PUT" && upsertContractorDailyMatch) {
+      await handleUpsertDailyMetricContractor(req, res, upsertContractorDailyMatch[1], upsertContractorDailyMatch[2], upsertContractorDailyMatch[3]);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/dashboard/contractors-comparison") {
+      await handleContractorsComparison(req, res, parsedUrl);
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/incidents") {
       await handleListIncidents(req, res, parsedUrl);
       return;
@@ -1900,6 +1940,13 @@ async function handleRequest(req, res) {
     console.error("[handleRequest] Unhandled error:", error);
     if (String(error?.message || "").includes("DB_PROVIDER=excel only")) {
       providerMisconfigured(res);
+      return;
+    }
+    if (
+      String(error?.message || "").includes("supported only with DB_PROVIDER=supabase") ||
+      String(error?.message || "").includes("is not a function")
+    ) {
+      providerFeatureUnsupported(res, "Contractors matrix is supported only with DB_PROVIDER=supabase");
       return;
     }
     sendJson(res, 500, {
