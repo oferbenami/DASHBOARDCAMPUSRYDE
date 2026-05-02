@@ -555,6 +555,29 @@
       .scope-btn:first-child { border-left:none }
       .scope-btn.active { background:var(--accent,#1976d2);color:#fff;font-weight:600 }
       .scope-btn:hover:not(.active) { background:#f0f4fd }
+      .dashboard-range-shortcuts {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .dash-range-btn {
+        border: 1px solid #c6d6f2;
+        background: #f5f8ff;
+        color: #1f2b43;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+      }
+      .dash-range-btn:hover { background: #eaf1ff; border-color: #aac2eb; }
+      .dash-range-btn.active {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #fff;
+      }
       .date-nav-btn {
         padding: 0.15rem 0.5rem;
         border: 1px solid #7f93b8;
@@ -578,6 +601,21 @@
         margin: 8px 0 12px;
       }
       #dashboardMainBackTop.show { display: inline-block; }
+      .operations-entry-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .date-nav-head {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        direction: ltr;
+      }
+      .date-nav-title {
+        margin: 0;
+        direction: rtl;
+      }
 
       /* ═══════════════════════════════
          MISC
@@ -887,6 +925,11 @@
             <div class="section-header">
               <span class="section-icon">📊</span>
               <h2 style="margin:0">לוח בקרה — KPI</h2>
+            </div>
+            <div class="dashboard-range-shortcuts" id="dashboardRangeShortcuts">
+              <button type="button" class="dash-range-btn" id="dashRangeToday">היום</button>
+              <button type="button" class="dash-range-btn" id="dashRangeCustomDay">יום אחר</button>
+              <button type="button" class="dash-range-btn" id="dashRangeWeek">מבט שבועי</button>
             </div>
             <div class="kpi-headline">
               <div class="headline-title">תמונת מצב תפעולית</div>
@@ -1259,12 +1302,12 @@
               <button id="btnConfirmUpdate" style="padding:0.25rem 0.75rem;background:#1976d2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">כן, עדכן</button>
               <button id="btnCancelUpdate" style="padding:0.25rem 0.75rem;background:#e0e0e0;color:#333;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">לא</button>
             </div>
-            <div class="grid cols-2">
+            <div class="operations-entry-grid">
               <div class="card">
-                <div style="display:flex;align-items:center;gap:0.4rem">
-                  <button id="dropoffDatePrev" type="button" class="date-nav-btn" title="יום קודם">←</button>
-                  <h2 id="dropoffTitle" style="margin:0">פיזור</h2>
-                  <button id="dropoffDateNext" type="button" class="date-nav-btn" title="יום הבא">→</button>
+                <div class="date-nav-head">
+                  <button id="dropoffDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
+                  <h2 id="dropoffTitle" class="date-nav-title">פיזור</h2>
+                  <button id="dropoffDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
                 </div>
                 <div class="grid cols-2">
                   <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
@@ -1276,10 +1319,10 @@
               </div>
 
               <div class="card">
-                <div style="display:flex;align-items:center;gap:0.4rem">
-                  <button id="pickupDatePrev" type="button" class="date-nav-btn" title="יום קודם">←</button>
-                  <h2 id="pickupTitle" style="margin:0">איסוף</h2>
-                  <button id="pickupDateNext" type="button" class="date-nav-btn" title="יום הבא">→</button>
+                <div class="date-nav-head">
+                  <button id="pickupDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
+                  <h2 id="pickupTitle" class="date-nav-title">איסוף</h2>
+                  <button id="pickupDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
                 </div>
                 <div class="grid cols-2">
                   <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
@@ -1891,6 +1934,13 @@
         return toDateVal(d);
       }
 
+      function startOfWeekSunday(dateVal) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        const day = d.getDay();
+        d.setDate(d.getDate() - day);
+        return toDateVal(d);
+      }
+
       let pickupDate = toDateVal(today);
       let dropoffDate = toDateVal(yesterday);
       let dashboardScope = "total";
@@ -1929,6 +1979,7 @@
         document.getElementById("drillTo").value = pickupDate;
         document.getElementById("targetFrom").value = pickupDate;
         updateHeadlineDates(pickupDate);
+        updateDashboardRangeButtons();
       }
 
       function syncOperationDateUI() {
@@ -1942,6 +1993,41 @@
         dropoffDate = shiftDateVal(dropoffDate, daysDelta);
         syncOperationDateUI();
         await reloadDailySections();
+      }
+
+      function updateDashboardRangeButtons() {
+        const from = document.getElementById("kpiFrom")?.value || "";
+        const to = document.getElementById("kpiTo")?.value || "";
+        const todayVal = toDateVal(new Date());
+        const weekStart = to ? startOfWeekSunday(to) : "";
+        let mode = "";
+        if (from && to && from === to) {
+          mode = to === todayVal ? "today" : "custom-day";
+        } else if (from && to && from === weekStart) {
+          mode = "week";
+        }
+        document.getElementById("dashRangeToday")?.classList.toggle("active", mode === "today");
+        document.getElementById("dashRangeCustomDay")?.classList.toggle("active", mode === "custom-day");
+        document.getElementById("dashRangeWeek")?.classList.toggle("active", mode === "week");
+      }
+
+      async function applyDashboardRange(mode) {
+        const todayVal = toDateVal(new Date());
+        const fromInput = document.getElementById("kpiFrom");
+        const toInput = document.getElementById("kpiTo");
+        if (!fromInput || !toInput) return;
+
+        if (mode === "today") {
+          fromInput.value = todayVal;
+          toInput.value = todayVal;
+        } else if (mode === "week") {
+          const ref = toInput.value || todayVal;
+          fromInput.value = startOfWeekSunday(ref);
+          toInput.value = ref;
+        }
+
+        updateDashboardRangeButtons();
+        await loadDashboard();
       }
 
       // ═══════════════════════════════
@@ -3130,8 +3216,34 @@
         updateDashboardMainBackVisibility();
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
-          async () => { await loadDashboard(); toastOk("לוח הבקרה עודכן"); }
+          async () => { await loadDashboard(); updateDashboardRangeButtons(); toastOk("לוח הבקרה עודכן"); }
         );
+        document.getElementById("dashRangeToday").addEventListener("click", async () => {
+          try { await applyDashboardRange("today"); }
+          catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+        });
+        document.getElementById("dashRangeWeek").addEventListener("click", async () => {
+          try { await applyDashboardRange("week"); }
+          catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+        });
+        document.getElementById("dashRangeCustomDay").addEventListener("click", () => {
+          const toInput = document.getElementById("kpiTo");
+          if (!toInput) return;
+          toInput.showPicker?.();
+          toInput.focus();
+        });
+        document.getElementById("kpiTo").addEventListener("change", async () => {
+          const toInput = document.getElementById("kpiTo");
+          const fromInput = document.getElementById("kpiFrom");
+          if (!toInput?.value || !fromInput) return;
+          fromInput.value = toInput.value;
+          updateDashboardRangeButtons();
+          try { await loadDashboard(); }
+          catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+        });
+        document.getElementById("kpiFrom").addEventListener("change", () => {
+          updateDashboardRangeButtons();
+        });
         document.querySelectorAll(".report-tile").forEach((tile) => {
           tile.addEventListener("click", () => {
             selectedDashboardReport = tile.dataset.report || "kpi-main";
@@ -3180,7 +3292,7 @@
             document.querySelectorAll("#dashboardScopeToggle .scope-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             dashboardScope = btn.dataset.scope;
-            try { await loadDashboard(); } catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
+            try { await loadDashboard(); updateDashboardRangeButtons(); } catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
           });
         });
 
