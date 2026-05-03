@@ -1488,6 +1488,12 @@ async function handleCreateContractor(req, res) {
   const name = String(body.name || "").trim();
   const code = String(body.code || "").trim();
   if (!name || !code) { badRequest(res, "name and code are required"); return; }
+  const existing = await listContractors({ activeOnly: false });
+  const normalizedCode = code.toLowerCase();
+  if ((existing || []).some((item) => String(item.code || "").trim().toLowerCase() === normalizedCode)) {
+    sendJson(res, 409, { error: "Contractor code already exists", message: "יש לבחור קוד מפעיל ייחודי." });
+    return;
+  }
   const contractor = await createContractor({ name, code });
   await appendAudit({ actorUserId: active.user.id, action: "CONTRACTOR_CREATED",
     entityType: "contractors", entityId: contractor.id,
@@ -1949,6 +1955,13 @@ async function handleRequest(req, res) {
       String(error?.message || "").includes("is not a function")
     ) {
       providerFeatureUnsupported(res, "Contractors matrix is supported only with DB_PROVIDER=supabase");
+      return;
+    }
+    if (String(error?.message || "").includes("Supabase request failed (409)")) {
+      sendJson(res, 409, {
+        error: "Conflict",
+        message: "הרשומה כבר קיימת או מתנגשת עם נתון ייחודי קיים."
+      });
       return;
     }
     sendJson(res, 500, {
