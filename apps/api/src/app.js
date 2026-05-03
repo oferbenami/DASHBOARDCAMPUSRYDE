@@ -1522,7 +1522,9 @@ async function handleUpsertDailyMetricContractor(req, res, date, serviceType, co
   const input = {
     ridesCount: Number(body.ridesCount || 0),
     taxiCount: Number(body.taxiCount || 0),
+    taxiPassengers: Number(body.taxiPassengers || 0),
     largeVehicleCount: Number(body.largeVehicleCount || 0),
+    largeVehiclePassengers: Number(body.largeVehiclePassengers || 0),
     registeredPassengers: Number(body.registeredPassengers || 0),
     issuesCount: Number(body.issuesCount || 0),
     affectedPassengers: Number(body.affectedPassengers || 0)

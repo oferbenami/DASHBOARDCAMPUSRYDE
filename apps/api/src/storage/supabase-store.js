@@ -108,7 +108,9 @@ function cleanDailyMetricContractor(row) {
     contractorCode: row.contractors?.code || null,
     ridesCount: Number(row.rides_count),
     taxiCount: Number(row.taxi_count),
+    taxiPassengers: Number(row.taxi_passengers || 0),
     largeVehicleCount: Number(row.large_vehicle_count),
+    largeVehiclePassengers: Number(row.large_vehicle_passengers || 0),
     registeredPassengers: Number(row.registered_passengers),
     issuesCount: Number(row.issues_count),
     affectedPassengers: Number(row.affected_passengers),
@@ -898,7 +900,9 @@ async function upsertDailyMetricContractor(serviceDate, serviceType, contractorI
   const body = {
     rides_count: input.ridesCount ?? 0,
     taxi_count: input.taxiCount ?? 0,
+    taxi_passengers: input.taxiPassengers ?? 0,
     large_vehicle_count: input.largeVehicleCount ?? 0,
+    large_vehicle_passengers: input.largeVehiclePassengers ?? 0,
     registered_passengers: input.registeredPassengers ?? 0,
     issues_count: input.issuesCount ?? 0,
     affected_passengers: input.affectedPassengers ?? 0,
@@ -950,13 +954,16 @@ async function getContractorsComparison({ dateFrom, dateTo, serviceType }) {
         name: row.contractorName,
         code: row.contractorCode,
         rides: 0, taxis: 0, largeVehicles: 0,
+        taxiPassengers: 0, largeVehiclePassengers: 0,
         passengers: 0, issues: 0, affected: 0, days: 0
       };
     }
     const c = byContractor[cid];
     c.rides += row.ridesCount;
     c.taxis += row.taxiCount;
+    c.taxiPassengers += row.taxiPassengers;
     c.largeVehicles += row.largeVehicleCount;
+    c.largeVehiclePassengers += row.largeVehiclePassengers;
     c.passengers += row.registeredPassengers;
     c.issues += row.issuesCount;
     c.affected += row.affectedPassengers;

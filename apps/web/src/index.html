@@ -527,6 +527,36 @@
         font-size: 0.75rem;
         white-space: nowrap;
       }
+      .management-subtabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .management-subtab {
+        width: auto;
+        padding: 7px 12px;
+        border: 1px solid #c8d2e2;
+        background: #f8fbff;
+        color: #3b4c68;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.82rem;
+      }
+      .management-subtab.active {
+        background: #e8f0fe;
+        border-color: #7ba3e8;
+        color: #0b4ea2;
+      }
+      .management-subpanel { display: none; }
+      .management-subpanel.active { display: block; }
+      .optional-split-field {
+        background: #f3f8ff;
+        border-color: #b8cff8 !important;
+      }
+      .optional-split-label {
+        color: #305ea9;
+        font-weight: 700;
+      }
 
       /* ═══════════════════════════════
          TOASTS
@@ -1493,7 +1523,7 @@
                   <div class="table-wrap" style="margin-top:8px">
                     <table>
                       <thead>
-                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th>נסיעות מונית</th><th>נסיעות רכב גדול</th><th></th></tr>
+                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th class="optional-split-label">מוניות נסיעות</th><th class="optional-split-label">מוניות נוסעים</th><th class="optional-split-label">רכב גדול נסיעות</th><th class="optional-split-label">רכב גדול נוסעים</th><th></th></tr>
                       </thead>
                       <tbody id="dropoffContractorRows"></tbody>
                     </table>
@@ -1523,7 +1553,7 @@
                   <div class="table-wrap" style="margin-top:8px">
                     <table>
                       <thead>
-                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th>נסיעות מונית</th><th>נסיעות רכב גדול</th><th></th></tr>
+                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th class="optional-split-label">מוניות נסיעות</th><th class="optional-split-label">מוניות נוסעים</th><th class="optional-split-label">רכב גדול נסיעות</th><th class="optional-split-label">רכב גדול נוסעים</th><th></th></tr>
                       </thead>
                       <tbody id="pickupContractorRows"></tbody>
                     </table>
@@ -1646,38 +1676,68 @@
       <div class="tab-panel" id="panel-management">
         <div class="wrap">
           <div class="info-box" id="mobileManagementNote" style="display:none">
-            ניהול יעדים וספי צבעים זמין בגישה ממחשב בלבד.
+            ניהול יעדים ומפעילים זמין בגישה ממחשב בלבד.
           </div>
           <div id="managementContent">
-            <div class="card">
-              <div class="section-header">
-                <span class="section-icon">🎯</span>
-                <h2 style="margin:0">ניהול יעדים וספי צבע לכל המדדים</h2>
+            <div class="management-subtabs">
+              <button id="mgmtTabTargets" class="management-subtab active" type="button" data-panel="targets">יעדים</button>
+              <button id="mgmtTabContractors" class="management-subtab" type="button" data-panel="contractors">ניהול מפעילים</button>
+            </div>
+
+            <div id="mgmtPanelTargets" class="management-subpanel active">
+              <div class="card">
+                <div class="section-header">
+                  <span class="section-icon">🎯</span>
+                  <h2 style="margin:0">ניהול יעדים וספי צבע לכל המדדים</h2>
+                </div>
+                <div class="row-actions" style="margin-top:10px">
+                  <button id="reloadManagedTargets" class="secondary">טען יעדים מנוהלים</button>
+                </div>
+                <div id="managedTargetsCount" style="margin-top:8px;font-size:0.82rem;color:#4a5a73">יעדים מנוהלים: 0</div>
+                <div class="mgmt-table-wrap">
+                  <table class="mgmt-table">
+                    <thead>
+                      <tr>
+                        <th>מדד</th>
+                        <th>יעד מספרי</th>
+                        <th>כיוון יעד</th>
+                        <th>בתוקף מ-</th>
+                        <th>בתוקף עד</th>
+                        <th>ירוק מ-</th>
+                        <th>ירוק עד</th>
+                        <th>צהוב מ-</th>
+                        <th>צהוב עד</th>
+                        <th>אדום מ-</th>
+                        <th>אדום עד</th>
+                        <th>פעולה</th>
+                      </tr>
+                    </thead>
+                    <tbody id="managedTargetsRows"></tbody>
+                  </table>
+                </div>
               </div>
-              <div class="row-actions" style="margin-top:10px">
-                <button id="reloadManagedTargets" class="secondary">טען יעדים מנוהלים</button>
-              </div>
-              <div id="managedTargetsCount" style="margin-top:8px;font-size:0.82rem;color:#4a5a73">יעדים מנוהלים: 0</div>
-              <div class="mgmt-table-wrap">
-                <table class="mgmt-table">
-                  <thead>
-                    <tr>
-                      <th>מדד</th>
-                      <th>יעד מספרי</th>
-                      <th>כיוון יעד</th>
-                      <th>בתוקף מ-</th>
-                      <th>בתוקף עד</th>
-                      <th>ירוק מ-</th>
-                      <th>ירוק עד</th>
-                      <th>צהוב מ-</th>
-                      <th>צהוב עד</th>
-                      <th>אדום מ-</th>
-                      <th>אדום עד</th>
-                      <th>פעולה</th>
-                    </tr>
-                  </thead>
-                  <tbody id="managedTargetsRows"></tbody>
-                </table>
+            </div>
+
+            <div id="mgmtPanelContractors" class="management-subpanel">
+              <div class="card">
+                <div class="section-header">
+                  <span class="section-icon">🧩</span>
+                  <h2 style="margin:0">ניהול מפעילים להזנת פעילות</h2>
+                </div>
+                <div class="grid cols-4">
+                  <div><label>שם מפעיל</label><input id="contractorName" /></div>
+                  <div><label>קוד מפעיל</label><input id="contractorCode" /></div>
+                  <div style="display:flex;align-items:flex-end"><button id="createContractor">הוסף מפעיל</button></div>
+                  <div style="display:flex;align-items:flex-end"><button id="reloadContractors" class="secondary">טען מפעילים</button></div>
+                </div>
+                <div class="table-wrap" style="margin-top:12px">
+                  <table>
+                    <thead>
+                      <tr><th>שם</th><th>קוד</th><th>פעיל</th><th>פעולה</th></tr>
+                    </thead>
+                    <tbody id="contractorsRows"></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -2151,6 +2211,7 @@
       let lastAdvancedData  = null;
       let contractorOptions = [];
       const contractorRowsState = { pickup: [], dropoff: [] };
+      let currentManagementSubtab = "targets";
             const dashboardMetaCache = new Map();
       const KPI_METRICS = [
         { key: "passengers", cardId: "kpiCard-passengers", valueId: "kpiPassengers", targetId: "kpiTarget-passengers", gapId: "kpiGap-passengers", deltaId: "kpiDelta-passengers" },
@@ -2384,6 +2445,65 @@
         { metricKey: "affectedPassengers", description: "מודד את מספר הנוסעים שהושפעו מתקלות ביום השירות." }
       ];
       const managedRowsByMetric = new Map();
+      let managementContractors = [];
+
+      function showManagementSubtab(tab) {
+        currentManagementSubtab = tab === "contractors" ? "contractors" : "targets";
+        document.querySelectorAll(".management-subtab").forEach((btn) =>
+          btn.classList.toggle("active", btn.dataset.panel === currentManagementSubtab)
+        );
+        document.getElementById("mgmtPanelTargets")?.classList.toggle("active", currentManagementSubtab === "targets");
+        document.getElementById("mgmtPanelContractors")?.classList.toggle("active", currentManagementSubtab === "contractors");
+      }
+
+      function renderContractorsManagementTable() {
+        const tbody = document.getElementById("contractorsRows");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        for (const row of managementContractors) {
+          const tr = document.createElement("tr");
+          tr.dataset.contractorId = row.id;
+          tr.innerHTML = `
+            <td><input class="mgmt-contractor-name" value="${row.name || ""}" /></td>
+            <td><input class="mgmt-contractor-code" value="${row.code || ""}" /></td>
+            <td>
+              <select class="mgmt-contractor-active">
+                <option value="true"${row.active ? " selected" : ""}>פעיל</option>
+                <option value="false"${!row.active ? " selected" : ""}>לא פעיל</option>
+              </select>
+            </td>
+            <td><button type="button" class="secondary mgmt-contractor-save" style="width:auto;padding:5px 10px">שמור</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      async function loadManagementContractors() {
+        const res = await api("GET", "/contractors?activeOnly=false");
+        managementContractors = res.contractors || [];
+        renderContractorsManagementTable();
+      }
+
+      async function createManagementContractor() {
+        const name = String(document.getElementById("contractorName")?.value || "").trim();
+        const code = String(document.getElementById("contractorCode")?.value || "").trim();
+        if (!name || !code) throw new Error("יש להזין שם וקוד מפעיל");
+        await api("POST", "/contractors", { name, code });
+        document.getElementById("contractorName").value = "";
+        document.getElementById("contractorCode").value = "";
+        await loadManagementContractors();
+      }
+
+      async function saveManagementContractor(contractorId) {
+        const row = document.querySelector(`#contractorsRows tr[data-contractor-id="${contractorId}"]`);
+        if (!row) return;
+        const name = String(row.querySelector(".mgmt-contractor-name")?.value || "").trim();
+        const code = String(row.querySelector(".mgmt-contractor-code")?.value || "").trim();
+        const active = String(row.querySelector(".mgmt-contractor-active")?.value || "true") === "true";
+        if (!name || !code) throw new Error("שם וקוד מפעיל הם שדות חובה");
+        await api("PUT", `/contractors/${contractorId}`, { name, code, active });
+        await loadManagementContractors();
+      }
 
       function managedDefaultThreshold(metricKey) {
         if (metricKey === "issues" || metricKey === "issuesRate" || metricKey === "affectedRate" || metricKey === "affectedPassengers") {
@@ -3960,6 +4080,33 @@
           if (!row?.dataset.metricKey) return;
           await saveManagedRow(row.dataset.metricKey);
         });
+
+        document.querySelectorAll(".management-subtab").forEach((btn) => {
+          btn.addEventListener("click", () => showManagementSubtab(btn.dataset.panel));
+        });
+        document.getElementById("reloadContractors").onclick = withLoading(
+          document.getElementById("reloadContractors"),
+          async () => {
+            await loadManagementContractors();
+            toastOk("רשימת מפעילים נטענה");
+          }
+        );
+        document.getElementById("createContractor").onclick = withLoading(
+          document.getElementById("createContractor"),
+          async () => {
+            await createManagementContractor();
+            toastOk("מפעיל נוסף בהצלחה");
+          }
+        );
+        document.getElementById("contractorsRows").addEventListener("click", async (e) => {
+          const btn = e.target.closest(".mgmt-contractor-save");
+          if (!btn) return;
+          const tr = btn.closest("tr");
+          const contractorId = tr?.dataset.contractorId;
+          if (!contractorId) return;
+          await saveManagementContractor(contractorId);
+          toastOk("פרטי מפעיל נשמרו");
+        });
       }
 
       // ═══════════════════════════════
@@ -4001,7 +4148,9 @@
           issuesCount: tr.querySelector(".ctr-issues")?.value || "",
           affectedPassengers: tr.querySelector(".ctr-affected")?.value || "",
           taxiCount: tr.querySelector(".ctr-taxi")?.value || "",
-          largeVehicleCount: tr.querySelector(".ctr-large")?.value || ""
+          taxiPassengers: tr.querySelector(".ctr-taxi-passengers")?.value || "",
+          largeVehicleCount: tr.querySelector(".ctr-large")?.value || "",
+          largeVehiclePassengers: tr.querySelector(".ctr-large-passengers")?.value || ""
         };
       }
 
@@ -4010,7 +4159,7 @@
         if (!tbody) return;
         const rows = contractorRowsState[type] || [];
         if (!contractorOptions.length) {
-          tbody.innerHTML = `<tr><td colspan="8" style="color:#6b7893">לא קיימים מפעילים פעילים או שהפיצ'ר לא נתמך בסביבת נתונים זו.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="10" style="color:#6b7893">לא קיימים מפעילים פעילים או שהפיצ'ר לא נתמך בסביבת נתונים זו.</td></tr>`;
           updateOperationSummaryLive(type);
           return;
         }
@@ -4021,8 +4170,10 @@
             <td><input class="ctr-registered" type="number" min="0" value="${Number(row.registeredPassengers || 0)}" /></td>
             <td><input class="ctr-issues" type="number" min="0" value="${Number(row.issuesCount || 0)}" /></td>
             <td><input class="ctr-affected" type="number" min="0" value="${Number(row.affectedPassengers || 0)}" /></td>
-            <td><input class="ctr-taxi" type="number" min="0" value="${Number(row.taxiCount || 0)}" /></td>
-            <td><input class="ctr-large" type="number" min="0" value="${Number(row.largeVehicleCount || 0)}" /></td>
+            <td><input class="ctr-taxi optional-split-field" type="number" min="0" value="${Number(row.taxiCount || 0)}" /></td>
+            <td><input class="ctr-taxi-passengers optional-split-field" type="number" min="0" value="${Number(row.taxiPassengers || 0)}" /></td>
+            <td><input class="ctr-large optional-split-field" type="number" min="0" value="${Number(row.largeVehicleCount || 0)}" /></td>
+            <td><input class="ctr-large-passengers optional-split-field" type="number" min="0" value="${Number(row.largeVehiclePassengers || 0)}" /></td>
             <td><button type="button" class="danger contractor-remove-row" data-type="${type}" data-row-index="${idx}" style="width:auto;padding:4px 8px">הסר</button></td>
           </tr>
         `).join("");
@@ -4041,7 +4192,9 @@
           issuesCount: 0,
           affectedPassengers: 0,
           taxiCount: 0,
-          largeVehicleCount: 0
+          taxiPassengers: 0,
+          largeVehicleCount: 0,
+          largeVehiclePassengers: 0
         });
         renderContractorRows(type);
       }
@@ -4060,9 +4213,11 @@
           acc.issuesCount += Number(live.issuesCount || 0);
           acc.affectedPassengers += Number(live.affectedPassengers || 0);
           acc.taxiCount += Number(live.taxiCount || 0);
+          acc.taxiPassengers += Number(live.taxiPassengers || 0);
           acc.largeVehicleCount += Number(live.largeVehicleCount || 0);
+          acc.largeVehiclePassengers += Number(live.largeVehiclePassengers || 0);
           return acc;
-        }, { ridesCount: 0, registeredPassengers: 0, issuesCount: 0, affectedPassengers: 0, taxiCount: 0, largeVehicleCount: 0 });
+        }, { ridesCount: 0, registeredPassengers: 0, issuesCount: 0, affectedPassengers: 0, taxiCount: 0, taxiPassengers: 0, largeVehicleCount: 0, largeVehiclePassengers: 0 });
       }
 
       function updateOperationSummaryLive(type) {
@@ -4085,7 +4240,7 @@
         const matched = Object.values(gaps).every((v) => v === 0);
         box.style.borderColor = matched ? "#86efac" : "#fde68a";
         box.style.background = matched ? "#f0fdf4" : "#fffbeb";
-        box.innerHTML = `סטטוס: <strong>${matched ? "תואם" : "פער"}</strong> | ראשי: נסיעות ${main.ridesCount}, נוסעים ${main.registeredPassengers}, תקלות ${main.issuesCount}, מושפעים ${main.affectedPassengers} | מטריצה: נסיעות ${matrix.ridesCount}, נוסעים ${matrix.registeredPassengers}, תקלות ${matrix.issuesCount}, מושפעים ${matrix.affectedPassengers} | פער: נסיעות ${gaps.rides}, נוסעים ${gaps.registered}, תקלות ${gaps.issues}, מושפעים ${gaps.affected}`;
+        box.innerHTML = `סטטוס: <strong>${matched ? "תואם" : "פער"}</strong> | ראשי: נסיעות ${main.ridesCount}, נוסעים ${main.registeredPassengers}, תקלות ${main.issuesCount}, מושפעים ${main.affectedPassengers} | מטריצה: נסיעות ${matrix.ridesCount}, נוסעים ${matrix.registeredPassengers}, תקלות ${matrix.issuesCount}, מושפעים ${matrix.affectedPassengers} | פער: נסיעות ${gaps.rides}, נוסעים ${gaps.registered}, תקלות ${gaps.issues}, מושפעים ${gaps.affected} | פיצול רשות: מוניות (${matrix.taxiCount} נסיעות, ${matrix.taxiPassengers} נוסעים) | רכב גדול (${matrix.largeVehicleCount} נסיעות, ${matrix.largeVehiclePassengers} נוסעים)`;
       }
 
       async function loadContractorsForOperations() {
@@ -4111,7 +4266,9 @@
             issuesCount: Number(row.issuesCount || 0),
             affectedPassengers: Number(row.affectedPassengers || 0),
             taxiCount: Number(row.taxiCount || 0),
-            largeVehicleCount: Number(row.largeVehicleCount || 0)
+            taxiPassengers: Number(row.taxiPassengers || 0),
+            largeVehicleCount: Number(row.largeVehicleCount || 0),
+            largeVehiclePassengers: Number(row.largeVehiclePassengers || 0)
           }));
         } catch {
           contractorRowsState[type] = [];
@@ -4137,8 +4294,10 @@
             registeredPassengers: parseNonNegativeInt(live.registeredPassengers),
             issuesCount: parseNonNegativeInt(live.issuesCount),
             affectedPassengers: parseNonNegativeInt(live.affectedPassengers),
-            taxiCount: parseNonNegativeInt(live.taxiCount),
-            largeVehicleCount: parseNonNegativeInt(live.largeVehicleCount)
+            taxiCount: live.taxiCount === "" ? 0 : parseNonNegativeInt(live.taxiCount),
+            taxiPassengers: live.taxiPassengers === "" ? 0 : parseNonNegativeInt(live.taxiPassengers),
+            largeVehicleCount: live.largeVehicleCount === "" ? 0 : parseNonNegativeInt(live.largeVehicleCount),
+            largeVehiclePassengers: live.largeVehiclePassengers === "" ? 0 : parseNonNegativeInt(live.largeVehiclePassengers)
           };
           for (const [field, val] of Object.entries(payload)) {
             if (val === null) throw new Error(`ערך לא תקין בשורת מטריצה ${idx + 1} עבור ${field}`);
@@ -4264,6 +4423,12 @@
         } catch (e) {
           hasFailures = true;
           await reportClientError("bootstrap_managed_targets_failure", e);
+        }
+        try {
+          await loadManagementContractors();
+        } catch (e) {
+          hasFailures = true;
+          await reportClientError("bootstrap_management_contractors_failure", e);
         }
 
         const [dailyResult, dashboardResult] = await Promise.allSettled([
