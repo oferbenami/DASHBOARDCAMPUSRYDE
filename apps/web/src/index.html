@@ -1724,6 +1724,7 @@
                   <span class="section-icon">🧩</span>
                   <h2 style="margin:0">ניהול מפעילים להזנת פעילות</h2>
                 </div>
+                <div id="contractorsStatus" class="info-box" style="display:none;margin-bottom:10px"></div>
                 <div class="grid cols-4">
                   <div><label>שם מפעיל</label><input id="contractorName" /></div>
                   <div><label>קוד מפעיל</label><input id="contractorCode" /></div>
@@ -1952,6 +1953,26 @@
       }
       function toastOk(msg) { toast(msg, "success"); }
       function toastErr(msg) { toast(msg, "error"); }
+      function setContractorsStatus(message, type = "info") {
+        const el = document.getElementById("contractorsStatus");
+        if (!el) return;
+        if (!message) {
+          el.style.display = "none";
+          el.textContent = "";
+          return;
+        }
+        const tones = {
+          info: { border: "#cbd5e1", bg: "#f8fafc", text: "#334155" },
+          success: { border: "#86efac", bg: "#f0fdf4", text: "#166534" },
+          error: { border: "#fecaca", bg: "#fef2f2", text: "#991b1b" }
+        };
+        const tone = tones[type] || tones.info;
+        el.style.display = "block";
+        el.style.borderColor = tone.border;
+        el.style.background = tone.bg;
+        el.style.color = tone.text;
+        el.textContent = message;
+      }
 
       // ═══════════════════════════════
       // API
@@ -1973,7 +1994,8 @@
             fetchConfig().then(initGoogleLogin);
             throw new Error("session-expired");
           }
-          const err = new Error(payload.error || `HTTP ${res.status}`);
+          const msg = payload.message ? `${payload.error || `HTTP ${res.status}`}: ${payload.message}` : (payload.error || `HTTP ${res.status}`);
+          const err = new Error(msg);
           err.status = res.status;
           err.code = payload.code || null;
           err.payload = payload;
@@ -2460,6 +2482,10 @@
         const tbody = document.getElementById("contractorsRows");
         if (!tbody) return;
         tbody.innerHTML = "";
+        if (!managementContractors.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:12px">אין מפעילים להצגה</td></tr>`;
+          return;
+        }
         for (const row of managementContractors) {
           const tr = document.createElement("tr");
           tr.dataset.contractorId = row.id;
@@ -2482,16 +2508,32 @@
         const res = await api("GET", "/contractors?activeOnly=false");
         managementContractors = res.contractors || [];
         renderContractorsManagementTable();
+        setContractorsStatus(`נטענו ${managementContractors.length} מפעילים`, "success");
       }
 
       async function createManagementContractor() {
         const name = String(document.getElementById("contractorName")?.value || "").trim();
         const code = String(document.getElementById("contractorCode")?.value || "").trim();
         if (!name || !code) throw new Error("יש להזין שם וקוד מפעיל");
-        await api("POST", "/contractors", { name, code });
-        document.getElementById("contractorName").value = "";
-        document.getElementById("contractorCode").value = "";
-        await loadManagementContractors();
+        try {
+          await api("POST", "/contractors", { name, code });
+          document.getElementById("contractorName").value = "";
+          document.getElementById("contractorCode").value = "";
+          await loadManagementContractors();
+          setContractorsStatus("מפעיל נוסף בהצלחה", "success");
+        } catch (err) {
+          const conflict = err?.status === 409 || err?.code === "CONTRACTOR_CODE_CONFLICT";
+          const message = conflict
+            ? "קוד מפעיל כבר קיים, בחר קוד אחר."
+            : String(err?.payload?.message || err?.message || "שמירת מפעיל נכשלה.");
+          setContractorsStatus(message, "error");
+          await reportClientError("contractors_create_failure", err, {
+            status: err?.status || null,
+            code: err?.code || null,
+            message
+          });
+          throw new Error(message);
+        }
       }
 
       async function saveManagementContractor(contractorId) {

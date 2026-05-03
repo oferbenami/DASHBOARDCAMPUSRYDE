@@ -73,6 +73,15 @@ function providerFeatureUnsupported(res, message) {
   });
 }
 
+function isSupabaseUniqueViolation(error) {
+  const text = String(error?.message || "");
+  return (
+    text.includes("Supabase request failed (409)") ||
+    text.includes("\"code\":\"23505\"") ||
+    text.includes("duplicate key value violates unique constraint")
+  );
+}
+
 function clientIp(req) {
   return (
     req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
@@ -1487,18 +1496,66 @@ async function handleCreateContractor(req, res) {
   const body = await readJsonBody(req);
   const name = String(body.name || "").trim();
   const code = String(body.code || "").trim();
-  if (!name || !code) { badRequest(res, "name and code are required"); return; }
-  const existing = await listContractors({ activeOnly: false });
-  const normalizedCode = code.toLowerCase();
-  if ((existing || []).some((item) => String(item.code || "").trim().toLowerCase() === normalizedCode)) {
-    sendJson(res, 409, { error: "Contractor code already exists", message: "יש לבחור קוד מפעיל ייחודי." });
+  if (!name || !code) {
+    sendJson(res, 400, {
+      error: "Bad Request",
+      message: "יש להזין שם וקוד מפעיל.",
+      code: "CONTRACTOR_INVALID_INPUT"
+    });
     return;
   }
-  const contractor = await createContractor({ name, code });
-  await appendAudit({ actorUserId: active.user.id, action: "CONTRACTOR_CREATED",
-    entityType: "contractors", entityId: contractor.id,
-    beforeData: null, afterData: contractor, metadata: { name, code } });
-  sendJson(res, 201, { contractor });
+  try {
+    const existing = await listContractors({ activeOnly: false });
+    const normalizedCode = code.toLowerCase();
+    if ((existing || []).some((item) => String(item.code || "").trim().toLowerCase() === normalizedCode)) {
+      sendJson(res, 409, {
+        error: "Contractor code already exists",
+        message: "קוד מפעיל כבר קיים, בחר קוד אחר.",
+        code: "CONTRACTOR_CODE_CONFLICT"
+      });
+      return;
+    }
+    const contractor = await createContractor({ name, code });
+    try {
+      await appendAudit({
+        actorUserId: active.user.id,
+        action: "CONTRACTOR_CREATED",
+        entityType: "contractors",
+        entityId: contractor.id,
+        beforeData: null,
+        afterData: contractor,
+        metadata: { name, code }
+      });
+    } catch (auditError) {
+      console.error("[contractors:create] audit append failed", {
+        provider: providerName(),
+        status: 201,
+        reason: String(auditError?.message || "unknown")
+      });
+    }
+    console.info("[contractors:create] success", { provider: providerName(), status: 201 });
+    sendJson(res, 201, { contractor });
+  } catch (error) {
+    if (isSupabaseUniqueViolation(error)) {
+      console.warn("[contractors:create] conflict", { provider: providerName(), status: 409 });
+      sendJson(res, 409, {
+        error: "Contractor code already exists",
+        message: "קוד מפעיל כבר קיים, בחר קוד אחר.",
+        code: "CONTRACTOR_CODE_CONFLICT"
+      });
+      return;
+    }
+    console.error("[contractors:create] failed", {
+      provider: providerName(),
+      status: 500,
+      reason: String(error?.message || "unknown")
+    });
+    sendJson(res, 500, {
+      error: "Internal Server Error",
+      message: "שמירת המפעיל נכשלה. נסה שוב בעוד רגע.",
+      code: "CONTRACTOR_CREATE_FAILED"
+    });
+  }
 }
 
 async function handleUpdateContractor(req, res, id) {
