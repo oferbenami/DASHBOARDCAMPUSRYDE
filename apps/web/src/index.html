@@ -1008,6 +1008,9 @@
           <button class="tab-btn" data-tab="incidents" onclick="showTab('incidents')">
             <span class="tab-icon">⚠️</span> תקלות
           </button>
+          <button class="tab-btn" data-tab="history" onclick="showTab('history')">
+            <span class="tab-icon">🕘</span> היסטוריה
+          </button>
           <button class="tab-btn" id="desktopMgmtTab" data-tab="management" onclick="showTab('management')">
             <span class="tab-icon">⚙️</span> ניהול
           </button>
@@ -1672,6 +1675,42 @@
         </div>
       </div>
 
+      <!-- ─── TAB: היסטוריה ─── -->
+      <div class="tab-panel" id="panel-history">
+        <div class="wrap">
+          <div class="card">
+            <div class="section-header">
+              <span class="section-icon">🕘</span>
+              <h2 style="margin:0">היסטוריית פעילות</h2>
+            </div>
+            <div class="row-actions" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
+              <button id="historyRange30" class="secondary">30 ימים</button>
+              <button id="historyRange90" class="secondary">90 ימים</button>
+              <button id="historyRangeAll" class="secondary">ללא הגבלה</button>
+              <button id="historyTypeBoth" class="secondary">שניהם</button>
+              <button id="historyTypePickup" class="secondary">איסוף בלבד</button>
+              <button id="historyTypeDropoff" class="secondary">פיזור בלבד</button>
+              <button id="historyReload" class="secondary">רענן</button>
+            </div>
+            <div class="table-wrap" style="margin-top:12px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>תאריך</th>
+                    <th>סוג</th>
+                    <th>נסיעות</th>
+                    <th>נוסעים</th>
+                    <th>תקלות</th>
+                    <th>נוסעים מושפעים</th>
+                  </tr>
+                </thead>
+                <tbody id="historyRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ─── TAB: ניהול ─── -->
       <div class="tab-panel" id="panel-management">
         <div class="wrap">
@@ -1854,6 +1893,10 @@
           <button class="bottom-tab" data-tab="incidents" onclick="showTab('incidents')">
             <span class="bt-icon">⚠️</span>
             <span>תקלות</span>
+          </button>
+          <button class="bottom-tab" data-tab="history" onclick="showTab('history')">
+            <span class="bt-icon">🕘</span>
+            <span>היסטוריה</span>
           </button>
           <button class="bottom-tab" data-tab="management" onclick="showTab('management')">
             <span class="bt-icon">⚙️</span>
@@ -2197,6 +2240,12 @@
         if (id === "dashboard" && previous !== "dashboard" && getToken()) {
           refreshDashboard("tab-return", { silent: true }).catch(() => {});
         }
+        if (id === "history" && getToken()) {
+          setHistoryFilterButtons();
+          loadHistoryTable().catch((err) => {
+            toastErr(err.message || "שגיאה בטעינת היסטוריה");
+          });
+        }
       }
 
       // ═══════════════════════════════
@@ -2231,6 +2280,9 @@
       let dashboardRefreshPromise = null;
       let lastDashboardData = null;
       let lastAdvancedData  = null;
+      let historyRangeMode = "30";
+      let historyServiceFilter = "both";
+      let historyLoadingPromise = null;
       let contractorOptions = [];
       const contractorRowsState = { pickup: [], dropoff: [] };
       let currentManagementSubtab = "targets";
@@ -2319,6 +2371,113 @@
         document.querySelectorAll(".hdr-dd-scope").forEach((b) =>
           b.classList.toggle("active", b.dataset.scope === scope)
         );
+      }
+
+      function historyRangeDays() {
+        if (historyRangeMode === "90") return 90;
+        if (historyRangeMode === "all") return 3650;
+        return 30;
+      }
+
+      function historyDayName(dateVal) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        return d.toLocaleDateString("he-IL", { weekday: "long" });
+      }
+
+      function historyDayColor(dateVal) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        const wd = d.getDay();
+        if (wd === 5) return "#b45309";
+        if (wd === 6) return "#b91c1c";
+        return "#64748b";
+      }
+
+      function setHistoryFilterButtons() {
+        const map = {
+          historyRange30: historyRangeMode === "30",
+          historyRange90: historyRangeMode === "90",
+          historyRangeAll: historyRangeMode === "all",
+          historyTypeBoth: historyServiceFilter === "both",
+          historyTypePickup: historyServiceFilter === "pickup",
+          historyTypeDropoff: historyServiceFilter === "dropoff"
+        };
+        Object.entries(map).forEach(([id, active]) => {
+          const el = document.getElementById(id);
+          if (el) el.classList.toggle("good", Boolean(active));
+        });
+      }
+
+      async function loadHistoryTable() {
+        if (historyLoadingPromise) return historyLoadingPromise;
+        const tbody = document.getElementById("historyRows");
+        if (!tbody) return;
+        const days = historyRangeDays();
+        historyLoadingPromise = (async () => {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px">טוען היסטוריה...</td></tr>`;
+          const todayVal = toDateVal(new Date());
+          const rows = [];
+          for (let i = 0; i < days; i += 1) {
+            const dateVal = shiftDateVal(todayVal, -i);
+            let data = null;
+            try {
+              data = await api("GET", `/daily-metrics?date=${dateVal}`);
+            } catch {
+              continue;
+            }
+            const pushRow = (type, rowData) => {
+              if (!rowData) return;
+              if (historyServiceFilter !== "both" && historyServiceFilter !== type) return;
+              rows.push({
+                serviceDate: dateVal,
+                serviceType: type,
+                ridesCount: Number(rowData.ridesCount || 0),
+                registeredPassengers: Number(rowData.registeredPassengers || 0),
+                issuesCount: Number(rowData.issuesCount || 0),
+                affectedPassengers: Number(rowData.affectedPassengers || 0)
+              });
+            };
+            pushRow("pickup", data?.pickup);
+            pushRow("dropoff", data?.dropoff);
+          }
+          if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px">אין נתונים להצגה</td></tr>`;
+            return;
+          }
+          tbody.innerHTML = rows.map((row) => {
+            const dayColor = historyDayColor(row.serviceDate);
+            const dayName = historyDayName(row.serviceDate);
+            const typeLabel = row.serviceType === "pickup" ? "איסוף" : "פיזור";
+            return `<tr class="history-row" data-date="${row.serviceDate}" data-type="${row.serviceType}" style="cursor:pointer">
+              <td>
+                <div>${row.serviceDate}</div>
+                <div style="font-size:0.78rem;color:${dayColor};font-weight:700">${dayName}</div>
+              </td>
+              <td>${typeLabel}</td>
+              <td>${row.ridesCount}</td>
+              <td>${row.registeredPassengers}</td>
+              <td>${row.issuesCount}</td>
+              <td>${row.affectedPassengers}</td>
+            </tr>`;
+          }).join("");
+        })();
+        try {
+          await historyLoadingPromise;
+        } finally {
+          historyLoadingPromise = null;
+        }
+      }
+
+      async function openOperationsFromHistory(dateVal, serviceType) {
+        const d = String(dateVal || "").trim();
+        if (!d) return;
+        if (serviceType === "pickup") {
+          pickupDate = d;
+        } else if (serviceType === "dropoff") {
+          dropoffDate = d;
+        }
+        syncOperationDateUI();
+        showTab("operations");
+        await reloadDailySections();
       }
 
       async function refreshDashboard(reason = "manual", options = {}) {
@@ -3859,9 +4018,52 @@
       // ═══════════════════════════════
       // WIRE UP BUTTONS
       // ═══════════════════════════════
+      function wireHistoryPanel() {
+        document.getElementById("historyRange30").addEventListener("click", async () => {
+          historyRangeMode = "30";
+          setHistoryFilterButtons();
+          await loadHistoryTable();
+        });
+        document.getElementById("historyRange90").addEventListener("click", async () => {
+          historyRangeMode = "90";
+          setHistoryFilterButtons();
+          await loadHistoryTable();
+        });
+        document.getElementById("historyRangeAll").addEventListener("click", async () => {
+          historyRangeMode = "all";
+          setHistoryFilterButtons();
+          await loadHistoryTable();
+        });
+        document.getElementById("historyTypeBoth").addEventListener("click", async () => {
+          historyServiceFilter = "both";
+          setHistoryFilterButtons();
+          await loadHistoryTable();
+        });
+        document.getElementById("historyTypePickup").addEventListener("click", async () => {
+          historyServiceFilter = "pickup";
+          setHistoryFilterButtons();
+          await loadHistoryTable();
+        });
+        document.getElementById("historyTypeDropoff").addEventListener("click", async () => {
+          historyServiceFilter = "dropoff";
+          setHistoryFilterButtons();
+          await loadHistoryTable();
+        });
+        document.getElementById("historyReload").addEventListener("click", async () => {
+          await loadHistoryTable();
+          toastOk("היסטוריה נטענה");
+        });
+        document.getElementById("historyRows").addEventListener("click", async (e) => {
+          const tr = e.target.closest(".history-row");
+          if (!tr) return;
+          await openOperationsFromHistory(tr.dataset.date, tr.dataset.type);
+        });
+      }
+
       function wireButtons() {
         wireMobileUI();
         wireDashboardBackButtons();
+        wireHistoryPanel();
         const topBack = document.getElementById("dashboardMainBackTop");
         if (topBack) topBack.addEventListener("click", goToDashboardMain);
         updateDashboardMainBackVisibility();
