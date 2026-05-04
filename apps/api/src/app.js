@@ -1565,10 +1565,48 @@ async function handleUpdateContractor(req, res, id) {
   const name = String(body.name || "").trim();
   const code = String(body.code || "").trim();
   const isActive = body.active !== false;
-  if (!name || !code) { badRequest(res, "name and code are required"); return; }
-  const contractor = await updateContractor(id, { name, code, active: isActive });
-  if (!contractor) { sendJson(res, 404, { error: "Contractor not found" }); return; }
-  sendJson(res, 200, { contractor });
+  if (!name || !code) {
+    sendJson(res, 400, {
+      error: "Bad Request",
+      message: "יש להזין שם וקוד מפעיל.",
+      code: "CONTRACTOR_INVALID_INPUT"
+    });
+    return;
+  }
+  try {
+    const contractor = await updateContractor(id, { name, code, active: isActive });
+    if (!contractor) {
+      sendJson(res, 404, {
+        error: "Contractor not found",
+        message: "המפעיל לא נמצא.",
+        code: "CONTRACTOR_NOT_FOUND"
+      });
+      return;
+    }
+    console.info("[contractors:update] success", { provider: providerName(), status: 200, contractorId: id });
+    sendJson(res, 200, { contractor });
+  } catch (error) {
+    if (isSupabaseUniqueViolation(error)) {
+      console.warn("[contractors:update] conflict", { provider: providerName(), status: 409, contractorId: id });
+      sendJson(res, 409, {
+        error: "Contractor code already exists",
+        message: "קוד מפעיל כבר קיים, בחר קוד אחר.",
+        code: "CONTRACTOR_CODE_CONFLICT"
+      });
+      return;
+    }
+    console.error("[contractors:update] failed", {
+      provider: providerName(),
+      status: 500,
+      contractorId: id,
+      reason: String(error?.message || "unknown")
+    });
+    sendJson(res, 500, {
+      error: "Internal Server Error",
+      message: "עדכון המפעיל נכשל. נסה שוב בעוד רגע.",
+      code: "CONTRACTOR_UPDATE_FAILED"
+    });
+  }
 }
 
 async function handleListDailyMetricsContractor(req, res, date, serviceType) {
