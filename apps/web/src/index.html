@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
@@ -31,9 +31,9 @@
         color: var(--text);
       }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          LOGIN SCREEN
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       #loginScreen {
         display: flex;
         flex-direction: column;
@@ -119,14 +119,14 @@
         font-size: 0.85rem;
       }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          APP SCREEN
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       #appScreen { display: none; }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          HEADER
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       #appHeader {
         position: sticky;
         top: 0;
@@ -208,9 +208,9 @@
       }
       .btn-logout:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          TAB PANELS
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       .tab-panel { display: none; }
       .tab-panel.active { display: block; }
       .wrap {
@@ -221,9 +221,9 @@
         gap: 14px;
       }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          CARDS & LAYOUT
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       .card {
         background: var(--card);
         border: 1px solid var(--line);
@@ -278,9 +278,9 @@
       button.good:hover:not(:disabled) { background: #0e5e46; }
       button.danger { background: var(--danger); }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          KPI CARDS
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       .kpi {
         border: 1px solid var(--line);
         border-radius: 10px;
@@ -485,9 +485,9 @@
       .alert-table td.alert-warn { color: #a16207; font-weight: 700; }
       .alert-table td.alert-danger { color: #b91c1c; font-weight: 700; }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          TABLES
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       .table-wrap { overflow-x: auto; margin-top: 12px; }
       table { width: 100%; border-collapse: collapse; min-width: 400px; }
       th {
@@ -558,9 +558,9 @@
         font-weight: 700;
       }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          TOASTS
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       #toastContainer {
         position: fixed;
         bottom: 80px;
@@ -587,9 +587,9 @@
       @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(4px); } }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          BOTTOM NAV (MOBILE)
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       #bottomNav {
         display: none;
         position: fixed;
@@ -672,9 +672,9 @@
         direction: rtl;
       }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          MISC
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+      ═══════════════════════════════ */
       .info-box {
         padding: 10px 14px;
         border: 1px dashed #b6c3da;
@@ -698,10 +698,10 @@
       .row-actions button { width: auto; padding: 7px 14px; }
       .divider { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
 
-      /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      /* ═══════════════════════════════
          RESPONSIVE
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-      /* â”€â”€â”€ MOBILE TILE DASHBOARD â”€â”€â”€ */
+      ═══════════════════════════════ */
+      /* ─── MOBILE TILE DASHBOARD ─── */
       #mobileTileGrid { display: none; }
       #mobileDetail   { display: none; }
       #mobileFab      { display: none; }
@@ -957,71 +957,71 @@
   </head>
   <body>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ═══════════════════════════════
          LOGIN SCREEN
-    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    ═══════════════════════════════ -->
     <div id="loginScreen">
       <div class="login-card">
-        <div class="login-logo">ðŸšŒ</div>
+        <div class="login-logo">🚌</div>
         <h1 class="login-title">DashboardRyde</h1>
-        <p class="login-subtitle">×ž×¢×¨×›×ª × ×™×”×•×œ × ×¡×™×¢×•×ª ×§×ž×¤×•×¡ â€” × ×™×˜×•×¨ KPI, ×ª×§×œ×•×ª ×•×¤×¢×™×œ×•×ª ×™×•×ž×™×ª</p>
-        <div class="login-badge">Stage 8 Â· Go-Live</div>
+        <p class="login-subtitle">מערכת ניהול נסיעות קמפוס — ניטור KPI, תקלות ופעילות יומית</p>
+        <div class="login-badge">Stage 8 · Go-Live</div>
 
         <!-- Google renders its official button here -->
         <div id="googleBtnWrap">
-          <span class="google-btn-loading">×˜×•×¢×Ÿ...</span>
+          <span class="google-btn-loading">טוען...</span>
         </div>
 
         <div id="loginError"></div>
         <p class="login-footer">
-          ×’×™×©×” ×ž×•×¨×©×™×ª ×‘×œ×‘×“ Â· DashboardRyde Campus<br>
-          <a href="#" id="devSettingsLink" style="color:#c8d2e2;font-size:0.72rem;text-decoration:none;" onclick="toggleDevSettings();return false;">âš™ ×”×’×“×¨×•×ª ×ž×ª×§×“×ž×•×ª</a>
+          גישה מורשית בלבד · DashboardRyde Campus<br>
+          <a href="#" id="devSettingsLink" style="color:#c8d2e2;font-size:0.72rem;text-decoration:none;" onclick="toggleDevSettings();return false;">⚙ הגדרות מתקדמות</a>
         </p>
         <div id="devSettingsBox" style="display:none;margin-top:14px;text-align:right;">
           <label style="font-size:0.78rem;color:#6b7a99;display:block;margin-bottom:4px;">API Base URL</label>
           <input id="devApiBase" style="font-size:0.82rem;padding:7px 10px;border-radius:8px;border:1px solid #c8d2e2;width:100%;direction:ltr;" />
-          <button onclick="saveDevSettings()" style="margin-top:8px;width:100%;padding:8px;background:#49566a;color:#fff;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">×©×ž×•×¨</button>
+          <button onclick="saveDevSettings()" style="margin-top:8px;width:100%;padding:8px;background:#49566a;color:#fff;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">שמור</button>
         </div>
       </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    <!-- ═══════════════════════════════
          APP SCREEN
-    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    ═══════════════════════════════ -->
     <div id="appScreen">
 
       <!-- HEADER -->
       <header id="appHeader">
         <a class="header-brand" href="#" onclick="return false;">
-          <span class="header-brand-icon">ðŸšŒ</span>
+          <span class="header-brand-icon">🚌</span>
           <span class="header-brand-text">DashboardRyde</span>
         </a>
 
         <!-- Desktop tabs in header -->
         <nav class="header-tabs" id="desktopTabs">
           <button class="tab-btn active" data-tab="dashboard" onclick="showTab('dashboard')">
-            <span class="tab-icon">ðŸ“Š</span> ×œ×•×— ×‘×§×¨×”
+            <span class="tab-icon">📊</span> לוח בקרה
           </button>
           <button class="tab-btn" data-tab="operations" onclick="showTab('operations')">
-            <span class="tab-icon">ðŸšŒ</span> ×¤×¢×™×œ×•×ª ×™×•×ž×™×ª
+            <span class="tab-icon">🚌</span> פעילות יומית
           </button>
           <button class="tab-btn" data-tab="incidents" onclick="showTab('incidents')">
-            <span class="tab-icon">âš ï¸</span> ×ª×§×œ×•×ª
+            <span class="tab-icon">⚠️</span> תקלות
           </button>
           <button class="tab-btn" id="desktopMgmtTab" data-tab="management" onclick="showTab('management')">
-            <span class="tab-icon">âš™ï¸</span> × ×™×”×•×œ
+            <span class="tab-icon">⚙️</span> ניהול
           </button>
         </nav>
 
-        <!-- Mobile header action buttons (visible on â‰¤768px, replaces FAB) -->
+        <!-- Mobile header action buttons (visible on ≤768px, replaces FAB) -->
         <div class="header-actions" id="headerActions">
-          <button class="hdr-action-btn" id="hBtnDate" title="×˜×•×•×— ×ª××¨×™×›×™×">
+          <button class="hdr-action-btn" id="hBtnDate" title="טווח תאריכים">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </button>
-          <button class="hdr-action-btn" id="hBtnRefresh" title="×¨×¢× ×Ÿ × ×ª×•× ×™×">
+          <button class="hdr-action-btn" id="hBtnRefresh" title="רענן נתונים">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
-          <button class="hdr-action-btn" id="hBtnExport" title="×™×™×¦×•×">
+          <button class="hdr-action-btn" id="hBtnExport" title="ייצוא">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
         </div>
@@ -1032,23 +1032,23 @@
             <div class="user-name" id="headerUserName">...</div>
             <div class="user-email" id="headerUserEmail"></div>
           </div>
-          <button class="btn-logout" id="btnLogout">×™×¦×™××”</button>
+          <button class="btn-logout" id="btnLogout">יציאה</button>
         </div>
 
         <!-- Date range dropdown panel -->
         <div id="headerDatePanel" class="hdr-dropdown">
           <div class="hdr-dd-row">
-            <button class="hdr-dd-btn" id="hDateToday">×”×™×•×</button>
-            <button class="hdr-dd-btn" id="hDateWeek">×©×‘×•×¢</button>
-            <button class="hdr-dd-btn" id="hDateMonth">×—×•×“×©</button>
+            <button class="hdr-dd-btn" id="hDateToday">היום</button>
+            <button class="hdr-dd-btn" id="hDateWeek">שבוע</button>
+            <button class="hdr-dd-btn" id="hDateMonth">חודש</button>
           </div>
           <div class="hdr-dd-row">
-            <input type="date" id="hDateInput" class="hdr-date-input" title="×‘×—×¨ ×ª××¨×™×š ×¡×¤×¦×™×¤×™">
+            <input type="date" id="hDateInput" class="hdr-date-input" title="בחר תאריך ספציפי">
           </div>
           <div class="hdr-dd-row">
-            <button class="hdr-dd-btn hdr-dd-scope" id="hScopeTotal"   data-scope="total">×¡×”"×›</button>
-            <button class="hdr-dd-btn hdr-dd-scope" id="hScopePickup"  data-scope="pickup">××™×¡×•×£</button>
-            <button class="hdr-dd-btn hdr-dd-scope" id="hScopeDropoff" data-scope="dropoff">×¤×™×–×•×¨</button>
+            <button class="hdr-dd-btn hdr-dd-scope" id="hScopeTotal"   data-scope="total">סה"כ</button>
+            <button class="hdr-dd-btn hdr-dd-scope" id="hScopePickup"  data-scope="pickup">איסוף</button>
+            <button class="hdr-dd-btn hdr-dd-scope" id="hScopeDropoff" data-scope="dropoff">פיזור</button>
           </div>
         </div>
         <!-- Export dropdown panel -->
@@ -1066,45 +1066,45 @@
         </div>
       </header>
 
-      <!-- â”€â”€â”€ TAB: ×œ×•×— ×‘×§×¨×” â”€â”€â”€ -->
+      <!-- ─── TAB: לוח בקרה ─── -->
       <div class="tab-panel active" id="panel-dashboard">
 
-        <!-- â•â• MOBILE TILE GRID (visible only on â‰¤768px) â•â• -->
+        <!-- ══ MOBILE TILE GRID (visible only on ≤768px) ══ -->
         <div id="mobileTileGrid">
           <div class="m-tile" data-detail="passengers">
-            <div class="m-tile-icon">ðŸ‘¥</div>
-            <div class="m-tile-label">× ×•×¡×¢×™×</div>
-            <div class="m-tile-value" id="mTileVal-passengers">â€”</div>
+            <div class="m-tile-icon">👥</div>
+            <div class="m-tile-label">נוסעים</div>
+            <div class="m-tile-value" id="mTileVal-passengers">—</div>
             <div class="m-tile-sub"   id="mTileSub-passengers"></div>
           </div>
           <div class="m-tile" data-detail="rides">
-            <div class="m-tile-icon">ðŸšŒ</div>
-            <div class="m-tile-label">× ×¡×™×¢×•×ª</div>
-            <div class="m-tile-value" id="mTileVal-rides">â€”</div>
+            <div class="m-tile-icon">🚌</div>
+            <div class="m-tile-label">נסיעות</div>
+            <div class="m-tile-value" id="mTileVal-rides">—</div>
             <div class="m-tile-sub"   id="mTileSub-rides"></div>
           </div>
           <div class="m-tile" data-detail="quality">
-            <div class="m-tile-icon">â­</div>
-            <div class="m-tile-label">××™×›×•×ª ×©×™×¨×•×ª</div>
-            <div class="m-tile-value" id="mTileVal-quality">â€”</div>
+            <div class="m-tile-icon">⭐</div>
+            <div class="m-tile-label">איכות שירות</div>
+            <div class="m-tile-value" id="mTileVal-quality">—</div>
             <div class="m-tile-sub"   id="mTileSub-quality"></div>
           </div>
           <div class="m-tile" data-detail="incidents">
-            <div class="m-tile-icon">âš ï¸</div>
-            <div class="m-tile-label">×ª×§×œ×•×ª</div>
-            <div class="m-tile-value" id="mTileVal-incidents">â€”</div>
+            <div class="m-tile-icon">⚠️</div>
+            <div class="m-tile-label">תקלות</div>
+            <div class="m-tile-value" id="mTileVal-incidents">—</div>
             <div class="m-tile-sub"   id="mTileSub-incidents"></div>
           </div>
           <div class="m-tile" data-detail="targets">
-            <div class="m-tile-icon">ðŸŽ¯</div>
-            <div class="m-tile-label">×¢×ž×™×“×” ×‘×™×¢×“×™×</div>
-            <div class="m-tile-value" id="mTileVal-targets">â€”</div>
+            <div class="m-tile-icon">🎯</div>
+            <div class="m-tile-label">עמידה ביעדים</div>
+            <div class="m-tile-value" id="mTileVal-targets">—</div>
             <div class="m-tile-sub"   id="mTileSub-targets"></div>
           </div>
           <div class="m-tile" data-detail="trend">
-            <div class="m-tile-icon">ðŸ“ˆ</div>
-            <div class="m-tile-label">×ž×’×ž×” ×©×‘×•×¢×™×ª</div>
-            <div class="m-tile-value" id="mTileVal-trend">â€”</div>
+            <div class="m-tile-icon">📈</div>
+            <div class="m-tile-label">מגמה שבועית</div>
+            <div class="m-tile-value" id="mTileVal-trend">—</div>
             <div class="m-tile-sub"   id="mTileSub-trend"></div>
           </div>
         </div><!-- /mobileTileGrid -->
@@ -1112,200 +1112,200 @@
         <div class="wrap">
           <div class="card">
             <div class="section-header">
-              <span class="section-icon">ðŸ“Š</span>
-              <h2 style="margin:0">×œ×•×— ×‘×§×¨×” â€” KPI</h2>
+              <span class="section-icon">📊</span>
+              <h2 style="margin:0">לוח בקרה — KPI</h2>
             </div>
             <div class="kpi-headline">
               <div class="headline-row">
-                <span class="headline-title">×ª×ž×•× ×ª ×ž×¦×‘ ×ª×¤×¢×•×œ×™×ª</span>
-                <span class="headline-chip">××™×¡×•×£: <strong id="headlinePickupDate">â€”</strong></span>
-                <span class="headline-chip">×¤×™×–×•×¨: <strong id="headlineDropoffDate">â€”</strong></span>
-                <span class="headline-chip">×ž×™×§×•×“ KPI: <strong id="headlineFocusDate">â€”</strong></span>
-                <span class="headline-chip">×˜×•×•×—: <strong id="headlineRangeMode">×™×•×ž×™</strong></span>
+                <span class="headline-title">תמונת מצב תפעולית</span>
+                <span class="headline-chip">איסוף: <strong id="headlinePickupDate">—</strong></span>
+                <span class="headline-chip">פיזור: <strong id="headlineDropoffDate">—</strong></span>
+                <span class="headline-chip">מיקוד KPI: <strong id="headlineFocusDate">—</strong></span>
+                <span class="headline-chip">טווח: <strong id="headlineRangeMode">יומי</strong></span>
               </div>
             </div>
 
             <div class="grid cols-4" style="margin-top:12px">
               <div>
-                <label>×ª××¨×™×š ×ž×™×§×•×“ KPI</label>
+                <label>תאריך מיקוד KPI</label>
                 <div class="dashboard-range-tools">
-                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="×™×•× ×”×‘×">â‡¦</button>
+                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
                   <input id="kpiTo" type="date" />
-                  <button id="kpiDatePrev" type="button" class="date-nav-btn" title="×™×•× ×§×•×“×">â‡¨</button>
+                  <button id="kpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">⇨</button>
                 </div>
                 <input id="kpiFrom" type="hidden" />
               </div>
               <div>
-                <label>×ž×¦×‘ ×ž×™×§×•×“ KPI</label>
+                <label>מצב מיקוד KPI</label>
                 <div class="dashboard-mode-toggle" id="dashboardRangeModeToggle">
-                  <button id="kpiModeDay" type="button" class="dashboard-mode-btn active" data-range-mode="day">×™×•×ž×™</button>
-                  <button id="kpiModeWeek" type="button" class="dashboard-mode-btn" data-range-mode="week">×©×‘×•×¢×™</button>
-                  <button id="kpiModeMonth" type="button" class="dashboard-mode-btn" data-range-mode="month">×—×•×“×©×™</button>
+                  <button id="kpiModeDay" type="button" class="dashboard-mode-btn active" data-range-mode="day">יומי</button>
+                  <button id="kpiModeWeek" type="button" class="dashboard-mode-btn" data-range-mode="week">שבועי</button>
+                  <button id="kpiModeMonth" type="button" class="dashboard-mode-btn" data-range-mode="month">חודשי</button>
                 </div>
               </div>
               <div>
-                <label>×ª×¦×•×’×ª × ×¡×™×¢×•×ª</label>
+                <label>תצוגת נסיעות</label>
                 <div id="dashboardScopeToggle" style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:4px">
-                  <button type="button" class="scope-btn active" data-scope="total">×¡×”"×›</button>
-                  <button type="button" class="scope-btn" data-scope="pickup">××™×¡×•×£</button>
-                  <button type="button" class="scope-btn" data-scope="dropoff">×¤×™×–×•×¨</button>
+                  <button type="button" class="scope-btn active" data-scope="total">סה"כ</button>
+                  <button type="button" class="scope-btn" data-scope="pickup">איסוף</button>
+                  <button type="button" class="scope-btn" data-scope="dropoff">פיזור</button>
                 </div>
               </div>
               <div style="display:flex;align-items:flex-end">
-                <button id="loadDashboard">×˜×¢×Ÿ × ×ª×•× ×™×</button>
+                <button id="loadDashboard">טען נתונים</button>
               </div>
             </div>
             <div class="row-actions" style="margin-top:10px">
-              <button id="exportExcel" class="secondary">â¬‡ï¸ ×™×™×¦×•× Excel</button>
-              <button id="exportPdf" class="secondary">â¬‡ï¸ ×™×™×¦×•× PDF</button>
+              <button id="exportExcel" class="secondary">⬇️ ייצוא Excel</button>
+              <button id="exportPdf" class="secondary">⬇️ ייצוא PDF</button>
             </div>
             <div id="dashboardProviderWarning" class="provider-warning"></div>
             <div class="grid cols-3" style="margin-top:14px">
               <div class="kpi" id="kpiCard-passengers">
-                <div class="name">×ž×¡×¤×¨ × ×•×¡×¢×™×</div>
-                <div class="val loading-val" id="kpiPassengers">×˜×•×¢×Ÿ...</div>
+                <div class="name">מספר נוסעים</div>
+                <div class="val loading-val" id="kpiPassengers">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-passengers" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-passengers" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-passengers" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-passengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-passengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-passengers" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-rides">
-                <div class="name">×ž×¡×¤×¨ × ×¡×™×¢×•×ª</div>
-                <div class="val loading-val" id="kpiRides">×˜×•×¢×Ÿ...</div>
+                <div class="name">מספר נסיעות</div>
+                <div class="val loading-val" id="kpiRides">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-rides" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-rides" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-rides" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-rides" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-rides" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-rides" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-efficiency">
-                <div class="name">×™×¢×™×œ×•×ª (× ×•×¡×¢×™× ×œ× ×¡×™×¢×”)</div>
-                <div class="val loading-val" id="kpiEfficiency">×˜×•×¢×Ÿ...</div>
+                <div class="name">יעילות (נוסעים לנסיעה)</div>
+                <div class="val loading-val" id="kpiEfficiency">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-efficiency" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-efficiency" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-efficiency" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-efficiency" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-efficiency" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-efficiency" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-issues">
-                <div class="name">×ž×¡×¤×¨ ×ª×§×œ×•×ª</div>
-                <div class="val loading-val" id="kpiIssues">×˜×•×¢×Ÿ...</div>
+                <div class="name">מספר תקלות</div>
+                <div class="val loading-val" id="kpiIssues">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-issues" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-issues" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-issues" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-issues" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-issues" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-issues" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-issuesRate">
-                <div class="name">% × ×¡×™×¢×•×ª ×¢× ×ª×§×œ×”</div>
-                <div class="val loading-val" id="kpiIssuesRate">×˜×•×¢×Ÿ...</div>
+                <div class="name">% נסיעות עם תקלה</div>
+                <div class="val loading-val" id="kpiIssuesRate">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-issuesRate" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-issuesRate" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-issuesRate" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-issuesRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-issuesRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-issuesRate" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-quality">
-                <div class="name">××™×›×•×ª ×©×™×¨×•×ª</div>
-                <div class="val loading-val" id="kpiQuality">×˜×•×¢×Ÿ...</div>
+                <div class="name">איכות שירות</div>
+                <div class="val loading-val" id="kpiQuality">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-serviceQuality" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-serviceQuality" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-serviceQuality" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-serviceQuality" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-serviceQuality" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-serviceQuality" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-affectedRate">
-                <div class="name">% × ×•×¡×¢×™× ×©× ×¤×’×¢×•</div>
-                <div class="val loading-val" id="kpiAffectedRate">×˜×•×¢×Ÿ...</div>
+                <div class="name">% נוסעים שנפגעו</div>
+                <div class="val loading-val" id="kpiAffectedRate">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-affectedRate" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-affectedRate" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-affectedRate" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-affectedRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-affectedRate" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-affectedRate" class="muted">—</strong></div>
                 </div>
               </div>
               <div class="kpi" id="kpiCard-affectedPassengers">
-                <div class="name">×ž×¡×¤×¨ ×¢×•×‘×“×™× ×©×—×•×• ×ª×§×œ×”</div>
-                <div class="val loading-val" id="kpiAffectedPassengers">×˜×•×¢×Ÿ...</div>
+                <div class="name">מספר עובדים שחוו תקלה</div>
+                <div class="val loading-val" id="kpiAffectedPassengers">טוען...</div>
                 <div class="sub-grid">
-                  <div class="sub-line"><span>×™×¢×“</span><strong id="kpiTarget-affectedPassengers" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×¤×¢×¨ ×ž×”×™×¢×“</span><strong id="kpiGap-affectedPassengers" class="muted">â€”</strong></div>
-                  <div class="sub-line"><span>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢×™</span><strong id="kpiDelta-affectedPassengers" class="muted">â€”</strong></div>
+                  <div class="sub-line"><span>יעד</span><strong id="kpiTarget-affectedPassengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>פער מהיעד</span><strong id="kpiGap-affectedPassengers" class="muted">—</strong></div>
+                  <div class="sub-line"><span>שינוי מול שבועי</span><strong id="kpiDelta-affectedPassengers" class="muted">—</strong></div>
                 </div>
               </div>
             </div>
 
             <hr class="divider" />
-            <h3>×§×•×‘×™×•×ª ×“×•×—×•×ª ×•-Drilldown</h3>
-            <button id="dashboardMainBackTop" type="button" class="secondary">×—×–×¨×” ×œ×œ×•×— ×”×‘×§×¨×” ×”×¨××©×™</button>
+            <h3>קוביות דוחות ו-Drilldown</h3>
+            <button id="dashboardMainBackTop" type="button" class="secondary">חזרה ללוח הבקרה הראשי</button>
             <div class="grid cols-3" id="dashboardTiles">
               <button type="button" class="report-tile active" data-report="kpi-main">
-                <div class="tile-title">×©×›×‘×ª KPI ×¨××©×™×ª</div>
-                <div class="tile-kpi" id="tileValue-kpi-main">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ××™×›×•×ª ×©×™×¨×•×ª</div>
+                <div class="tile-title">שכבת KPI ראשית</div>
+                <div class="tile-kpi" id="tileValue-kpi-main">—</div>
+                <div class="tile-note">מדד מרכזי: איכות שירות</div>
               </button>
               <button type="button" class="report-tile" data-report="trend-analysis">
-                <div class="tile-title">×’×¨×¤×™ ×ž×’×ž×”</div>
-                <div class="tile-kpi" id="tileValue-trend-analysis">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: × ×•×¡×¢×™×</div>
+                <div class="tile-title">גרפי מגמה</div>
+                <div class="tile-kpi" id="tileValue-trend-analysis">—</div>
+                <div class="tile-note">מדד מרכזי: נוסעים</div>
               </button>
               <button type="button" class="report-tile" data-report="benchmark">
-                <div class="tile-title">×’×¨×¤×™ ×”×©×•×•××”</div>
-                <div class="tile-kpi" id="tileValue-benchmark">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ×¤×¢×¨ ×ž×•×œ ×™×¢×“</div>
+                <div class="tile-title">גרפי השוואה</div>
+                <div class="tile-kpi" id="tileValue-benchmark">—</div>
+                <div class="tile-note">מדד מרכזי: פער מול יעד</div>
               </button>
               <button type="button" class="report-tile" data-report="critical-control">
-                <div class="tile-title">×“×•×—×•×ª ×—×¨×™×’×™×</div>
-                <div class="tile-kpi" id="tileValue-critical-control">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ×™×ž×™× ××“×•×ž×™×</div>
+                <div class="tile-title">דוחות חריגים</div>
+                <div class="tile-kpi" id="tileValue-critical-control">—</div>
+                <div class="tile-note">מדד מרכזי: ימים אדומים</div>
               </button>
               <button type="button" class="report-tile" data-report="root-cause">
-                <div class="tile-title">× ×™×ª×•×— ×ª×§×œ×•×ª</div>
-                <div class="tile-kpi" id="tileValue-root-cause">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ×ª×§×œ×•×ª ×›×•×œ×œ</div>
+                <div class="tile-title">ניתוח תקלות</div>
+                <div class="tile-kpi" id="tileValue-root-cause">—</div>
+                <div class="tile-note">מדד מרכזי: תקלות כולל</div>
               </button>
               <button type="button" class="report-tile" data-report="incident-drilldown">
-                <div class="tile-title">×“×•×— ×¤×™×¨×•×˜ ×ª×§×œ×•×ª</div>
-                <div class="tile-kpi" id="tileValue-incident-drilldown">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ××™×¨×•×¢×™ ×ª×§×œ×”</div>
+                <div class="tile-title">דוח פירוט תקלות</div>
+                <div class="tile-kpi" id="tileValue-incident-drilldown">—</div>
+                <div class="tile-note">מדד מרכזי: אירועי תקלה</div>
               </button>
               <button type="button" class="report-tile" data-report="operations-daily">
-                <div class="tile-title">×“×•×— ×ª×¤×¢×•×œ×™ ×™×•×ž×™</div>
-                <div class="tile-kpi" id="tileValue-operations-daily">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ×¢×ž×™×“×” ×™×•×ž×™×ª</div>
+                <div class="tile-title">דוח תפעולי יומי</div>
+                <div class="tile-kpi" id="tileValue-operations-daily">—</div>
+                <div class="tile-note">מדד מרכזי: עמידה יומית</div>
               </button>
               <button type="button" class="report-tile" data-report="targets-vs-actual">
-                <div class="tile-title">×™×¢×“×™× ×ž×•×œ ×‘×™×¦×•×¢</div>
-                <div class="tile-kpi" id="tileValue-targets-vs-actual">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: KPI ×ž×¢×œ ×™×¢×“</div>
+                <div class="tile-title">יעדים מול ביצוע</div>
+                <div class="tile-kpi" id="tileValue-targets-vs-actual">—</div>
+                <div class="tile-note">מדד מרכזי: KPI מעל יעד</div>
               </button>
               <button type="button" class="report-tile" data-report="load-efficiency">
-                <div class="tile-title">×¢×•×ž×¡×™× ×•×™×¢×™×œ×•×ª</div>
-                <div class="tile-kpi" id="tileValue-load-efficiency">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ×™×¢×™×œ×•×ª</div>
+                <div class="tile-title">עומסים ויעילות</div>
+                <div class="tile-kpi" id="tileValue-load-efficiency">—</div>
+                <div class="tile-note">מדד מרכזי: יעילות</div>
               </button>
               <button type="button" class="report-tile" data-report="pickup-vs-dropoff">
-                <div class="tile-title">×”×©×•×•××ª ××™×¡×•×£/×¤×™×–×•×¨</div>
-                <div class="tile-kpi" id="tileValue-pickup-vs-dropoff">â€”</div>
-                <div class="tile-note">×ž×“×“ ×ž×¨×›×–×™: ×”×¤×¨×© ××™×›×•×ª</div>
+                <div class="tile-title">השוואת איסוף/פיזור</div>
+                <div class="tile-kpi" id="tileValue-pickup-vs-dropoff">—</div>
+                <div class="tile-note">מדד מרכזי: הפרש איכות</div>
               </button>
             </div>
 
             <div class="drill-card" id="dashboardDrillCard">
-              <div class="drill-title" id="drillReportTitle">×©×›×‘×ª KPI ×¨××©×™×ª</div>
-              <div class="drill-sub" id="drillReportSubtitle">×‘×—×™×¨×” ×‘×§×•×‘×™×™×” ×ž×¦×™×’×” ×¤×™×¨×•×˜ ×ž×ž×•×§×“ ×©×œ ××•×ª×• × ×•×©×.</div>
+              <div class="drill-title" id="drillReportTitle">שכבת KPI ראשית</div>
+              <div class="drill-sub" id="drillReportSubtitle">בחירה בקובייה מציגה פירוט ממוקד של אותו נושא.</div>
               <div class="drill-row">
-                <span class="drill-chip" id="drillPrimaryValue">×ž×“×“ ×ž×¨×›×–×™: â€”</span>
-                <span class="drill-chip" id="drillTargetValue">×™×¢×“: â€”</span>
-                <span class="drill-chip" id="drillGapValue">×¤×¢×¨: â€”</span>
+                <span class="drill-chip" id="drillPrimaryValue">מדד מרכזי: —</span>
+                <span class="drill-chip" id="drillTargetValue">יעד: —</span>
+                <span class="drill-chip" id="drillGapValue">פער: —</span>
               </div>
               <div class="row-actions" style="margin-top:10px">
-                <button id="openDetailedReport">×¤×ª×— ×“×•×— ×ž×¤×•×¨×˜</button>
+                <button id="openDetailedReport">פתח דוח מפורט</button>
               </div>
               <div class="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>×ª××¨×™×š</th><th>×¢×¨×š</th></tr>
+                    <tr><th>תאריך</th><th>ערך</th></tr>
                   </thead>
                   <tbody id="drillMetricRows"></tbody>
                 </table>
@@ -1313,12 +1313,12 @@
             </div>
 
             <hr class="divider" />
-            <h3>×ž×’×ž×” ×™×•×ž×™×ª</h3>
+            <h3>מגמה יומית</h3>
             <div class="table-wrap">
               <table id="trendTable">
                 <thead>
                   <tr>
-                    <th>×ª××¨×™×š</th><th>× ×•×¡×¢×™×</th><th>× ×¡×™×¢×•×ª</th><th>×ª×§×œ×•×ª</th><th>% ×ª×§×œ×•×ª</th><th>××™×›×•×ª</th>
+                    <th>תאריך</th><th>נוסעים</th><th>נסיעות</th><th>תקלות</th><th>% תקלות</th><th>איכות</th>
                   </tr>
                 </thead>
                 <tbody id="trendRows"></tbody>
@@ -1326,47 +1326,47 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-trend-analysis">× ×™×ª×•×— ×ž×’×ž×•×ª</h3>
+            <h3 id="section-trend-analysis">ניתוח מגמות</h3>
             <div class="chart-grid">
               <div class="chart-card">
-                <div class="chart-title">×ž×¡×¤×¨ × ×•×¡×¢×™× ×œ××•×¨×š ×–×ž×Ÿ</div>
+                <div class="chart-title">מספר נוסעים לאורך זמן</div>
                 <div class="chart-wrap"><canvas id="chartPassengers"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×ž×¡×¤×¨ × ×¡×™×¢×•×ª ×œ××•×¨×š ×–×ž×Ÿ</div>
+                <div class="chart-title">מספר נסיעות לאורך זמן</div>
                 <div class="chart-wrap"><canvas id="chartRides"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×™×¢×™×œ×•×ª ×”×ž×¢×¨×š</div>
+                <div class="chart-title">יעילות המערך</div>
                 <div class="chart-wrap"><canvas id="chartEfficiency"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">××™×›×•×ª ×©×™×¨×•×ª</div>
+                <div class="chart-title">איכות שירות</div>
                 <div class="chart-wrap"><canvas id="chartQuality"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×ª×§×œ×•×ª ×™×•×ž×™×•×ª</div>
+                <div class="chart-title">תקלות יומיות</div>
                 <div class="chart-wrap"><canvas id="chartIssues"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">% × ×¡×™×¢×•×ª ×¢× ×ª×§×œ×” / % × ×•×¡×¢×™× ×©× ×¤×’×¢×•</div>
+                <div class="chart-title">% נסיעות עם תקלה / % נוסעים שנפגעו</div>
                 <div class="chart-wrap"><canvas id="chartRates"></canvas></div>
               </div>
             </div>
 
             <hr class="divider" />
-            <h3 id="section-benchmark">×”×©×•×•××ª ×‘×™×¦×•×¢×™×</h3>
+            <h3 id="section-benchmark">השוואת ביצועים</h3>
             <div class="chart-grid">
               <div class="chart-card">
-                <div class="chart-title">×™×•× × ×•×›×—×™ ×ž×•×œ ×ž×ž×•×¦×¢ ×©×‘×•×¢×™ ×§×•×“× ×ž×•×œ ×™×¢×“</div>
+                <div class="chart-title">יום נוכחי מול ממוצע שבועי קודם מול יעד</div>
                 <div class="chart-wrap"><canvas id="chartBenchmark"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×”×©×•×•××” ×œ×¤×™ ×¡×•×’ ×™×•× (×â€“×” / ×©×™×©×™ / ×¢×¨×‘ ×—×’ / ×—×¨×™×’)</div>
+                <div class="chart-title">השוואה לפי סוג יום (א–ה / שישי / ערב חג / חריג)</div>
                 <div class="table-wrap" style="margin-top:0">
                   <table>
                     <thead>
-                      <tr><th>×¡×•×’ ×™×•×</th><th>× ×•×¡×¢×™×</th><th>× ×¡×™×¢×•×ª</th><th>×™×¢×™×œ×•×ª</th><th>××™×›×•×ª</th></tr>
+                      <tr><th>סוג יום</th><th>נוסעים</th><th>נסיעות</th><th>יעילות</th><th>איכות</th></tr>
                     </thead>
                     <tbody id="benchmarkDayTypeRows"></tbody>
                   </table>
@@ -1375,56 +1375,56 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-critical-control">×‘×§×¨×ª ×—×¨×™×’×™×</h3>
+            <h3 id="section-critical-control">בקרת חריגים</h3>
             <div class="table-wrap alert-table">
               <table>
                 <thead>
-                  <tr><th>×¡×•×’ ×—×¨×™×’×”</th><th>×ª××¨×™×š</th><th>×¢×¨×š</th><th>×¡×˜×˜×•×¡</th></tr>
+                  <tr><th>סוג חריגה</th><th>תאריך</th><th>ערך</th><th>סטטוס</th></tr>
                 </thead>
                 <tbody id="alertRows"></tbody>
               </table>
             </div>
 
             <hr class="divider" />
-            <h3 id="section-root-cause">× ×™×ª×•×— ×’×•×¨×ž×™ ×©×•×¨×©</h3>
+            <h3 id="section-root-cause">ניתוח גורמי שורש</h3>
             <div class="chart-grid">
               <div class="chart-card">
-                <div class="chart-title">×”×ª×¤×œ×’×•×ª ×¡×•×’×™ ×ª×§×œ×•×ª</div>
+                <div class="chart-title">התפלגות סוגי תקלות</div>
                 <div class="chart-wrap"><canvas id="chartIssueDistributionPie"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×›×ž×•×ª ×ª×§×œ×•×ª ×œ×¤×™ ×¡×•×’</div>
+                <div class="chart-title">כמות תקלות לפי סוג</div>
                 <div class="chart-wrap"><canvas id="chartIssueByTypeBar"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×ž×’×ž×ª ×ª×§×œ×•×ª ×œ×¤×™ ×¡×•×’</div>
+                <div class="chart-title">מגמת תקלות לפי סוג</div>
                 <div class="chart-wrap"><canvas id="chartIssueTrendByType"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×ž×ž×•×¦×¢ ×–×ž×Ÿ ××™×—×•×¨</div>
+                <div class="chart-title">ממוצע זמן איחור</div>
                 <div class="drill-row">
-                  <span class="drill-chip" id="avgDelayChip">×ž×ž×•×¦×¢ ××™×—×•×¨: â€”</span>
-                  <span class="drill-chip" id="delayCountChip">×›×ž×•×ª ×ª×§×œ×•×ª ××™×—×•×¨: â€”</span>
+                  <span class="drill-chip" id="avgDelayChip">ממוצע איחור: —</span>
+                  <span class="drill-chip" id="delayCountChip">כמות תקלות איחור: —</span>
                 </div>
               </div>
             </div>
 
             <hr class="divider" />
-            <h3 id="section-operations-daily">×“×•×— ×ª×¤×¢×•×œ×™ ×™×•×ž×™</h3>
+            <h3 id="section-operations-daily">דוח תפעולי יומי</h3>
             <div class="chart-card">
               <div class="drill-row">
-                <span class="drill-chip" id="opsSummaryPassengers">× ×•×¡×¢×™×: â€”</span>
-                <span class="drill-chip" id="opsSummaryRides">× ×¡×™×¢×•×ª: â€”</span>
-                <span class="drill-chip" id="opsSummaryQuality">××™×›×•×ª ×©×™×¨×•×ª: â€”</span>
-                <span class="drill-chip" id="opsSummaryIncidents">×ª×§×œ×•×ª: â€”</span>
+                <span class="drill-chip" id="opsSummaryPassengers">נוסעים: —</span>
+                <span class="drill-chip" id="opsSummaryRides">נסיעות: —</span>
+                <span class="drill-chip" id="opsSummaryQuality">איכות שירות: —</span>
+                <span class="drill-chip" id="opsSummaryIncidents">תקלות: —</span>
               </div>
               <div class="row-actions" style="margin-top:10px">
-                <button id="exportDailyManagerPdf" class="secondary">×™×™×¦×•× PDF ×™×•×ž×™ × ×™×”×•×œ×™</button>
+                <button id="exportDailyManagerPdf" class="secondary">ייצוא PDF יומי ניהולי</button>
               </div>
               <div class="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>×¡×•×’ ×ª×§×œ×”</th><th>×›×ž×•×ª</th></tr>
+                    <tr><th>סוג תקלה</th><th>כמות</th></tr>
                   </thead>
                   <tbody id="opsIssueRows"></tbody>
                 </table>
@@ -1432,49 +1432,49 @@
             </div>
 
             <hr class="divider" />
-            <h3 id="section-targets-vs-actual">×™×¢×“×™× ×ž×•×œ ×‘×™×¦×•×¢</h3>
+            <h3 id="section-targets-vs-actual">יעדים מול ביצוע</h3>
             <div class="table-wrap">
               <table>
                 <thead>
-                  <tr><th>×ž×“×“</th><th>×‘×¤×•×¢×œ</th><th>×™×¢×“</th><th>×¤×¢×¨</th><th>×©×™× ×•×™ ×ž×•×œ ×©×‘×•×¢ ×§×•×“×</th><th>×¡×˜×˜×•×¡</th></tr>
+                  <tr><th>מדד</th><th>בפועל</th><th>יעד</th><th>פער</th><th>שינוי מול שבוע קודם</th><th>סטטוס</th></tr>
                 </thead>
                 <tbody id="targetsActualRows"></tbody>
               </table>
             </div>
 
             <hr class="divider" />
-            <h3 id="section-load-efficiency">× ×™×ª×•×— ×¢×•×ž×¡×™× ×•×™×¢×™×œ×•×ª</h3>
+            <h3 id="section-load-efficiency">ניתוח עומסים ויעילות</h3>
             <div class="chart-grid">
               <div class="chart-card">
-                <div class="chart-title">×”×ª×¤×œ×’×•×ª × ×•×¡×¢×™× ×œ× ×¡×™×¢×” (×”×™×¡×˜×•×’×¨×ž×”)</div>
+                <div class="chart-title">התפלגות נוסעים לנסיעה (היסטוגרמה)</div>
                 <div class="chart-wrap"><canvas id="chartLoadHistogram"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">×ž×ž×•×¦×¢ × ×•×¡×¢×™× ×œ× ×¡×™×¢×” ×œ××•×¨×š ×–×ž×Ÿ</div>
+                <div class="chart-title">ממוצע נוסעים לנסיעה לאורך זמן</div>
                 <div class="chart-wrap"><canvas id="chartEfficiencySeries"></canvas></div>
               </div>
               <div class="chart-card">
-                <div class="chart-title">××™×ª×•×¨ ×¢×•×ž×¡×™×</div>
+                <div class="chart-title">איתור עומסים</div>
                 <div class="drill-row">
-                  <span class="drill-chip" id="loadUnderChip">×™×ž×™× ×‘×ª×ª ×¢×•×ž×¡: â€”</span>
-                  <span class="drill-chip" id="loadOverChip">×™×ž×™× ×‘×¢×•×ž×¡ ×™×ª×¨: â€”</span>
-                  <span class="drill-chip" id="loadOverCapacityChip">××™×¨×•×¢×™ ×¢×•×ž×¡ ×™×ª×¨: â€”</span>
+                  <span class="drill-chip" id="loadUnderChip">ימים בתת עומס: —</span>
+                  <span class="drill-chip" id="loadOverChip">ימים בעומס יתר: —</span>
+                  <span class="drill-chip" id="loadOverCapacityChip">אירועי עומס יתר: —</span>
                 </div>
               </div>
             </div>
 
             <hr class="divider" />
-            <h3 id="section-pickup-vs-dropoff">×”×©×•×•××ª ××™×¡×•×£ ×ž×•×œ ×¤×™×–×•×¨</h3>
+            <h3 id="section-pickup-vs-dropoff">השוואת איסוף מול פיזור</h3>
             <div class="chart-grid">
               <div class="chart-card">
-                <div class="chart-title">×”×©×•×•××ª ×ž×“×“×™ ×œ×™×‘×”: ××™×¡×•×£ ×ž×•×œ ×¤×™×–×•×¨</div>
+                <div class="chart-title">השוואת מדדי ליבה: איסוף מול פיזור</div>
                 <div class="chart-wrap"><canvas id="chartPickupVsDropoff"></canvas></div>
               </div>
               <div class="chart-card">
                 <div class="table-wrap" style="margin-top:0">
                   <table>
                     <thead>
-                      <tr><th>×ž×“×“</th><th>××™×¡×•×£</th><th>×¤×™×–×•×¨</th><th>×¤×¢×¨</th></tr>
+                      <tr><th>מדד</th><th>איסוף</th><th>פיזור</th><th>פער</th></tr>
                     </thead>
                     <tbody id="pickupDropoffRows"></tbody>
                   </table>
@@ -1485,231 +1485,231 @@
         </div>
       </div>
 
-      <!-- â”€â”€â”€ TAB: ×¤×¢×™×œ×•×ª ×™×•×ž×™×ª â”€â”€â”€ -->
+      <!-- ─── TAB: פעילות יומית ─── -->
       <div class="tab-panel" id="panel-operations">
         <div class="wrap">
           <div class="card">
             <div class="section-header">
-              <span class="section-icon">ðŸšŒ</span>
-              <h2 style="margin:0">×¤×¢×™×œ×•×ª ×™×•×ž×™×ª â€” ×”×–× ×ª × ×ª×•× ×™×</h2>
+              <span class="section-icon">🚌</span>
+              <h2 style="margin:0">פעילות יומית — הזנת נתונים</h2>
               <div style="margin-right:auto;display:flex;align-items:center;gap:0.5rem">
-                <label style="font-size:0.85rem;font-weight:600;white-space:nowrap">×ª××¨×™×š ××™×¡×•×£:</label>
+                <label style="font-size:0.85rem;font-weight:600;white-space:nowrap">תאריך איסוף:</label>
                 <input type="date" id="entryDate" style="font-size:0.85rem;padding:0.25rem 0.5rem;border-radius:6px;border:1px solid var(--border)" />
               </div>
             </div>
             <div id="existingDataNotice" style="display:none;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;margin-bottom:1rem;color:#5d4037;font-size:0.875rem">
-              <span>× ×ž×¦××• × ×ª×•× ×™× ×§×™×™×ž×™× ×œ×ª××¨×™×š ×–×”. ×”×× ×‘×¨×¦×•× ×š ×œ×¢×“×›×Ÿ?</span>
-              <button id="btnConfirmUpdate" style="padding:0.25rem 0.75rem;background:#1976d2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">×›×Ÿ, ×¢×“×›×Ÿ</button>
-              <button id="btnCancelUpdate" style="padding:0.25rem 0.75rem;background:#e0e0e0;color:#333;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">×œ×</button>
+              <span>נמצאו נתונים קיימים לתאריך זה. האם ברצונך לעדכן?</span>
+              <button id="btnConfirmUpdate" style="padding:0.25rem 0.75rem;background:#1976d2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">כן, עדכן</button>
+              <button id="btnCancelUpdate" style="padding:0.25rem 0.75rem;background:#e0e0e0;color:#333;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">לא</button>
             </div>
             <div class="operations-entry-grid">
               <div class="card">
                 <div class="date-nav-head">
-                  <button id="dropoffDateNext" type="button" class="date-nav-btn" title="×™×•× ×”×‘×">â†</button>
-                  <h2 id="dropoffTitle" class="date-nav-title">×¤×™×–×•×¨</h2>
-                  <button id="dropoffDatePrev" type="button" class="date-nav-btn" title="×™×•× ×§×•×“×">â†’</button>
+                  <button id="dropoffDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
+                  <h2 id="dropoffTitle" class="date-nav-title">פיזור</h2>
+                  <button id="dropoffDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
                 </div>
                 <div class="grid cols-2">
-                  <div><label>× ×¡×™×¢×•×ª</label><input id="dropoff_rides" type="number" min="0" /></div>
-                  <div><label>× ×•×¡×¢×™× ×¨×©×•×ž×™×</label><input id="dropoff_registered" type="number" min="0" /></div>
-                  <div><label>×ª×§×œ×•×ª</label><input id="dropoff_issues" type="number" min="0" /></div>
-                  <div><label>× ×•×¡×¢×™× ×ž×•×©×¤×¢×™×</label><input id="dropoff_affected" type="number" min="0" /></div>
+                  <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
+                  <div><label>נוסעים רשומים</label><input id="dropoff_registered" type="number" min="0" /></div>
+                  <div><label>תקלות</label><input id="dropoff_issues" type="number" min="0" /></div>
+                  <div><label>נוסעים מושפעים</label><input id="dropoff_affected" type="number" min="0" /></div>
                 </div>
                 <div class="card" style="margin-top:10px;padding:10px;background:#f8fbff">
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-                    <strong style="font-size:0.85rem">×¤×™×¨×•×˜ ×œ×¤×™ ×ž×¤×¢×™×œ×™×</strong>
-                    <button id="addDropoffContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">×”×•×¡×£ ×©×•×¨×”</button>
+                    <strong style="font-size:0.85rem">פירוט לפי מפעילים</strong>
+                    <button id="addDropoffContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">הוסף שורה</button>
                   </div>
                   <div class="table-wrap" style="margin-top:8px">
                     <table>
                       <thead>
-                        <tr><th>×ž×¤×¢×™×œ</th><th>× ×¡×™×¢×•×ª</th><th>× ×•×¡×¢×™× ×¨×©×•×ž×™×</th><th>×ª×§×œ×•×ª</th><th>× ×•×¡×¢×™× ×ž×•×©×¤×¢×™×</th><th class="optional-split-label">×ž×•× ×™×•×ª × ×¡×™×¢×•×ª</th><th class="optional-split-label">×ž×•× ×™×•×ª × ×•×¡×¢×™×</th><th class="optional-split-label">×¨×›×‘ ×’×“×•×œ × ×¡×™×¢×•×ª</th><th class="optional-split-label">×¨×›×‘ ×’×“×•×œ × ×•×¡×¢×™×</th><th></th></tr>
+                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th class="optional-split-label">מוניות נסיעות</th><th class="optional-split-label">מוניות נוסעים</th><th class="optional-split-label">רכב גדול נסיעות</th><th class="optional-split-label">רכב גדול נוסעים</th><th></th></tr>
                       </thead>
                       <tbody id="dropoffContractorRows"></tbody>
                     </table>
                   </div>
                   <div id="dropoffSummaryBox" class="info-box" style="margin-top:8px"></div>
                 </div>
-                <button id="saveDropoff" style="margin-top:10px">×©×ž×•×¨ ×¤×™×–×•×¨</button>
+                <button id="saveDropoff" style="margin-top:10px">שמור פיזור</button>
               </div>
 
               <div class="card">
                 <div class="date-nav-head">
-                  <button id="pickupDateNext" type="button" class="date-nav-btn" title="×™×•× ×”×‘×">â†</button>
-                  <h2 id="pickupTitle" class="date-nav-title">××™×¡×•×£</h2>
-                  <button id="pickupDatePrev" type="button" class="date-nav-btn" title="×™×•× ×§×•×“×">â†’</button>
+                  <button id="pickupDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
+                  <h2 id="pickupTitle" class="date-nav-title">איסוף</h2>
+                  <button id="pickupDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
                 </div>
                 <div class="grid cols-2">
-                  <div><label>× ×¡×™×¢×•×ª</label><input id="pickup_rides" type="number" min="0" /></div>
-                  <div><label>× ×•×¡×¢×™× ×¨×©×•×ž×™×</label><input id="pickup_registered" type="number" min="0" /></div>
-                  <div><label>×ª×§×œ×•×ª</label><input id="pickup_issues" type="number" min="0" /></div>
-                  <div><label>× ×•×¡×¢×™× ×ž×•×©×¤×¢×™×</label><input id="pickup_affected" type="number" min="0" /></div>
+                  <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
+                  <div><label>נוסעים רשומים</label><input id="pickup_registered" type="number" min="0" /></div>
+                  <div><label>תקלות</label><input id="pickup_issues" type="number" min="0" /></div>
+                  <div><label>נוסעים מושפעים</label><input id="pickup_affected" type="number" min="0" /></div>
                 </div>
                 <div class="card" style="margin-top:10px;padding:10px;background:#f8fbff">
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-                    <strong style="font-size:0.85rem">×¤×™×¨×•×˜ ×œ×¤×™ ×ž×¤×¢×™×œ×™×</strong>
-                    <button id="addPickupContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">×”×•×¡×£ ×©×•×¨×”</button>
+                    <strong style="font-size:0.85rem">פירוט לפי מפעילים</strong>
+                    <button id="addPickupContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">הוסף שורה</button>
                   </div>
                   <div class="table-wrap" style="margin-top:8px">
                     <table>
                       <thead>
-                        <tr><th>×ž×¤×¢×™×œ</th><th>× ×¡×™×¢×•×ª</th><th>× ×•×¡×¢×™× ×¨×©×•×ž×™×</th><th>×ª×§×œ×•×ª</th><th>× ×•×¡×¢×™× ×ž×•×©×¤×¢×™×</th><th class="optional-split-label">×ž×•× ×™×•×ª × ×¡×™×¢×•×ª</th><th class="optional-split-label">×ž×•× ×™×•×ª × ×•×¡×¢×™×</th><th class="optional-split-label">×¨×›×‘ ×’×“×•×œ × ×¡×™×¢×•×ª</th><th class="optional-split-label">×¨×›×‘ ×’×“×•×œ × ×•×¡×¢×™×</th><th></th></tr>
+                        <tr><th>מפעיל</th><th>נסיעות</th><th>נוסעים רשומים</th><th>תקלות</th><th>נוסעים מושפעים</th><th class="optional-split-label">מוניות נסיעות</th><th class="optional-split-label">מוניות נוסעים</th><th class="optional-split-label">רכב גדול נסיעות</th><th class="optional-split-label">רכב גדול נוסעים</th><th></th></tr>
                       </thead>
                       <tbody id="pickupContractorRows"></tbody>
                     </table>
                   </div>
                   <div id="pickupSummaryBox" class="info-box" style="margin-top:8px"></div>
                 </div>
-                <button id="savePickup" style="margin-top:10px">×©×ž×•×¨ ××™×¡×•×£</button>
+                <button id="savePickup" style="margin-top:10px">שמור איסוף</button>
               </div>
             </div>
             <div style="margin-top:12px">
               <button id="saveBoth" class="good" style="display:flex;align-items:center;justify-content:center;gap:8px">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                ×©×ž×•×¨ ××™×¡×•×£ + ×¤×™×–×•×¨
+                שמור איסוף + פיזור
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- â”€â”€â”€ TAB: ×ª×§×œ×•×ª â”€â”€â”€ -->
+      <!-- ─── TAB: תקלות ─── -->
       <div class="tab-panel" id="panel-incidents">
         <div class="wrap">
-          <!-- ×”×–× ×ª ×ª×§×œ×” -->
+          <!-- הזנת תקלה -->
           <div class="card">
             <div class="section-header">
-              <span class="section-icon">âš ï¸</span>
-              <h2 style="margin:0">×”×–× ×ª ×ª×§×œ×” ×—×“×©×”</h2>
+              <span class="section-icon">⚠️</span>
+              <h2 style="margin:0">הזנת תקלה חדשה</h2>
             </div>
             <div class="grid cols-4">
-              <div><label>×ª××¨×™×š ×©×™×¨×•×ª</label><input id="incident_date" type="date" /></div>
+              <div><label>תאריך שירות</label><input id="incident_date" type="date" /></div>
               <div>
-                <label>×¡×•×’ ×©×™×¨×•×ª</label>
+                <label>סוג שירות</label>
                 <select id="incident_type">
-                  <option value="pickup">××™×¡×•×£</option>
-                  <option value="dropoff">×¤×™×–×•×¨</option>
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
                 </select>
               </div>
-              <div><label>×ž×•×¦×</label><input id="incident_origin" /></div>
-              <div><label>×™×¢×“</label><input id="incident_destination" /></div>
-              <div><label>×©×¢×ª ×ž×©×ž×¨×ª</label><input id="incident_shift" placeholder="08:00" /></div>
-              <div><label>×ž×¡×¤×¨ × ×•×¡×¢×™×</label><input id="incident_passengers" type="number" min="0" /></div>
+              <div><label>מוצא</label><input id="incident_origin" /></div>
+              <div><label>יעד</label><input id="incident_destination" /></div>
+              <div><label>שעת משמרת</label><input id="incident_shift" placeholder="08:00" /></div>
+              <div><label>מספר נוסעים</label><input id="incident_passengers" type="number" min="0" /></div>
               <div>
-                <label>×¡×•×’ ×ª×§×œ×”</label>
+                <label>סוג תקלה</label>
                 <select id="incident_issue_type">
-                  <option value="delay">×¢×™×›×•×‘</option>
-                  <option value="no_show">××™ ×”×’×¢×”</option>
-                  <option value="vehicle_failure">×ª×§×œ×ª ×¨×›×‘</option>
-                  <option value="over_capacity">×¢×•×ž×¡ ×™×ª×¨</option>
-                  <option value="route_change">×©×™× ×•×™ ×ž×¡×œ×•×œ</option>
-                  <option value="dispatch_error">×©×’×™××ª ×©×™×’×•×¨</option>
-                  <option value="driver_service">×©×™×¨×•×ª × ×”×’</option>
-                  <option value="other">××—×¨</option>
+                  <option value="delay">עיכוב</option>
+                  <option value="no_show">אי הגעה</option>
+                  <option value="vehicle_failure">תקלת רכב</option>
+                  <option value="over_capacity">עומס יתר</option>
+                  <option value="route_change">שינוי מסלול</option>
+                  <option value="dispatch_error">שגיאת שיגור</option>
+                  <option value="driver_service">שירות נהג</option>
+                  <option value="other">אחר</option>
                 </select>
               </div>
-              <div><label>×“×§×•×ª ××™×—×•×¨</label><input id="incident_delay_minutes" type="number" min="0" /></div>
+              <div><label>דקות איחור</label><input id="incident_delay_minutes" type="number" min="0" /></div>
             </div>
-            <div style="margin-top:10px"><label>×ª×™××•×¨</label><textarea id="incident_description"></textarea></div>
+            <div style="margin-top:10px"><label>תיאור</label><textarea id="incident_description"></textarea></div>
             <div class="row-actions" style="margin-top:12px">
-              <button id="saveIncident">ðŸ’¾ ×©×ž×•×¨ ×ª×§×œ×”</button>
-              <button id="recalcIncident" class="good">ðŸ”„ ×¢×“×›×Ÿ ×œ×˜×‘×œ×” ×”×¨××©×™×ª</button>
+              <button id="saveIncident">💾 שמור תקלה</button>
+              <button id="recalcIncident" class="good">🔄 עדכן לטבלה הראשית</button>
             </div>
           </div>
 
-          <!-- ×¨×©×™×ž×ª ×ª×§×œ×•×ª -->
+          <!-- רשימת תקלות -->
           <div class="card">
             <div class="section-header">
-              <span class="section-icon">ðŸ“‹</span>
-              <h2 style="margin:0">×¨×©×™×ž×ª ×ª×§×œ×•×ª</h2>
+              <span class="section-icon">📋</span>
+              <h2 style="margin:0">רשימת תקלות</h2>
             </div>
             <div class="grid cols-2">
-              <div><label>×ª××¨×™×š ×¡×™× ×•×Ÿ</label><input id="filter_date" type="date" /></div>
+              <div><label>תאריך סינון</label><input id="filter_date" type="date" /></div>
               <div>
-                <label>×¡×•×’ ×©×™×¨×•×ª</label>
+                <label>סוג שירות</label>
                 <select id="filter_type">
-                  <option value="pickup">××™×¡×•×£</option>
-                  <option value="dropoff">×¤×™×–×•×¨</option>
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
                 </select>
               </div>
             </div>
-            <button id="loadIncidents" class="secondary" style="margin-top:10px">×˜×¢×Ÿ ×ª×§×œ×•×ª</button>
+            <button id="loadIncidents" class="secondary" style="margin-top:10px">טען תקלות</button>
             <div class="table-wrap">
               <table>
                 <thead>
-                  <tr><th>×ž×–×”×”</th><th>×ª××¨×™×š</th><th>×¡×•×’</th><th>×ž×•×¦×</th><th>×™×¢×“</th><th>× ×•×¡×¢×™×</th><th>×ª×§×œ×”</th></tr>
+                  <tr><th>מזהה</th><th>תאריך</th><th>סוג</th><th>מוצא</th><th>יעד</th><th>נוסעים</th><th>תקלה</th></tr>
                 </thead>
                 <tbody id="incidentRows"></tbody>
               </table>
             </div>
           </div>
 
-          <!-- ×¤×™×¨×•×˜ (Drilldown) -->
+          <!-- פירוט (Drilldown) -->
           <div class="card">
             <div class="section-header">
-              <span class="section-icon">ðŸ”</span>
-              <h2 style="margin:0">×¤×™×¨×•×˜ ×ž×“×“</h2>
+              <span class="section-icon">🔍</span>
+              <h2 style="margin:0">פירוט מדד</h2>
             </div>
             <div class="grid cols-4">
-              <div><label>×ž×ª××¨×™×š</label><input id="drillFrom" type="date" /></div>
-              <div><label>×¢×“ ×ª××¨×™×š</label><input id="drillTo" type="date" /></div>
+              <div><label>מתאריך</label><input id="drillFrom" type="date" /></div>
+              <div><label>עד תאריך</label><input id="drillTo" type="date" /></div>
               <div>
-                <label>×¡×•×’ ×©×™×¨×•×ª</label>
+                <label>סוג שירות</label>
                 <select id="drillServiceType">
-                  <option value="">×”×›×œ</option>
-                  <option value="pickup">××™×¡×•×£</option>
-                  <option value="dropoff">×¤×™×–×•×¨</option>
+                  <option value="">הכל</option>
+                  <option value="pickup">איסוף</option>
+                  <option value="dropoff">פיזור</option>
                 </select>
               </div>
-              <div><label>×ž×¤×ª×— ×ž×“×“</label><input id="drillMetricKey" placeholder="serviceQuality" /></div>
+              <div><label>מפתח מדד</label><input id="drillMetricKey" placeholder="serviceQuality" /></div>
             </div>
-            <button id="loadDrilldown" class="secondary" style="margin-top:10px">×˜×¢×Ÿ ×¤×™×¨×•×˜</button>
+            <button id="loadDrilldown" class="secondary" style="margin-top:10px">טען פירוט</button>
             <div class="grid cols-2" style="margin-top:12px">
-              <div class="kpi"><div class="name">×©×•×¨×•×ª × ×ª×•× ×™×</div><div class="val" id="drillRowsCount">â€”</div></div>
-              <div class="kpi"><div class="name">×ª×§×œ×•×ª</div><div class="val" id="drillIncidentsCount">â€”</div></div>
+              <div class="kpi"><div class="name">שורות נתונים</div><div class="val" id="drillRowsCount">—</div></div>
+              <div class="kpi"><div class="name">תקלות</div><div class="val" id="drillIncidentsCount">—</div></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- â”€â”€â”€ TAB: × ×™×”×•×œ â”€â”€â”€ -->
+      <!-- ─── TAB: ניהול ─── -->
       <div class="tab-panel" id="panel-management">
         <div class="wrap">
           <div class="info-box" id="mobileManagementNote" style="display:none">
-            × ×™×”×•×œ ×™×¢×“×™× ×•×ž×¤×¢×™×œ×™× ×–×ž×™×Ÿ ×‘×’×™×©×” ×ž×ž×—×©×‘ ×‘×œ×‘×“.
+            ניהול יעדים ומפעילים זמין בגישה ממחשב בלבד.
           </div>
           <div id="managementContent">
             <div class="management-subtabs">
-              <button id="mgmtTabTargets" class="management-subtab active" type="button" data-panel="targets">×™×¢×“×™×</button>
-              <button id="mgmtTabContractors" class="management-subtab" type="button" data-panel="contractors">× ×™×”×•×œ ×ž×¤×¢×™×œ×™×</button>
+              <button id="mgmtTabTargets" class="management-subtab active" type="button" data-panel="targets">יעדים</button>
+              <button id="mgmtTabContractors" class="management-subtab" type="button" data-panel="contractors">ניהול מפעילים</button>
             </div>
 
             <div id="mgmtPanelTargets" class="management-subpanel active">
               <div class="card">
                 <div class="section-header">
-                  <span class="section-icon">ðŸŽ¯</span>
-                  <h2 style="margin:0">× ×™×”×•×œ ×™×¢×“×™× ×•×¡×¤×™ ×¦×‘×¢ ×œ×›×œ ×”×ž×“×“×™×</h2>
+                  <span class="section-icon">🎯</span>
+                  <h2 style="margin:0">ניהול יעדים וספי צבע לכל המדדים</h2>
                 </div>
                 <div class="row-actions" style="margin-top:10px">
-                  <button id="reloadManagedTargets" class="secondary">×˜×¢×Ÿ ×™×¢×“×™× ×ž× ×•×”×œ×™×</button>
+                  <button id="reloadManagedTargets" class="secondary">טען יעדים מנוהלים</button>
                 </div>
-                <div id="managedTargetsCount" style="margin-top:8px;font-size:0.82rem;color:#4a5a73">×™×¢×“×™× ×ž× ×•×”×œ×™×: 0</div>
+                <div id="managedTargetsCount" style="margin-top:8px;font-size:0.82rem;color:#4a5a73">יעדים מנוהלים: 0</div>
                 <div class="mgmt-table-wrap">
                   <table class="mgmt-table">
                     <thead>
                       <tr>
-                        <th>×ž×“×“</th>
-                        <th>×™×¢×“ ×ž×¡×¤×¨×™</th>
-                        <th>×›×™×•×•×Ÿ ×™×¢×“</th>
-                        <th>×‘×ª×•×§×£ ×ž-</th>
-                        <th>×‘×ª×•×§×£ ×¢×“</th>
-                        <th>×™×¨×•×§ ×ž-</th>
-                        <th>×™×¨×•×§ ×¢×“</th>
-                        <th>×¦×”×•×‘ ×ž-</th>
-                        <th>×¦×”×•×‘ ×¢×“</th>
-                        <th>××“×•× ×ž-</th>
-                        <th>××“×•× ×¢×“</th>
-                        <th>×¤×¢×•×œ×”</th>
+                        <th>מדד</th>
+                        <th>יעד מספרי</th>
+                        <th>כיוון יעד</th>
+                        <th>בתוקף מ-</th>
+                        <th>בתוקף עד</th>
+                        <th>ירוק מ-</th>
+                        <th>ירוק עד</th>
+                        <th>צהוב מ-</th>
+                        <th>צהוב עד</th>
+                        <th>אדום מ-</th>
+                        <th>אדום עד</th>
+                        <th>פעולה</th>
                       </tr>
                     </thead>
                     <tbody id="managedTargetsRows"></tbody>
@@ -1721,20 +1721,20 @@
             <div id="mgmtPanelContractors" class="management-subpanel">
               <div class="card">
                 <div class="section-header">
-                  <span class="section-icon">ðŸ§©</span>
-                  <h2 style="margin:0">× ×™×”×•×œ ×ž×¤×¢×™×œ×™× ×œ×”×–× ×ª ×¤×¢×™×œ×•×ª</h2>
+                  <span class="section-icon">🧩</span>
+                  <h2 style="margin:0">ניהול מפעילים להזנת פעילות</h2>
                 </div>
                 <div id="contractorsStatus" class="info-box" style="display:none;margin-bottom:10px"></div>
                 <div class="grid cols-4">
-                  <div><label>×©× ×ž×¤×¢×™×œ</label><input id="contractorName" /></div>
-                  <div><label>×§×•×“ ×ž×¤×¢×™×œ</label><input id="contractorCode" /></div>
-                  <div style="display:flex;align-items:flex-end"><button id="createContractor">×”×•×¡×£ ×ž×¤×¢×™×œ</button></div>
-                  <div style="display:flex;align-items:flex-end"><button id="reloadContractors" class="secondary">×˜×¢×Ÿ ×ž×¤×¢×™×œ×™×</button></div>
+                  <div><label>שם מפעיל</label><input id="contractorName" /></div>
+                  <div><label>קוד מפעיל</label><input id="contractorCode" /></div>
+                  <div style="display:flex;align-items:flex-end"><button id="createContractor">הוסף מפעיל</button></div>
+                  <div style="display:flex;align-items:flex-end"><button id="reloadContractors" class="secondary">טען מפעילים</button></div>
                 </div>
                 <div class="table-wrap" style="margin-top:12px">
                   <table>
                     <thead>
-                      <tr><th>×©×</th><th>×§×•×“</th><th>×¤×¢×™×œ</th><th>×¤×¢×•×œ×”</th></tr>
+                      <tr><th>שם</th><th>קוד</th><th>פעיל</th><th>פעולה</th></tr>
                     </thead>
                     <tbody id="contractorsRows"></tbody>
                   </table>
@@ -1745,10 +1745,10 @@
         </div>
       </div>
 
-      <!-- â•â• MOBILE DETAIL OVERLAY â•â• -->
+      <!-- ══ MOBILE DETAIL OVERLAY ══ -->
       <div id="mobileDetail">
         <div id="mDetailHeader">
-          <button id="mDetailBack">â€¹</button>
+          <button id="mDetailBack">‹</button>
           <span id="mDetailTitle"></span>
           <div style="width:40px"></div>
         </div>
@@ -1757,60 +1757,60 @@
           <!-- Detail: Passengers -->
           <div class="m-detail-section" id="mDetail-passengers">
             <div class="m-kpi-row">
-              <div class="m-kpi-cell"><div class="m-kpi-label">× ×•×¡×¢×™×</div><div class="m-kpi-val" id="mKpi-pass-total">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">× ×¡×™×¢×•×ª</div><div class="m-kpi-val" id="mKpi-pass-rides">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">×™×¢×™×œ×•×ª</div><div class="m-kpi-val" id="mKpi-pass-eff">â€”</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">נוסעים</div><div class="m-kpi-val" id="mKpi-pass-total">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">נסיעות</div><div class="m-kpi-val" id="mKpi-pass-rides">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">יעילות</div><div class="m-kpi-val" id="mKpi-pass-eff">—</div></div>
             </div>
-            <div class="m-section-title">×ž×’×ž×ª × ×•×¡×¢×™×</div>
+            <div class="m-section-title">מגמת נוסעים</div>
             <div class="m-chart-box"><canvas id="mChart-passengers"></canvas></div>
-            <div class="m-section-title">××™×¡×•×£ ×ž×•×œ ×¤×™×–×•×¨</div>
+            <div class="m-section-title">איסוף מול פיזור</div>
             <div class="m-chart-box"><canvas id="mChart-pickdrop"></canvas></div>
           </div>
 
           <!-- Detail: Rides + Efficiency -->
           <div class="m-detail-section" id="mDetail-rides">
             <div class="m-kpi-row">
-              <div class="m-kpi-cell"><div class="m-kpi-label">× ×¡×™×¢×•×ª</div><div class="m-kpi-val" id="mKpi-rides-total">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">×™×¢×™×œ×•×ª</div><div class="m-kpi-val" id="mKpi-rides-eff">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">× ×•×¡×¢×™×</div><div class="m-kpi-val" id="mKpi-rides-pass">â€”</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">נסיעות</div><div class="m-kpi-val" id="mKpi-rides-total">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">יעילות</div><div class="m-kpi-val" id="mKpi-rides-eff">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">נוסעים</div><div class="m-kpi-val" id="mKpi-rides-pass">—</div></div>
             </div>
-            <div class="m-section-title">×ž×’×ž×ª ×™×¢×™×œ×•×ª</div>
+            <div class="m-section-title">מגמת יעילות</div>
             <div class="m-chart-box" style="flex:2"><canvas id="mChart-efficiency"></canvas></div>
           </div>
 
           <!-- Detail: Service Quality -->
           <div class="m-detail-section" id="mDetail-quality">
             <div class="m-kpi-row">
-              <div class="m-kpi-cell"><div class="m-kpi-label">××™×›×•×ª</div><div class="m-kpi-val" id="mKpi-qual-score">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">% ×ª×§×œ×•×ª</div><div class="m-kpi-val" id="mKpi-qual-issues">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">% × ×¤×’×¢×•</div><div class="m-kpi-val" id="mKpi-qual-affected">â€”</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">איכות</div><div class="m-kpi-val" id="mKpi-qual-score">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">% תקלות</div><div class="m-kpi-val" id="mKpi-qual-issues">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">% נפגעו</div><div class="m-kpi-val" id="mKpi-qual-affected">—</div></div>
             </div>
-            <div class="m-section-title">×ž×’×ž×ª ××™×›×•×ª ×©×™×¨×•×ª</div>
+            <div class="m-section-title">מגמת איכות שירות</div>
             <div class="m-chart-box" style="flex:2"><canvas id="mChart-quality"></canvas></div>
           </div>
 
           <!-- Detail: Incidents -->
           <div class="m-detail-section" id="mDetail-incidents">
             <div class="m-kpi-row">
-              <div class="m-kpi-cell"><div class="m-kpi-label">×ª×§×œ×•×ª</div><div class="m-kpi-val" id="mKpi-inc-total">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">% × ×¡×™×¢×•×ª</div><div class="m-kpi-val" id="mKpi-inc-rate">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">×ž×ž×•×¦×¢ ××™×—×•×¨</div><div class="m-kpi-val" id="mKpi-inc-delay">â€”</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">תקלות</div><div class="m-kpi-val" id="mKpi-inc-total">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">% נסיעות</div><div class="m-kpi-val" id="mKpi-inc-rate">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">ממוצע איחור</div><div class="m-kpi-val" id="mKpi-inc-delay">—</div></div>
             </div>
-            <div class="m-section-title">×”×ª×¤×œ×’×•×ª ×œ×¤×™ ×¡×•×’</div>
+            <div class="m-section-title">התפלגות לפי סוג</div>
             <div class="m-chart-box" style="flex:2"><canvas id="mChart-incidentsPie"></canvas></div>
           </div>
 
           <!-- Detail: Targets -->
           <div class="m-detail-section" id="mDetail-targets">
             <div class="m-kpi-row">
-              <div class="m-kpi-cell" style="flex:2"><div class="m-kpi-label">×¢×ž×™×“×” ×‘×™×¢×“×™×</div><div class="m-kpi-val" id="mKpi-tgt-score">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">×™×¨×•×§</div><div class="m-kpi-val" id="mKpi-tgt-green">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">××“×•×</div><div class="m-kpi-val" id="mKpi-tgt-red">â€”</div></div>
+              <div class="m-kpi-cell" style="flex:2"><div class="m-kpi-label">עמידה ביעדים</div><div class="m-kpi-val" id="mKpi-tgt-score">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">ירוק</div><div class="m-kpi-val" id="mKpi-tgt-green">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">אדום</div><div class="m-kpi-val" id="mKpi-tgt-red">—</div></div>
             </div>
-            <div class="m-section-title">×™×¢×“ ×ž×•×œ ×‘×™×¦×•×¢</div>
+            <div class="m-section-title">יעד מול ביצוע</div>
             <div style="flex:1;overflow-y:auto;border-radius:10px;background:var(--card);padding:4px">
               <table class="m-targets-table" id="mTargetsTable">
-                <thead><tr><th>×ž×“×“</th><th>×‘×¤×•×¢×œ</th><th>×™×¢×“</th><th>×¡×˜×˜×•×¡</th></tr></thead>
+                <thead><tr><th>מדד</th><th>בפועל</th><th>יעד</th><th>סטטוס</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1819,45 +1819,45 @@
           <!-- Detail: Weekly Trend / Benchmark -->
           <div class="m-detail-section" id="mDetail-trend">
             <div class="m-kpi-row">
-              <div class="m-kpi-cell"><div class="m-kpi-label">×‘×¤×•×¢×œ</div><div class="m-kpi-val" id="mKpi-trnd-actual">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">×ž×ž×•×¦×¢ ×©×‘×•×¢×™</div><div class="m-kpi-val" id="mKpi-trnd-baseline">â€”</div></div>
-              <div class="m-kpi-cell"><div class="m-kpi-label">×™×¢×“</div><div class="m-kpi-val" id="mKpi-trnd-target">â€”</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">בפועל</div><div class="m-kpi-val" id="mKpi-trnd-actual">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">ממוצע שבועי</div><div class="m-kpi-val" id="mKpi-trnd-baseline">—</div></div>
+              <div class="m-kpi-cell"><div class="m-kpi-label">יעד</div><div class="m-kpi-val" id="mKpi-trnd-target">—</div></div>
             </div>
-            <div class="m-section-title">×”×©×•×•××” ×ž×•×œ ×ž×ž×•×¦×¢</div>
+            <div class="m-section-title">השוואה מול ממוצע</div>
             <div class="m-chart-box"><canvas id="mChart-benchmark"></canvas></div>
-            <div class="m-section-title">×œ×¤×™ ×¡×•×’ ×™×•×</div>
+            <div class="m-section-title">לפי סוג יום</div>
             <div style="flex:1;overflow-y:auto;border-radius:10px;background:var(--card);padding:6px" id="mBenchmarkByDayType"></div>
           </div>
 
         </div><!-- /mDetailBody -->
       </div><!-- /mobileDetail -->
 
-      <!-- FAB (hidden â€” actions moved to header) -->
-      <button id="mobileFab" style="display:none" title="×ª×¤×¨×™×˜ ×ž×”×™×¨">â˜°</button>
+      <!-- FAB (hidden — actions moved to header) -->
+      <button id="mobileFab" style="display:none" title="תפריט מהיר">☰</button>
       <div id="mobileFabPanel" style="display:none">
-        <button class="m-fab-btn" id="mFabPdf">â¬‡ï¸ ×™×™×¦×•× PDF</button>
-        <button class="m-fab-btn" id="mFabExcel">â¬‡ï¸ ×™×™×¦×•× Excel</button>
-        <button class="m-fab-btn" id="mFabRefresh">ðŸ”„ ×¨×¢× ×Ÿ × ×ª×•× ×™×</button>
+        <button class="m-fab-btn" id="mFabPdf">⬇️ ייצוא PDF</button>
+        <button class="m-fab-btn" id="mFabExcel">⬇️ ייצוא Excel</button>
+        <button class="m-fab-btn" id="mFabRefresh">🔄 רענן נתונים</button>
       </div>
 
       <!-- Mobile Bottom Navigation -->
       <nav id="bottomNav">
         <div class="bottom-nav-inner">
           <button class="bottom-tab active" data-tab="dashboard" onclick="showTab('dashboard')">
-            <span class="bt-icon">ðŸ“Š</span>
-            <span>×œ×•×— ×‘×§×¨×”</span>
+            <span class="bt-icon">📊</span>
+            <span>לוח בקרה</span>
           </button>
           <button class="bottom-tab" data-tab="operations" onclick="showTab('operations')">
-            <span class="bt-icon">ðŸšŒ</span>
-            <span>×¤×¢×™×œ×•×ª</span>
+            <span class="bt-icon">🚌</span>
+            <span>פעילות</span>
           </button>
           <button class="bottom-tab" data-tab="incidents" onclick="showTab('incidents')">
-            <span class="bt-icon">âš ï¸</span>
-            <span>×ª×§×œ×•×ª</span>
+            <span class="bt-icon">⚠️</span>
+            <span>תקלות</span>
           </button>
           <button class="bottom-tab" data-tab="management" onclick="showTab('management')">
-            <span class="bt-icon">âš™ï¸</span>
-            <span>× ×™×”×•×œ</span>
+            <span class="bt-icon">⚙️</span>
+            <span>ניהול</span>
           </button>
         </div>
       </nav>
@@ -1867,9 +1867,9 @@
     <div id="toastContainer"></div>
 
     <script>
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // CONFIG
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       const API_BASE_KEY = "dr_api_base";
       const TOKEN_KEY = "dr_session_token";
       let GOOGLE_CLIENT_ID = "";
@@ -1917,7 +1917,7 @@
         const login = document.getElementById("loginScreen");
         if (app) app.style.display = "none";
         if (login) login.style.display = "flex";
-        showLoginError(message || "××™×¨×¢×” ×©×’×™××” ×‘×˜×¢×™× ×ª ×”××¤×œ×™×§×¦×™×”. × ×¡×” ×œ×”×™×›× ×¡ ×ž×—×“×©.");
+        showLoginError(message || "אירעה שגיאה בטעינת האפליקציה. נסה להיכנס מחדש.");
       }
 
       async function hasValidSavedSession() {
@@ -1945,9 +1945,9 @@
         } catch {}
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // TOAST
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       function toast(msg, type = "") {
         const el = document.createElement("div");
         el.className = "toast" + (type ? " toast-" + type : "");
@@ -1978,9 +1978,9 @@
         el.textContent = message;
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // API
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       async function api(method, path, body) {
         const res = await fetch(`${getApiBase()}${path}`, {
           method,
@@ -1993,7 +1993,7 @@
             localStorage.removeItem(TOKEN_KEY);
             document.getElementById("appScreen").style.display = "none";
             document.getElementById("loginScreen").style.display = "flex";
-            document.getElementById("loginError").textContent = "×¤×’ ×ª×•×§×£ ×”×”×ª×—×‘×¨×•×ª â€” ×× × ×›× ×¡ ×ž×—×“×©.";
+            document.getElementById("loginError").textContent = "פג תוקף ההתחברות — אנא כנס מחדש.";
             document.getElementById("loginError").style.display = "block";
             fetchConfig().then(initGoogleLogin);
             throw new Error("session-expired");
@@ -2008,9 +2008,9 @@
         return payload;
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // DEV SETTINGS
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       function toggleDevSettings() {
         const box = document.getElementById("devSettingsBox");
         const visible = box.style.display !== "none";
@@ -2028,9 +2028,9 @@
         fetchConfig().then(initGoogleLogin);
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // AUTH FLOW
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       function showLoginError(msg) {
         const el = document.getElementById("loginError");
         el.textContent = msg;
@@ -2043,7 +2043,7 @@
             await reportClientError("auth_google_missing_credential", new Error("Missing Google credential"), {
               responseType: typeof response
             });
-            showLoginError("×”×ª×—×‘×¨×•×ª Google × ×›×©×œ×”. × ×¡×” ×©×•×‘.");
+            showLoginError("התחברות Google נכשלה. נסה שוב.");
             return;
           }
           const authRes = await fetch(`${getApiBase()}/auth/google/callback`, {
@@ -2062,10 +2062,10 @@
                 expectedLoginUri: GOOGLE_LOGIN_URI || null,
                 currentOrigin: location.origin
               });
-              showLoginError("×”×”×ª×—×‘×¨×•×ª × ×—×¡×ž×” ×¢×§×‘ ×”×’×“×¨×ª Google ×œ× ×ª×§×™× ×”. ×™×© ×œ×¤× ×•×ª ×œ×ž× ×”×œ ×”×ž×¢×¨×›×ª.");
+              showLoginError("ההתחברות נחסמה עקב הגדרת Google לא תקינה. יש לפנות למנהל המערכת.");
               return;
             }
-            showLoginError(data.error || "×”×ª×—×‘×¨×•×ª × ×›×©×œ×”. ×‘×“×•×§ ×©××ª×” ×ž×•×¨×©×” ×œ×”×™×›× ×¡ ×œ×ž×¢×¨×›×ª.");
+            showLoginError(data.error || "התחברות נכשלה. בדוק שאתה מורשה להיכנס למערכת.");
             return;
           }
 
@@ -2073,7 +2073,7 @@
           await enterApp(data.user);
         } catch (e) {
           await reportClientError("auth_google_callback_failure", e);
-          showLoginError("×©×’×™××ª ×¨×©×ª: " + e.message);
+          showLoginError("שגיאת רשת: " + e.message);
         }
       }
 
@@ -2081,9 +2081,9 @@
         const wrap = document.getElementById("googleBtnWrap");
 
         if (!GOOGLE_CLIENT_ID) {
-          wrap.innerHTML = `<button class="btn-dev-login" id="btnDevLogin">ðŸ”‘ ×›× ×™×¡×” ×™×“× ×™×ª (×ž×¦×‘ ×¤×™×ª×•×—)</button>`;
+          wrap.innerHTML = `<button class="btn-dev-login" id="btnDevLogin">🔑 כניסה ידנית (מצב פיתוח)</button>`;
           document.getElementById("btnDevLogin").addEventListener("click", () => {
-            const token = prompt("×”×›× ×¡ Session Token:");
+            const token = prompt("הכנס Session Token:");
             if (token && token.trim()) {
               localStorage.setItem(TOKEN_KEY, token.trim());
               enterApp(null);
@@ -2119,7 +2119,7 @@
           return;
         }
 
-        // Google script is async/defer â€” poll until ready
+        // Google script is async/defer — poll until ready
         let attempts = 0;
         const poll = setInterval(() => {
           attempts++;
@@ -2128,7 +2128,7 @@
             setupGoogleButton();
           } else if (attempts > 80) {
             clearInterval(poll);
-            wrap.innerHTML = `<p style="color:#b91c1c;font-size:0.82rem;margin:0">×œ× × ×™×ª×Ÿ ×œ×˜×¢×•×Ÿ ××ª ×›×¤×ª×•×¨ Google. ×‘×“×•×§ ×—×™×‘×•×¨ ×œ××™× ×˜×¨× ×˜.</p>`;
+            wrap.innerHTML = `<p style="color:#b91c1c;font-size:0.82rem;margin:0">לא ניתן לטעון את כפתור Google. בדוק חיבור לאינטרנט.</p>`;
           }
         }, 100);
       }
@@ -2151,7 +2151,7 @@
           await bootstrap();
         } catch (err) {
           await reportClientError("enter_app_bootstrap_failure", err, { isMobile });
-          showFatalLoginError("×”×”×ª×—×‘×¨×•×ª ×”×•×©×œ×ž×” ××š ×˜×¢×™× ×ª ×”××¤×œ×™×§×¦×™×” × ×›×©×œ×”. × ×¡×” ×œ×”×™×›× ×¡ ×ž×—×“×©.");
+          showFatalLoginError("ההתחברות הושלמה אך טעינת האפליקציה נכשלה. נסה להיכנס מחדש.");
         }
       }
 
@@ -2159,11 +2159,11 @@
         try {
           const data = await api("GET", "/auth/me");
           const user = data.user || data;
-          document.getElementById("headerUserName").textContent = user.fullName || user.email || "×ž×©×ª×ž×©";
+          document.getElementById("headerUserName").textContent = user.fullName || user.email || "משתמש";
           document.getElementById("headerUserEmail").textContent = user.email || "";
         } catch {
           if (fallback) {
-            document.getElementById("headerUserName").textContent = fallback.fullName || fallback.email || "×ž×©×ª×ž×©";
+            document.getElementById("headerUserName").textContent = fallback.fullName || fallback.email || "משתמש";
             document.getElementById("headerUserEmail").textContent = fallback.email || "";
           }
         }
@@ -2179,9 +2179,9 @@
         document.getElementById("loginError").style.display = "none";
       });
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // TAB NAVIGATION
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       let currentTab = "dashboard";
 
       function showTab(id) {
@@ -2199,9 +2199,9 @@
         }
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // DATE HELPERS
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       const today = new Date();
       const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
       const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 6);
@@ -2272,8 +2272,8 @@
 
       function syncOperationDateUI() {
         document.getElementById("entryDate").value = pickupDate;
-        document.getElementById("pickupTitle").textContent = `××™×¡×•×£ (${pickupDate})`;
-        document.getElementById("dropoffTitle").textContent = `×¤×™×–×•×¨ (${dropoffDate})`;
+        document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
+        document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
       }
 
       async function shiftOperationDates(daysDelta) {
@@ -2308,7 +2308,7 @@
         );
         const headlineRangeMode = document.getElementById("headlineRangeMode");
         if (headlineRangeMode) {
-          headlineRangeMode.textContent = dashboardRangeMode === "week" ? "×©×‘×•×¢×™" : dashboardRangeMode === "month" ? "×—×•×“×©×™" : "×™×•×ž×™";
+          headlineRangeMode.textContent = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
         }
         const hDateInput = document.getElementById("hDateInput");
         if (hDateInput) hDateInput.value = to;
@@ -2332,7 +2332,7 @@
         try {
           await dashboardRefreshPromise;
         } catch (err) {
-          if (!silent) toastErr(err.message || "×©×’×™××” ×‘×˜×¢×™× ×ª ×”×“×©×‘×•×¨×“");
+          if (!silent) toastErr(err.message || "שגיאה בטעינת הדשבורד");
           throw err;
         } finally {
           dashboardRefreshPromise = null;
@@ -2393,9 +2393,9 @@
         await refreshDashboard(daysDelta > 0 ? "kpi-date-next" : "kpi-date-prev");
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // KPI COLOR CODING
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       let currentThresholds = {};
 
       async function loadThresholdsForKPI() {
@@ -2436,7 +2436,7 @@
       }
 
       function formatMetric(metricKey, value, withSign = false) {
-        if (value === null || value === undefined || Number.isNaN(Number(value))) return "â€”";
+        if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
         const n = Number(value);
         const sign = withSign && n > 0 ? "+" : "";
         const fixed = n.toFixed(metricDigits(metricKey));
@@ -2445,26 +2445,26 @@
 
       function metricLabel(metricKey) {
         const labels = {
-          passengers: "× ×•×¡×¢×™×",
-          rides: "× ×¡×™×¢×•×ª",
-          efficiency: "×™×¢×™×œ×•×ª",
-          serviceQuality: "××™×›×•×ª ×©×™×¨×•×ª",
-          issues: "×ª×§×œ×•×ª",
-          issuesRate: "% × ×¡×™×¢×•×ª ×¢× ×ª×§×œ×”",
-          affectedRate: "% × ×•×¡×¢×™× ×©× ×¤×’×¢×•",
-          affectedPassengers: "×ž×¡×¤×¨ × ×•×¡×¢×™× ×©×—×•×• ×ª×§×œ×” ×œ×™×•×"
+          passengers: "נוסעים",
+          rides: "נסיעות",
+          efficiency: "יעילות",
+          serviceQuality: "איכות שירות",
+          issues: "תקלות",
+          issuesRate: "% נסיעות עם תקלה",
+          affectedRate: "% נוסעים שנפגעו",
+          affectedPassengers: "מספר נוסעים שחוו תקלה ליום"
         };
         return labels[metricKey] || metricKey;
       }
       const MANAGED_KPI_CATALOG = [
-        { metricKey: "passengers", description: "×ž×•×“×“ ××ª ×¡×š ×”× ×•×¡×¢×™× ×©×©×•×¨×ª ×”×©×™×¨×•×ª ×˜×™×¤×œ×” ×‘×”×." },
-        { metricKey: "rides", description: "×ž×•×“×“ ××ª ×›×ž×•×ª ×”× ×¡×™×¢×•×ª ×©×‘×•×¦×¢×• ×‘×¤×•×¢×œ ×‘×™×•× ×”×©×™×¨×•×ª." },
-        { metricKey: "efficiency", description: "×ž×•×“×“ ×™×¢×™×œ×•×ª ×ª×¤×¢×•×œ×™×ª: ×™×—×¡ × ×•×¡×¢×™× ×œ×›×œ × ×¡×™×¢×”." },
-        { metricKey: "issues", description: "×ž×•×“×“ ××ª ×ž×¡×¤×¨ ×”×ª×§×œ×•×ª ×”×›×•×œ×œ ×©× ×¨×©× ×‘×ª×§×•×¤×ª ×”×ž×“×™×“×”." },
-        { metricKey: "issuesRate", description: "×ž×•×“×“ ××ª ××—×•×– ×”× ×¡×™×¢×•×ª ×¢× ×ª×§×œ×” ×ž×ª×•×š ×›×œ×œ ×”× ×¡×™×¢×•×ª." },
-        { metricKey: "serviceQuality", description: "×ž×•×“×“ ××ª ××™×›×•×ª ×”×©×™×¨×•×ª ×”×›×•×œ×œ×ª ×‘××—×•×–×™×." },
-        { metricKey: "affectedRate", description: "×ž×•×“×“ ××ª ××—×•×– ×”× ×•×¡×¢×™× ×©×”×•×©×¤×¢×• ×ž×ª×§×œ×•×ª." },
-        { metricKey: "affectedPassengers", description: "×ž×•×“×“ ××ª ×ž×¡×¤×¨ ×”× ×•×¡×¢×™× ×©×”×•×©×¤×¢×• ×ž×ª×§×œ×•×ª ×‘×™×•× ×”×©×™×¨×•×ª." }
+        { metricKey: "passengers", description: "מודד את סך הנוסעים ששורת השירות טיפלה בהם." },
+        { metricKey: "rides", description: "מודד את כמות הנסיעות שבוצעו בפועל ביום השירות." },
+        { metricKey: "efficiency", description: "מודד יעילות תפעולית: יחס נוסעים לכל נסיעה." },
+        { metricKey: "issues", description: "מודד את מספר התקלות הכולל שנרשם בתקופת המדידה." },
+        { metricKey: "issuesRate", description: "מודד את אחוז הנסיעות עם תקלה מתוך כלל הנסיעות." },
+        { metricKey: "serviceQuality", description: "מודד את איכות השירות הכוללת באחוזים." },
+        { metricKey: "affectedRate", description: "מודד את אחוז הנוסעים שהושפעו מתקלות." },
+        { metricKey: "affectedPassengers", description: "מודד את מספר הנוסעים שהושפעו מתקלות ביום השירות." }
       ];
       const managedRowsByMetric = new Map();
       let managementContractors = [];
@@ -2483,7 +2483,7 @@
         if (!tbody) return;
         tbody.innerHTML = "";
         if (!managementContractors.length) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:12px">××™×Ÿ ×ž×¤×¢×™×œ×™× ×œ×”×¦×’×”</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:12px">אין מפעילים להצגה</td></tr>`;
           return;
         }
         for (const row of managementContractors) {
@@ -2494,11 +2494,11 @@
             <td><input class="mgmt-contractor-code" value="${row.code || ""}" /></td>
             <td>
               <select class="mgmt-contractor-active">
-                <option value="true"${row.active ? " selected" : ""}>×¤×¢×™×œ</option>
-                <option value="false"${!row.active ? " selected" : ""}>×œ× ×¤×¢×™×œ</option>
+                <option value="true"${row.active ? " selected" : ""}>פעיל</option>
+                <option value="false"${!row.active ? " selected" : ""}>לא פעיל</option>
               </select>
             </td>
-            <td><button type="button" class="secondary mgmt-contractor-save" style="width:auto;padding:5px 10px">×©×ž×•×¨</button></td>
+            <td><button type="button" class="secondary mgmt-contractor-save" style="width:auto;padding:5px 10px">שמור</button></td>
           `;
           tbody.appendChild(tr);
         }
@@ -2508,24 +2508,24 @@
         const res = await api("GET", "/contractors?activeOnly=false");
         managementContractors = res.contractors || [];
         renderContractorsManagementTable();
-        setContractorsStatus(`× ×˜×¢× ×• ${managementContractors.length} ×ž×¤×¢×™×œ×™×`, "success");
+        setContractorsStatus(`נטענו ${managementContractors.length} מפעילים`, "success");
       }
 
       async function createManagementContractor() {
         const name = String(document.getElementById("contractorName")?.value || "").trim();
         const code = String(document.getElementById("contractorCode")?.value || "").trim();
-        if (!name || !code) throw new Error("×™×© ×œ×”×–×™×Ÿ ×©× ×•×§×•×“ ×ž×¤×¢×™×œ");
+        if (!name || !code) throw new Error("יש להזין שם וקוד מפעיל");
         try {
           await api("POST", "/contractors", { name, code });
           document.getElementById("contractorName").value = "";
           document.getElementById("contractorCode").value = "";
           await loadManagementContractors();
-          setContractorsStatus("×ž×¤×¢×™×œ × ×•×¡×£ ×‘×”×¦×œ×—×”", "success");
+          setContractorsStatus("מפעיל נוסף בהצלחה", "success");
         } catch (err) {
           const conflict = err?.status === 409 || err?.code === "CONTRACTOR_CODE_CONFLICT";
           const message = conflict
-            ? "×§×•×“ ×ž×¤×¢×™×œ ×›×‘×¨ ×§×™×™×, ×‘×—×¨ ×§×•×“ ××—×¨."
-            : String(err?.payload?.message || err?.message || "×©×ž×™×¨×ª ×ž×¤×¢×™×œ × ×›×©×œ×”.");
+            ? "קוד מפעיל כבר קיים, בחר קוד אחר."
+            : String(err?.payload?.message || err?.message || "שמירת מפעיל נכשלה.");
           setContractorsStatus(message, "error");
           await reportClientError("contractors_create_failure", err, {
             status: err?.status || null,
@@ -2615,8 +2615,8 @@
             <td><input class="compact-input managed-target-value" type="number" step="0.01" value="${target ? Number(target.targetValue) : ""}" /></td>
             <td>
               <select class="compact-select managed-target-direction">
-                <option value="at_least"${(target?.direction || defaultDir) === "at_least" ? " selected" : ""}>×œ×¤×—×•×ª</option>
-                <option value="at_most"${(target?.direction || defaultDir) === "at_most" ? " selected" : ""}>×œ×›×œ ×”×™×•×ª×¨</option>
+                <option value="at_least"${(target?.direction || defaultDir) === "at_least" ? " selected" : ""}>לפחות</option>
+                <option value="at_most"${(target?.direction || defaultDir) === "at_most" ? " selected" : ""}>לכל היותר</option>
               </select>
             </td>
             <td><input class="compact-input managed-target-from" type="date" value="${target?.effectiveFrom || todayVal}" /></td>
@@ -2627,12 +2627,12 @@
             <td><input class="compact-input managed-th-yellow-max" type="number" step="0.01" value="${managedNumber(threshold.yellowMax)}" /></td>
             <td><input class="compact-input managed-th-red-min" type="number" step="0.01" value="${managedNumber(threshold.redMin)}" /></td>
             <td><input class="compact-input managed-th-red-max" type="number" step="0.01" value="${managedNumber(threshold.redMax)}" /></td>
-            <td><button type="button" class="save-one-btn managed-save-row">×©×ž×•×¨ ×™×¢×“+×¡×¤×™×</button></td>
+            <td><button type="button" class="save-one-btn managed-save-row">שמור יעד+ספים</button></td>
           `;
           tbody.appendChild(tr);
           managedRowsByMetric.set(metricKey, tr);
         }
-        document.getElementById("managedTargetsCount").textContent = `×™×¢×“×™× ×ž× ×•×”×œ×™×: ${MANAGED_KPI_CATALOG.length}`;
+        document.getElementById("managedTargetsCount").textContent = `יעדים מנוהלים: ${MANAGED_KPI_CATALOG.length}`;
       }
 
       async function saveManagedRow(metricKey) {
@@ -2645,8 +2645,8 @@
         try {
           const targetValueRaw = row.querySelector(".managed-target-value").value;
           const targetFrom = row.querySelector(".managed-target-from").value;
-          if (!targetFrom) throw new Error("×™×© ×œ×‘×—×•×¨ ×ª××¨×™×š ×ª×—×•×œ×”");
-          if (targetValueRaw === "") throw new Error("×™×© ×œ×”×–×™×Ÿ ×™×¢×“ ×ž×¡×¤×¨×™");
+          if (!targetFrom) throw new Error("יש לבחור תאריך תחולה");
+          if (targetValueRaw === "") throw new Error("יש להזין יעד מספרי");
 
           await api("POST", "/management/targets", {
             metricKey,
@@ -2665,9 +2665,9 @@
             redMax: Number(row.querySelector(".managed-th-red-max").value || 0)
           });
           await loadThresholdsForKPI();
-          toastOk(`× ×©×ž×¨ ×‘×”×¦×œ×—×”: ${metricLabel(metricKey)}`);
+          toastOk(`נשמר בהצלחה: ${metricLabel(metricKey)}`);
         } catch (err) {
-          toastErr(err.message || `×©×ž×™×¨×” × ×›×©×œ×” ×¢×‘×•×¨ ${metricLabel(metricKey)}`);
+          toastErr(err.message || `שמירה נכשלה עבור ${metricLabel(metricKey)}`);
         } finally {
           btn.disabled = false;
           btn.textContent = orig;
@@ -2676,26 +2676,26 @@
 
       function dayTypeLabel(dayType) {
         const labels = {
-          weekday: "×â€“×”",
-          friday: "×©×™×©×™",
-          holiday_eve: "×¢×¨×‘ ×—×’",
-          exception: "×—×¨×™×’",
-          regular: "×â€“×”",
-          unknown: "×œ× ×ž×¡×•×•×’"
+          weekday: "א–ה",
+          friday: "שישי",
+          holiday_eve: "ערב חג",
+          exception: "חריג",
+          regular: "א–ה",
+          unknown: "לא מסווג"
         };
-        return labels[dayType] || dayType || "×œ× ×ž×¡×•×•×’";
+        return labels[dayType] || dayType || "לא מסווג";
       }
 
       function issueTypeLabel(issueType) {
         const labels = {
-          delay: "×¢×™×›×•×‘",
-          no_show: "××™ ×”×’×¢×”",
-          vehicle_failure: "×ª×§×œ×ª ×¨×›×‘",
-          over_capacity: "×¢×•×ž×¡ ×™×ª×¨",
-          route_change: "×©×™× ×•×™ ×ž×¡×œ×•×œ",
-          dispatch_error: "×©×’×™××ª ×©×™×’×•×¨",
-          driver_service: "×©×™×¨×•×ª × ×”×’",
-          other: "××—×¨"
+          delay: "עיכוב",
+          no_show: "אי הגעה",
+          vehicle_failure: "תקלת רכב",
+          over_capacity: "עומס יתר",
+          route_change: "שינוי מסלול",
+          dispatch_error: "שגיאת שיגור",
+          driver_service: "שירות נהג",
+          other: "אחר"
         };
         return labels[issueType] || issueType;
       }
@@ -2714,7 +2714,7 @@
         const prevDropoff = toDateVal(addDays(currentPickup, -1));
         document.getElementById("headlinePickupDate").textContent = currentPickup;
         document.getElementById("headlineDropoffDate").textContent = prevDropoff;
-        document.getElementById("headlineFocusDate").textContent = focusDate || "â€”";
+        document.getElementById("headlineFocusDate").textContent = focusDate || "—";
       }
 
       function defaultDirection(metricKey) {
@@ -2825,7 +2825,7 @@
         const ids = ["kpiPassengers","kpiRides","kpiEfficiency","kpiIssues","kpiIssuesRate","kpiQuality","kpiAffectedRate","kpiAffectedPassengers"];
         for (const id of ids) {
           const el = document.getElementById(id);
-          if (loading) { el.textContent = "×˜×•×¢×Ÿ..."; el.classList.add("loading-val"); }
+          if (loading) { el.textContent = "טוען..."; el.classList.add("loading-val"); }
           else { el.classList.remove("loading-val"); }
         }
         KPI_METRICS.forEach((metric) => {
@@ -2833,9 +2833,9 @@
           const gapEl = document.getElementById(metric.gapId);
           const deltaEl = document.getElementById(metric.deltaId);
           if (loading) {
-            targetEl.textContent = "â€”";
-            gapEl.textContent = "â€”";
-            deltaEl.textContent = "â€”";
+            targetEl.textContent = "—";
+            gapEl.textContent = "—";
+            deltaEl.textContent = "—";
           }
         });
         ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality","kpiCard-affectedRate","kpiCard-affectedPassengers"]
@@ -2847,16 +2847,16 @@
 
       function reportConfig() {
         return {
-          "kpi-main": { title: "×©×›×‘×ª KPI ×¨××©×™×ª", subtitle: "×ž×¦×‘ ×™×¢×“-×‘×™×¦×•×¢ ×œ×ž×“×“ ××™×›×•×ª ×”×©×™×¨×•×ª", metricKey: "serviceQuality", actionTab: "dashboard" },
-          "trend-analysis": { title: "×’×¨×¤×™ ×ž×’×ž×”", subtitle: "×ž×¢×§×‘ ×©×™× ×•×™ ×œ××•×¨×š ×–×ž×Ÿ ×‘×ž×“×“ × ×•×¡×¢×™×", metricKey: "passengers", actionTab: "dashboard" },
-          "benchmark": { title: "×’×¨×¤×™ ×”×©×•×•××”", subtitle: "×”×©×•×•××” ×‘×™×Ÿ ×‘×™×¦×•×¢ ×‘×¤×•×¢×œ ×œ×™×¢×“", metricKey: "serviceQuality", actionTab: "dashboard" },
-          "critical-control": { title: "×“×•×—×•×ª ×—×¨×™×’×™×", subtitle: "×ž×•×§×“×™ ×©×œ×™×˜×”: ×ª×§×œ×•×ª ×•×—×¨×™×’×•×ª ××™×›×•×ª", metricKey: "issues", actionTab: "dashboard" },
-          "root-cause": { title: "× ×™×ª×•×— ×ª×§×œ×•×ª", subtitle: "×–×™×”×•×™ ×’×•×¨×ž×™ ×©×•×¨×© ×œ×¤×™ ×¡×•×’×™ ×ª×§×œ×”", metricKey: "issuesRate", actionTab: "dashboard" },
-          "incident-drilldown": { title: "×“×•×— ×¤×™×¨×•×˜ ×ª×§×œ×•×ª", subtitle: "×ž×¢×‘×¨ ×ž×”×™×¨ ×œ×¨×©×™×ž×ª ×”×ª×§×œ×•×ª ×”×ž×œ××”", metricKey: "issues", actionTab: "incidents" },
-          "operations-daily": { title: "×“×•×— ×ª×¤×¢×•×œ×™ ×™×•×ž×™", subtitle: "×ª×ž×•× ×ª ×‘×™×¦×•×¢ ×™×•×ž×™×ª ×œ×¤×™ ×¤×¢×™×œ×•×ª", metricKey: "rides", actionTab: "dashboard" },
-          "targets-vs-actual": { title: "×™×¢×“×™× ×ž×•×œ ×‘×™×¦×•×¢", subtitle: "×‘×§×¨×” × ×™×”×•×œ×™×ª ×¢×œ ×¢×ž×™×“×” ×‘×™×¢×“×™×", metricKey: "serviceQuality", actionTab: "dashboard" },
-          "load-efficiency": { title: "× ×™×ª×•×— ×¢×•×ž×¡×™× ×•×™×¢×™×œ×•×ª", subtitle: "××™×ª×•×¨ ×¦×•×•××¨×™ ×‘×§×‘×•×§ ×‘×ž×¢×¨×š ×”× ×¡×™×¢×•×ª", metricKey: "efficiency", actionTab: "dashboard" },
-          "pickup-vs-dropoff": { title: "×”×©×•×•××ª ××™×¡×•×£ ×ž×•×œ ×¤×™×–×•×¨", subtitle: "×–×™×”×•×™ ×ž×§×•×¨ ×”×¤×¢×¨×™× ×”×ª×¤×¢×•×œ×™×™×", metricKey: "serviceQuality", actionTab: "dashboard" }
+          "kpi-main": { title: "שכבת KPI ראשית", subtitle: "מצב יעד-ביצוע למדד איכות השירות", metricKey: "serviceQuality", actionTab: "dashboard" },
+          "trend-analysis": { title: "גרפי מגמה", subtitle: "מעקב שינוי לאורך זמן במדד נוסעים", metricKey: "passengers", actionTab: "dashboard" },
+          "benchmark": { title: "גרפי השוואה", subtitle: "השוואה בין ביצוע בפועל ליעד", metricKey: "serviceQuality", actionTab: "dashboard" },
+          "critical-control": { title: "דוחות חריגים", subtitle: "מוקדי שליטה: תקלות וחריגות איכות", metricKey: "issues", actionTab: "dashboard" },
+          "root-cause": { title: "ניתוח תקלות", subtitle: "זיהוי גורמי שורש לפי סוגי תקלה", metricKey: "issuesRate", actionTab: "dashboard" },
+          "incident-drilldown": { title: "דוח פירוט תקלות", subtitle: "מעבר מהיר לרשימת התקלות המלאה", metricKey: "issues", actionTab: "incidents" },
+          "operations-daily": { title: "דוח תפעולי יומי", subtitle: "תמונת ביצוע יומית לפי פעילות", metricKey: "rides", actionTab: "dashboard" },
+          "targets-vs-actual": { title: "יעדים מול ביצוע", subtitle: "בקרה ניהולית על עמידה ביעדים", metricKey: "serviceQuality", actionTab: "dashboard" },
+          "load-efficiency": { title: "ניתוח עומסים ויעילות", subtitle: "איתור צווארי בקבוק במערך הנסיעות", metricKey: "efficiency", actionTab: "dashboard" },
+          "pickup-vs-dropoff": { title: "השוואת איסוף מול פיזור", subtitle: "זיהוי מקור הפערים התפעוליים", metricKey: "serviceQuality", actionTab: "dashboard" }
         };
       }
 
@@ -2895,9 +2895,9 @@
         }
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // MOBILE TILE DASHBOARD
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       const mobileCharts = {};
       function upsertMobileChart(id, cfg) {
         if (typeof Chart === "undefined") return;
@@ -2910,7 +2910,7 @@
         Object.keys(mobileCharts).forEach(id => { mobileCharts[id].destroy(); delete mobileCharts[id]; });
       }
 
-      const M_LABELS = { passengers:"× ×•×¡×¢×™×", rides:"× ×¡×™×¢×•×ª", efficiency:"×™×¢×™×œ×•×ª", serviceQuality:"××™×›×•×ª", issues:"×ª×§×œ×•×ª", issuesRate:"% ×ª×§×œ×•×ª", affectedRate:"% × ×¤×’×¢×•" };
+      const M_LABELS = { passengers:"נוסעים", rides:"נסיעות", efficiency:"יעילות", serviceQuality:"איכות", issues:"תקלות", issuesRate:"% תקלות", affectedRate:"% נפגעו" };
       const M_STATUS_COLOR = { green:"#22c55e", yellow:"#eab308", red:"#ef4444" };
 
       function updateMobileTiles(summary, scope, kpiMeta, dashboardTrends, targetsVsActual) {
@@ -2932,51 +2932,51 @@
         const passVal = Number(s.passengers || 0);
         const passTgt = tgtVal("passengers");
         setMobileTile("passengers", fmt(passVal, 0),
-          passTgt ? `×™×¢×“: ${fmt(passTgt,0)}` : "",
+          passTgt ? `יעד: ${fmt(passTgt,0)}` : "",
           passTgt ? statusColor("passengers", passVal, passTgt, tgtDir("passengers")) : "");
 
         // Tile: rides
         const ridesVal = Number(s.rides || 0);
         const effVal   = Number(s.efficiency || 0);
         setMobileTile("rides", fmt(ridesVal, 0),
-          `×™×¢×™×œ×•×ª: ${fmt(effVal)} × ×•×¡×¢/× ×¡×™×¢×”`, "");
+          `יעילות: ${fmt(effVal)} נוסע/נסיעה`, "");
 
         // Tile: quality
         const qualVal = Number(s.serviceQuality || 0);
         const qualTgt = tgtVal("serviceQuality");
         setMobileTile("quality", `${fmt(qualVal)}%`,
-          qualTgt ? `×™×¢×“: ${fmt(qualTgt)}%` : "",
+          qualTgt ? `יעד: ${fmt(qualTgt)}%` : "",
           currentThresholds.serviceQuality ? thresholdColor("serviceQuality", qualVal) : statusColor("serviceQuality", qualVal, qualTgt, tgtDir("serviceQuality")));
 
         // Tile: incidents
         const issVal  = Number(s.issues || 0);
         const issRate = Number(s.issuesRate || 0);
         setMobileTile("incidents", fmt(issVal, 0),
-          `${fmt(issRate)}% × ×¡×™×¢×•×ª ×¢× ×ª×§×œ×”`,
+          `${fmt(issRate)}% נסיעות עם תקלה`,
           currentThresholds.issuesRate ? thresholdColor("issuesRate", issRate) : "");
 
-        // Tile: targets â€” count green/yellow/red
+        // Tile: targets — count green/yellow/red
         if (targetsVsActual && targetsVsActual.rows) {
           const rows = targetsVsActual.rows;
           const greenCount = rows.filter(r => r.status === "green").length;
           setMobileTile("targets", `${greenCount}/${rows.length}`,
-            `${Math.round(greenCount/rows.length*100)}% ×¢×ž×™×“×” ×‘×™×¢×“×™×`,
+            `${Math.round(greenCount/rows.length*100)}% עמידה ביעדים`,
             greenCount === rows.length ? "tile-green" : greenCount >= rows.length / 2 ? "tile-yellow" : "tile-red");
         } else {
-          setMobileTile("targets", "â€”", "××™×Ÿ × ×ª×•× ×™ ×™×¢×“", "");
+          setMobileTile("targets", "—", "אין נתוני יעד", "");
         }
 
         // Tile: trend (vs weekly baseline)
         if (dashboardTrends && dashboardTrends.overlays) {
           const base = Number(dashboardTrends.overlays.weeklyBaseline?.serviceQuality || 0);
           const diff = qualVal - base;
-          const arrow = diff >= 0 ? "â†‘" : "â†“";
+          const arrow = diff >= 0 ? "↑" : "↓";
           const absDiff = Math.abs(diff).toFixed(1);
           setMobileTile("trend", `${arrow} ${absDiff}%`,
-            `×ž×•×œ ×ž×ž×•×¦×¢ ×©×‘×•×¢×™ (${fmt(base)}%)`,
+            `מול ממוצע שבועי (${fmt(base)}%)`,
             diff >= 0 ? "tile-green" : "tile-red");
         } else {
-          setMobileTile("trend", "â€”", "××™×Ÿ × ×ª×•× ×™ ×‘×¡×™×¡", "");
+          setMobileTile("trend", "—", "אין נתוני בסיס", "");
         }
       }
 
@@ -3013,7 +3013,7 @@
         document.querySelectorAll(".m-detail-section").forEach(s => s.classList.remove("open"));
         const sec = document.getElementById(`mDetail-${topic}`);
         if (!sec) return;
-        const titles = { passengers:"× ×•×¡×¢×™×", rides:"× ×¡×™×¢×•×ª ×•×™×¢×™×œ×•×ª", quality:"××™×›×•×ª ×©×™×¨×•×ª", incidents:"×ª×§×œ×•×ª", targets:"×™×¢×“×™× ×ž×•×œ ×‘×™×¦×•×¢", trend:"×ž×’×ž×” ×©×‘×•×¢×™×ª" };
+        const titles = { passengers:"נוסעים", rides:"נסיעות ויעילות", quality:"איכות שירות", incidents:"תקלות", targets:"יעדים מול ביצוע", trend:"מגמה שבועית" };
         document.getElementById("mDetailTitle").textContent = titles[topic] || topic;
         const detail = document.getElementById("mobileDetail");
         detail.style.display = "flex";
@@ -3035,8 +3035,8 @@
           document.getElementById("mKpi-pass-total").textContent = fmt(s.passengers, 0);
           document.getElementById("mKpi-pass-rides").textContent = fmt(s.rides, 0);
           document.getElementById("mKpi-pass-eff").textContent   = fmt(s.efficiency);
-          upsertMobileChart("mChart-passengers", { type:"line", data:{ labels, datasets:[{ label:"× ×•×¡×¢×™×", data:pts.map(p=>p.passengers), borderColor:"#1976d2", backgroundColor:"#1976d220", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
-          upsertMobileChart("mChart-pickdrop", { type:"bar", data:{ labels:["× ×•×¡×¢×™×","× ×¡×™×¢×•×ª","×™×¢×™×œ×•×ª"], datasets:[ { label:"××™×¡×•×£", data:[pu.passengers,pu.rides,pu.efficiency], backgroundColor:"#42a5f5" }, { label:"×¤×™×–×•×¨", data:[do_.passengers,do_.rides,do_.efficiency], backgroundColor:"#ef9a9a" } ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+          upsertMobileChart("mChart-passengers", { type:"line", data:{ labels, datasets:[{ label:"נוסעים", data:pts.map(p=>p.passengers), borderColor:"#1976d2", backgroundColor:"#1976d220", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+          upsertMobileChart("mChart-pickdrop", { type:"bar", data:{ labels:["נוסעים","נסיעות","יעילות"], datasets:[ { label:"איסוף", data:[pu.passengers,pu.rides,pu.efficiency], backgroundColor:"#42a5f5" }, { label:"פיזור", data:[do_.passengers,do_.rides,do_.efficiency], backgroundColor:"#ef9a9a" } ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
         }
 
         if (topic === "rides" && lad.dashboardTrends) {
@@ -3045,7 +3045,7 @@
           document.getElementById("mKpi-rides-total").textContent = fmt(s.rides, 0);
           document.getElementById("mKpi-rides-eff").textContent   = fmt(s.efficiency);
           document.getElementById("mKpi-rides-pass").textContent  = fmt(s.passengers, 0);
-          upsertMobileChart("mChart-efficiency", { type:"line", data:{ labels, datasets:[{ label:"×™×¢×™×œ×•×ª", data:pts.map(p=>p.efficiency), borderColor:"#7c3aed", backgroundColor:"#7c3aed15", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+          upsertMobileChart("mChart-efficiency", { type:"line", data:{ labels, datasets:[{ label:"יעילות", data:pts.map(p=>p.efficiency), borderColor:"#7c3aed", backgroundColor:"#7c3aed15", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
         }
 
         if (topic === "quality" && lad.dashboardTrends) {
@@ -3055,8 +3055,8 @@
           document.getElementById("mKpi-qual-issues").textContent   = `${fmt(s.issuesRate)}%`;
           document.getElementById("mKpi-qual-affected").textContent = `${fmt(s.affectedRate)}%`;
           const tgt = lad.dashboardTrends.overlays?.target?.serviceQuality;
-          const datasets = [{ label:"××™×›×•×ª", data:pts.map(p=>p.serviceQuality), borderColor:"#16a34a", backgroundColor:"#16a34a15", tension:.3, fill:true, pointRadius:2 }];
-          if (tgt) datasets.push({ label:"×™×¢×“", data:pts.map(()=>Number(tgt)), borderColor:"#dc2626", borderDash:[4,4], pointRadius:0, borderWidth:1.5 });
+          const datasets = [{ label:"איכות", data:pts.map(p=>p.serviceQuality), borderColor:"#16a34a", backgroundColor:"#16a34a15", tension:.3, fill:true, pointRadius:2 }];
+          if (tgt) datasets.push({ label:"יעד", data:pts.map(()=>Number(tgt)), borderColor:"#dc2626", borderDash:[4,4], pointRadius:0, borderWidth:1.5 });
           upsertMobileChart("mChart-quality", { type:"line", data:{ labels, datasets }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
         }
 
@@ -3064,7 +3064,7 @@
           const ia = lad.incidentsAnalysis;
           document.getElementById("mKpi-inc-total").textContent = fmt(s.issues, 0);
           document.getElementById("mKpi-inc-rate").textContent  = `${fmt(s.issuesRate)}%`;
-          document.getElementById("mKpi-inc-delay").textContent = ia.avgDelayMinutes != null ? `${fmt(ia.avgDelayMinutes)} ×“×§×³` : "â€”";
+          document.getElementById("mKpi-inc-delay").textContent = ia.avgDelayMinutes != null ? `${fmt(ia.avgDelayMinutes)} דק׳` : "—";
           const byType = (ia.byType || []).slice(0, 6);
           upsertMobileChart("mChart-incidentsPie", { type:"doughnut", data:{ labels:byType.map(t=>t.issueType), datasets:[{ data:byType.map(t=>t.count), backgroundColor:["#1976d2","#7c3aed","#ef4444","#eab308","#22c55e","#f97316"] }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9},boxWidth:10}}} } });
         }
@@ -3091,12 +3091,12 @@
           const tgt  = Number(bm.metrics?.serviceQuality?.target   || 0);
           document.getElementById("mKpi-trnd-actual").textContent   = `${fmt(cur)}%`;
           document.getElementById("mKpi-trnd-baseline").textContent = `${fmt(base)}%`;
-          document.getElementById("mKpi-trnd-target").textContent   = tgt ? `${fmt(tgt)}%` : "â€”";
-          upsertMobileChart("mChart-benchmark", { type:"bar", data:{ labels:["×‘×¤×•×¢×œ","×ž×ž×•×¦×¢ ×©×‘×•×¢×™","×™×¢×“"], datasets:[{ data:[cur, base, tgt || null], backgroundColor:["#1976d2","#7c3aed","#22c55e"], borderRadius:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}},suggestedMin:0,suggestedMax:100} } } });
+          document.getElementById("mKpi-trnd-target").textContent   = tgt ? `${fmt(tgt)}%` : "—";
+          upsertMobileChart("mChart-benchmark", { type:"bar", data:{ labels:["בפועל","ממוצע שבועי","יעד"], datasets:[{ data:[cur, base, tgt || null], backgroundColor:["#1976d2","#7c3aed","#22c55e"], borderRadius:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}},suggestedMin:0,suggestedMax:100} } } });
           const dayTypes = bm.byDayType || [];
-          const dayLabels = { weekday:"×-×”", friday:"×©×™×©×™", holiday_eve:"×¢×¨×‘ ×—×’", exception:"×—×¨×™×’" };
+          const dayLabels = { weekday:"א-ה", friday:"שישי", holiday_eve:"ערב חג", exception:"חריג" };
           const bmDiv = document.getElementById("mBenchmarkByDayType");
-          if (bmDiv) bmDiv.innerHTML = dayTypes.map(d => `<div class="m-benchmark-row"><span class="m-benchmark-label">${dayLabels[d.dayType]||d.dayType}</span><span class="m-benchmark-val">${fmt(d.serviceQuality)}%</span><span class="m-benchmark-val" style="color:#6b7a99">${fmt(d.passengers,0)} × ×•×¡×¢</span></div>`).join("");
+          if (bmDiv) bmDiv.innerHTML = dayTypes.map(d => `<div class="m-benchmark-row"><span class="m-benchmark-label">${dayLabels[d.dayType]||d.dayType}</span><span class="m-benchmark-val">${fmt(d.serviceQuality)}%</span><span class="m-benchmark-val" style="color:#6b7a99">${fmt(d.passengers,0)} נוסע</span></div>`).join("");
         }
       }
 
@@ -3178,7 +3178,7 @@
           try { await applyDashboardRange("month"); } catch {}
         });
 
-        // Custom date input: user taps the date field, picks a date â†’ load that day
+        // Custom date input: user taps the date field, picks a date → load that day
         const hDateInput = document.getElementById("hDateInput");
         hDateInput.addEventListener("click", (e) => e.stopPropagation());
         hDateInput.addEventListener("change", async () => {
@@ -3237,7 +3237,7 @@
         if (!warning) return;
         warning.style.display = visible ? "block" : "none";
         warning.textContent = visible
-          ? (message || "×—×œ×§ ×ž×”×“×•×—×•×ª ×”×ž×ª×§×“×ž×™× ×œ× ×¢×•×“×›× ×• ×›×¢×ª. ×ž×•×¦×’×™× × ×ª×•× ×™× ×–×ž×™× ×™× ××—×¨×•× ×™×.")
+          ? (message || "חלק מהדוחות המתקדמים לא עודכנו כעת. מוצגים נתונים זמינים אחרונים.")
           : "";
       }
 
@@ -3265,7 +3265,7 @@
           const datasets = [baseDataset];
           if (target[titleKey] !== null && target[titleKey] !== undefined) {
             datasets.push({
-              label: "×™×¢×“",
+              label: "יעד",
               data: labels.map(() => Number(target[titleKey] || 0)),
               borderColor: "#0f766e",
               borderDash: [6, 5],
@@ -3276,7 +3276,7 @@
           }
           if (baseline[titleKey] !== null && baseline[titleKey] !== undefined) {
             datasets.push({
-              label: "×ž×ž×•×¦×¢ ×©×‘×•×¢×™ ×§×•×“×",
+              label: "ממוצע שבועי קודם",
               data: labels.map(() => Number(baseline[titleKey] || 0)),
               borderColor: "#64748b",
               borderDash: [4, 4],
@@ -3302,10 +3302,10 @@
           });
         };
 
-        lineCfg("passengers", "chartPassengers", METRIC_COLORS.passengers, "× ×•×¡×¢×™×");
-        lineCfg("rides", "chartRides", METRIC_COLORS.rides, "× ×¡×™×¢×•×ª");
-        lineCfg("efficiency", "chartEfficiency", METRIC_COLORS.efficiency, "× ×•×¡×¢×™× ×œ× ×¡×™×¢×”");
-        lineCfg("serviceQuality", "chartQuality", METRIC_COLORS.serviceQuality, "% ××™×›×•×ª");
+        lineCfg("passengers", "chartPassengers", METRIC_COLORS.passengers, "נוסעים");
+        lineCfg("rides", "chartRides", METRIC_COLORS.rides, "נסיעות");
+        lineCfg("efficiency", "chartEfficiency", METRIC_COLORS.efficiency, "נוסעים לנסיעה");
+        lineCfg("serviceQuality", "chartQuality", METRIC_COLORS.serviceQuality, "% איכות");
 
         upsertChart("chartIssues", {
           type: "bar",
@@ -3313,7 +3313,7 @@
             labels,
             datasets: [
               {
-                label: "×ª×§×œ×•×ª ×™×•×ž×™×•×ª",
+                label: "תקלות יומיות",
                 data: trendsPayload.points.map((p) => Number(p.issues || 0)),
                 backgroundColor: withAlpha(METRIC_COLORS.issues, 0.72),
                 borderColor: METRIC_COLORS.issues,
@@ -3335,7 +3335,7 @@
             labels,
             datasets: [
               {
-                label: "% × ×¡×™×¢×•×ª ×¢× ×ª×§×œ×”",
+                label: "% נסיעות עם תקלה",
                 data: trendsPayload.points.map((p) => Number(p.issuesRate || 0)),
                 borderColor: METRIC_COLORS.issuesRate,
                 backgroundColor: withAlpha(METRIC_COLORS.issuesRate, 0.2),
@@ -3344,7 +3344,7 @@
                 tension: 0.3
               },
               {
-                label: "% × ×•×¡×¢×™× ×©× ×¤×’×¢×•",
+                label: "% נוסעים שנפגעו",
                 data: trendsPayload.points.map((p) => Number(p.affectedRate || 0)),
                 borderColor: METRIC_COLORS.affectedRate,
                 backgroundColor: withAlpha(METRIC_COLORS.affectedRate, 0.2),
@@ -3369,10 +3369,10 @@
         upsertChart("chartBenchmark", {
           type: "bar",
           data: {
-            labels: ["×™×•× × ×•×›×—×™", "×ž×ž×•×¦×¢ ×©×‘×•×¢×™ ×§×•×“×", "×™×¢×“"],
+            labels: ["יום נוכחי", "ממוצע שבועי קודם", "יעד"],
             datasets: [
               {
-                label: "××™×›×•×ª ×©×™×¨×•×ª %",
+                label: "איכות שירות %",
                 data: [
                   Number(quality.current || 0),
                   Number(quality.baseline || 0),
@@ -3407,21 +3407,21 @@
         const tbody = document.getElementById("alertRows");
         tbody.innerHTML = "";
         const rows = [];
-        for (const row of alertsPayload.redDays || []) rows.push({ type: "×™×•× ××“×•×", date: row.serviceDate, value: row.value, status: "danger" });
-        for (const row of alertsPayload.efficiencyDropDays || []) rows.push({ type: "×™×¨×™×“×ª ×™×¢×™×œ×•×ª", date: row.serviceDate, value: row.value, status: "warn" });
-        for (const row of alertsPayload.issueSpikeDays || []) rows.push({ type: "×—×¨×™×’×ª ×ª×§×œ×•×ª", date: row.serviceDate, value: row.value, status: "danger" });
-        for (const row of alertsPayload.topWorstQuality || []) rows.push({ type: "Top ××™×›×•×ª × ×ž×•×›×”", date: row.serviceDate, value: row.value, status: "warn" });
-        for (const row of alertsPayload.topIssueDays || []) rows.push({ type: "Top ×ª×§×œ×•×ª", date: row.serviceDate, value: row.value, status: "danger" });
+        for (const row of alertsPayload.redDays || []) rows.push({ type: "יום אדום", date: row.serviceDate, value: row.value, status: "danger" });
+        for (const row of alertsPayload.efficiencyDropDays || []) rows.push({ type: "ירידת יעילות", date: row.serviceDate, value: row.value, status: "warn" });
+        for (const row of alertsPayload.issueSpikeDays || []) rows.push({ type: "חריגת תקלות", date: row.serviceDate, value: row.value, status: "danger" });
+        for (const row of alertsPayload.topWorstQuality || []) rows.push({ type: "Top איכות נמוכה", date: row.serviceDate, value: row.value, status: "warn" });
+        for (const row of alertsPayload.topIssueDays || []) rows.push({ type: "Top תקלות", date: row.serviceDate, value: row.value, status: "danger" });
 
         if (!rows.length) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="4">×œ× ×–×•×”×• ×—×¨×™×’×•×ª ×‘×˜×•×•×— ×”× ×‘×—×¨</td>`;
+          tr.innerHTML = `<td colspan="4">לא זוהו חריגות בטווח הנבחר</td>`;
           tbody.appendChild(tr);
           return;
         }
         rows.slice(0, 30).forEach((row) => {
           const tr = document.createElement("tr");
-          const statusText = row.status === "danger" ? "××“×•×" : row.status === "warn" ? "×¦×”×•×‘" : "×™×¨×•×§";
+          const statusText = row.status === "danger" ? "אדום" : row.status === "warn" ? "צהוב" : "ירוק";
           const className = row.status === "danger" ? "alert-danger" : row.status === "warn" ? "alert-warn" : "alert-good";
           tr.innerHTML = `<td>${row.type}</td><td>${row.date}</td><td>${fmt(row.value)}</td><td class="${className}">${statusText}</td>`;
           tbody.appendChild(tr);
@@ -3449,7 +3449,7 @@
           data: {
             labels,
             datasets: [{
-              label: "×›×ž×•×ª ×ª×§×œ×•×ª",
+              label: "כמות תקלות",
               data: values,
               backgroundColor: withAlpha(METRIC_COLORS.issues, 0.72),
               borderColor: METRIC_COLORS.issues,
@@ -3481,23 +3481,23 @@
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } } }
         });
 
-        document.getElementById("avgDelayChip").textContent = `×ž×ž×•×¦×¢ ××™×—×•×¨: ${payload.avgDelayMinutes === null ? "â€”" : fmt(payload.avgDelayMinutes)} ×“×§×³`;
-        document.getElementById("delayCountChip").textContent = `×›×ž×•×ª ×ª×§×œ×•×ª ××™×—×•×¨: ${payload.delayCount || 0}`;
+        document.getElementById("avgDelayChip").textContent = `ממוצע איחור: ${payload.avgDelayMinutes === null ? "—" : fmt(payload.avgDelayMinutes)} דק׳`;
+        document.getElementById("delayCountChip").textContent = `כמות תקלות איחור: ${payload.delayCount || 0}`;
       }
 
       function renderOperationsDaily(payload) {
         const selected = payload.summary?.selected || {};
-        document.getElementById("opsSummaryPassengers").textContent = `× ×•×¡×¢×™×: ${fmt(selected.passengers, 0)}`;
-        document.getElementById("opsSummaryRides").textContent = `× ×¡×™×¢×•×ª: ${fmt(selected.rides, 0)}`;
-        document.getElementById("opsSummaryQuality").textContent = `××™×›×•×ª ×©×™×¨×•×ª: ${fmt(selected.serviceQuality)}%`;
-        document.getElementById("opsSummaryIncidents").textContent = `×ª×§×œ×•×ª: ${payload.incidentsCount || 0}`;
+        document.getElementById("opsSummaryPassengers").textContent = `נוסעים: ${fmt(selected.passengers, 0)}`;
+        document.getElementById("opsSummaryRides").textContent = `נסיעות: ${fmt(selected.rides, 0)}`;
+        document.getElementById("opsSummaryQuality").textContent = `איכות שירות: ${fmt(selected.serviceQuality)}%`;
+        document.getElementById("opsSummaryIncidents").textContent = `תקלות: ${payload.incidentsCount || 0}`;
 
         const tbody = document.getElementById("opsIssueRows");
         tbody.innerHTML = "";
         const rows = payload.issuesByType || [];
         if (!rows.length) {
           const tr = document.createElement("tr");
-          tr.innerHTML = "<td colspan='2'>××™×Ÿ ×ª×§×œ×•×ª ×‘×˜×•×•×—</td>";
+          tr.innerHTML = "<td colspan='2'>אין תקלות בטווח</td>";
           tbody.appendChild(tr);
         } else {
           rows.forEach((row) => {
@@ -3514,7 +3514,7 @@
         (payload.rows || []).forEach((row) => {
           const statusClass = row.status === "green" ? "alert-good" : row.status === "yellow" ? "alert-warn" : row.status === "red" ? "alert-danger" : "";
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${metricLabel(row.metricKey)}</td><td>${formatMetric(row.metricKey, row.actual)}</td><td>${row.target === null ? "â€”" : formatMetric(row.metricKey, row.target)}</td><td>${row.gap === null ? "â€”" : formatMetric(row.metricKey, row.gap, true)}</td><td>${row.deltaVsWeekly === null ? "â€”" : formatMetric(row.metricKey, row.deltaVsWeekly, true)}</td><td class="${statusClass}">${row.status || "â€”"}</td>`;
+          tr.innerHTML = `<td>${metricLabel(row.metricKey)}</td><td>${formatMetric(row.metricKey, row.actual)}</td><td>${row.target === null ? "—" : formatMetric(row.metricKey, row.target)}</td><td>${row.gap === null ? "—" : formatMetric(row.metricKey, row.gap, true)}</td><td>${row.deltaVsWeekly === null ? "—" : formatMetric(row.metricKey, row.deltaVsWeekly, true)}</td><td class="${statusClass}">${row.status || "—"}</td>`;
           tbody.appendChild(tr);
         });
       }
@@ -3525,7 +3525,7 @@
           data: {
             labels: (payload.histogram || []).map((row) => row.bin),
             datasets: [{
-              label: "×™×ž×™×",
+              label: "ימים",
               data: (payload.histogram || []).map((row) => Number(row.count || 0)),
               backgroundColor: withAlpha(METRIC_COLORS.rides, 0.72),
               borderColor: METRIC_COLORS.rides,
@@ -3539,7 +3539,7 @@
           data: {
             labels: (payload.series || []).map((row) => row.serviceDate),
             datasets: [{
-              label: "× ×•×¡×¢×™× ×œ× ×¡×™×¢×”",
+              label: "נוסעים לנסיעה",
               data: (payload.series || []).map((row) => Number(row.efficiency || 0)),
               borderColor: METRIC_COLORS.efficiency,
               borderWidth: 2.2,
@@ -3549,9 +3549,9 @@
           },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true } } }
         });
-        document.getElementById("loadUnderChip").textContent = `×™×ž×™× ×‘×ª×ª ×¢×•×ž×¡: ${payload.flags?.underloadedDaysCount || 0}`;
-        document.getElementById("loadOverChip").textContent = `×™×ž×™× ×‘×¢×•×ž×¡ ×™×ª×¨: ${payload.flags?.overloadedDaysCount || 0}`;
-        document.getElementById("loadOverCapacityChip").textContent = `××™×¨×•×¢×™ ×¢×•×ž×¡ ×™×ª×¨: ${payload.flags?.overCapacityIncidents || 0}`;
+        document.getElementById("loadUnderChip").textContent = `ימים בתת עומס: ${payload.flags?.underloadedDaysCount || 0}`;
+        document.getElementById("loadOverChip").textContent = `ימים בעומס יתר: ${payload.flags?.overloadedDaysCount || 0}`;
+        document.getElementById("loadOverCapacityChip").textContent = `אירועי עומס יתר: ${payload.flags?.overCapacityIncidents || 0}`;
       }
 
       function renderPickupVsDropoff(payload) {
@@ -3563,12 +3563,12 @@
             labels: keys.map((k) => metricLabel(k)),
             datasets: [
               {
-                label: "××™×¡×•×£",
+                label: "איסוף",
                 data: keys.map((k) => Number(metrics[k]?.pickup || 0)),
                 backgroundColor: withAlpha(METRIC_COLORS.passengers, 0.72)
               },
               {
-                label: "×¤×™×–×•×¨",
+                label: "פיזור",
                 data: keys.map((k) => Number(metrics[k]?.dropoff || 0)),
                 backgroundColor: withAlpha(METRIC_COLORS.issuesRate, 0.72)
               }
@@ -3600,9 +3600,9 @@
 
         document.getElementById("drillReportTitle").textContent = cfg.title;
         document.getElementById("drillReportSubtitle").textContent = cfg.subtitle;
-        document.getElementById("drillPrimaryValue").textContent = `×ž×“×“ ×ž×¨×›×–×™: ${formatMetric(cfg.metricKey, actual)}`;
-        document.getElementById("drillTargetValue").textContent = `×™×¢×“: ${formatMetric(cfg.metricKey, targetValue)}`;
-        document.getElementById("drillGapValue").textContent = `×¤×¢×¨: ${formatMetric(cfg.metricKey, gap, true)}`;
+        document.getElementById("drillPrimaryValue").textContent = `מדד מרכזי: ${formatMetric(cfg.metricKey, actual)}`;
+        document.getElementById("drillTargetValue").textContent = `יעד: ${formatMetric(cfg.metricKey, targetValue)}`;
+        document.getElementById("drillGapValue").textContent = `פער: ${formatMetric(cfg.metricKey, gap, true)}`;
 
         const tbody = document.getElementById("drillMetricRows");
         tbody.innerHTML = "";
@@ -3628,9 +3628,9 @@
         btn.classList.toggle("show", selectedDashboardReport !== "kpi-main");
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // DASHBOARD
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       async function loadDashboard() {
         const from = document.getElementById("kpiFrom").value;
         const to = document.getElementById("kpiTo").value;
@@ -3639,7 +3639,7 @@
         try {
         let baseDataFallback = false;
         let bannerMessage = "";
-        const providerMisconfiguredMessage = "×”×ž×¢×¨×›×ª ×œ× ×–×ž×™× ×” ×¢×§×‘ ×”×’×“×¨×ª ×©×¨×ª ×©×’×•×™×” (DB_PROVIDER). ×™×© ×œ×¤× ×•×ª ×œ×ž× ×”×œ ×”×ž×¢×¨×›×ª.";
+        const providerMisconfiguredMessage = "המערכת לא זמינה עקב הגדרת שרת שגויה (DB_PROVIDER). יש לפנות למנהל המערכת.";
 
         let summary;
         let trends;
@@ -3657,9 +3657,9 @@
             summary = lastDashboardData.summary;
             trends = lastDashboardData.trends;
             baseDataFallback = true;
-            bannerMessage = "×—×œ×§ ×ž× ×ª×•× ×™ ×”×‘×¡×™×¡ ×‘×œ×•×— ×”×‘×§×¨×” ×œ× ×¢×•×“×›× ×• ×›×¢×ª. ×ž×•×¦×’×™× ×”× ×ª×•× ×™× ×”××—×¨×•× ×™× ×”×–×ž×™× ×™×.";
+            bannerMessage = "חלק מנתוני הבסיס בלוח הבקרה לא עודכנו כעת. מוצגים הנתונים האחרונים הזמינים.";
           } else {
-            throw new Error("×œ× × ×™×ª×Ÿ ×œ×˜×¢×•×Ÿ ××ª × ×ª×•× ×™ ×œ×•×— ×”×‘×§×¨×” ×›×¨×’×¢. ×™×© ×œ× ×¡×•×ª ×©×•×‘ ×‘×¢×•×“ ×¨×’×¢.");
+            throw new Error("לא ניתן לטעון את נתוני לוח הבקרה כרגע. יש לנסות שוב בעוד רגע.");
           }
         }
         summary = summary || { total: {}, pickup: {}, dropoff: {} };
@@ -3693,7 +3693,7 @@
         ];
         if (firstUnexpected) {
           if (!bannerMessage) {
-            bannerMessage = "×—×œ×§ ×ž×”×“×•×—×•×ª ×”×ž×ª×§×“×ž×™× ×œ× ×¢×•×“×›× ×• ×›×¢×ª. ×ž×•×¦×’×™× × ×ª×•× ×™× ××—×¨×•× ×™× ×–×ž×™× ×™×.";
+            bannerMessage = "חלק מהדוחות המתקדמים לא עודכנו כעת. מוצגים נתונים אחרונים זמינים.";
           }
           advancedResults.forEach((result, index) => {
             if (result.status === "rejected" && !isProviderMisconfiguredErr(result.reason)) {
@@ -3743,7 +3743,7 @@
             console.warn("[dashboard] meta fetch failed", err);
             metaFailed = true;
             if (!bannerMessage) {
-              bannerMessage = "×ž×˜×-× ×ª×•× ×™ KPI ×œ× ×¢×•×“×›× ×• ×›×¢×ª. ×ž×•×¦×’×™× ×¢×¨×›×™ ×‘×¡×™×¡ ×–×ž×™× ×™×.";
+              bannerMessage = "מטא-נתוני KPI לא עודכנו כעת. מוצגים ערכי בסיס זמינים.";
             }
           }
           kpiMeta = { targets: [], baselineByMetric: {}, baselineSampleCount: 0, focusDayType: null };
@@ -3801,16 +3801,16 @@
         }
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // BUTTON HELPERS
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       function withLoading(btn, fn) {
         return async () => {
           btn.disabled = true;
           const orig = btn.textContent;
           btn.textContent = "...";
           try { await fn(); }
-          catch(err) { toastErr(err.message || "×©×’×™××” ×‘×©×ž×™×¨×”"); }
+          catch(err) { toastErr(err.message || "שגיאה בשמירה"); }
           finally { btn.disabled = false; btn.textContent = orig; }
         };
       }
@@ -3847,7 +3847,7 @@
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "secondary";
-          btn.textContent = "×—×–×¨×” ×œ×œ×•×— ×”×‘×§×¨×” ×”×¨××©×™";
+          btn.textContent = "חזרה ללוח הבקרה הראשי";
           btn.style.marginRight = "10px";
           btn.style.padding = "4px 10px";
           btn.style.fontSize = "0.8rem";
@@ -3856,9 +3856,9 @@
         }
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // WIRE UP BUTTONS
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       function wireButtons() {
         wireMobileUI();
         wireDashboardBackButtons();
@@ -3867,7 +3867,7 @@
         updateDashboardMainBackVisibility();
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
-          async () => { await refreshDashboard("manual-load"); toastOk("×œ×•×— ×”×‘×§×¨×” ×¢×•×“×›×Ÿ"); }
+          async () => { await refreshDashboard("manual-load"); toastOk("לוח הבקרה עודכן"); }
         );
         document.getElementById("kpiTo").addEventListener("change", async () => {
           const toInput = document.getElementById("kpiTo");
@@ -3875,7 +3875,7 @@
           applyRangeModeFromFocusDate();
           updateDashboardRangeButtons();
           try { await refreshDashboard("kpi-date-change"); }
-          catch(err) { toastErr(err.message || "×©×’×™××” ×‘×˜×¢×™× ×ª ×”×“×©×‘×•×¨×“"); }
+          catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
         });
         document.querySelectorAll("#dashboardRangeModeToggle .dashboard-mode-btn").forEach((btn) => {
           btn.addEventListener("click", async () => {
@@ -3885,7 +3885,7 @@
             applyRangeModeFromFocusDate();
             updateDashboardRangeButtons();
             try { await refreshDashboard("range-mode-change"); }
-            catch(err) { toastErr(err.message || "×©×’×™××” ×‘×˜×¢×™× ×ª ×”×“×©×‘×•×¨×“"); }
+            catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
           });
         });
         document.getElementById("kpiDatePrev").addEventListener("click", async () => {
@@ -3922,7 +3922,7 @@
           };
           if (cfg.actionTab && cfg.actionTab !== "dashboard") {
             showTab(cfg.actionTab);
-            toastOk(`× ×¤×ª×— ×“×•×— ${cfg.title}`);
+            toastOk(`נפתח דוח ${cfg.title}`);
             return;
           }
           const sectionId = sectionMap[reportKey];
@@ -3930,11 +3930,11 @@
           if (target) {
             target.scrollIntoView({ behavior: "smooth", block: "start" });
           }
-          toastOk(`×ž×¢×‘×¨ ×œ×¤×™×¨×•×˜: ${cfg.title}`);
+          toastOk(`מעבר לפירוט: ${cfg.title}`);
         };
         document.getElementById("exportDailyManagerPdf").onclick = withLoading(
           document.getElementById("exportDailyManagerPdf"),
-          async () => { await downloadDailyManagerPdf(); toastOk("×“×•×— ×™×•×ž×™ × ×™×”×•×œ×™ ×™×•×¦× ×œ-PDF"); }
+          async () => { await downloadDailyManagerPdf(); toastOk("דוח יומי ניהולי יוצא ל-PDF"); }
         );
         document.querySelectorAll("#dashboardScopeToggle .scope-btn").forEach(btn => {
           btn.addEventListener("click", async () => {
@@ -3942,18 +3942,18 @@
             document.querySelectorAll("#dashboardScopeToggle .scope-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             dashboardScope = btn.dataset.scope;
-            try { await refreshDashboard("scope-change"); } catch(err) { toastErr(err.message || "×©×’×™××” ×‘×˜×¢×™× ×ª ×”×“×©×‘×•×¨×“"); }
+            try { await refreshDashboard("scope-change"); } catch(err) { toastErr(err.message || "שגיאה בטעינת הדשבורד"); }
           });
         });
 
         document.getElementById("exportExcel").onclick = withLoading(
           document.getElementById("exportExcel"),
-          async () => { await downloadExport("excel"); toastOk("×§×•×‘×¥ Excel ×”×•×¨×“"); }
+          async () => { await downloadExport("excel"); toastOk("קובץ Excel הורד"); }
         );
 
         document.getElementById("exportPdf").onclick = withLoading(
           document.getElementById("exportPdf"),
-          async () => { await downloadExport("pdf"); toastOk("×§×•×‘×¥ PDF ×”×•×¨×“"); }
+          async () => { await downloadExport("pdf"); toastOk("קובץ PDF הורד"); }
         );
 
         document.getElementById("entryDate").addEventListener("change", async (e) => {
@@ -4019,7 +4019,7 @@
             await saveContractorMatrix("pickup");
             await loadDashboard();
             await reloadDailySections();
-            toastOk("× ×ª×•× ×™ ××™×¡×•×£ × ×©×ž×¨×•");
+            toastOk("נתוני איסוף נשמרו");
           }
         );
 
@@ -4031,7 +4031,7 @@
             await saveContractorMatrix("dropoff");
             await loadDashboard();
             await reloadDailySections();
-            toastOk("× ×ª×•× ×™ ×¤×™×–×•×¨ × ×©×ž×¨×•");
+            toastOk("נתוני פיזור נשמרו");
           }
         );
 
@@ -4046,7 +4046,7 @@
             await saveContractorMatrix("dropoff");
             await loadDashboard();
             await reloadDailySections();
-            toastOk("× ×ª×•× ×™ ××™×¡×•×£ ×•×¤×™×–×•×¨ × ×©×ž×¨×•");
+            toastOk("נתוני איסוף ופיזור נשמרו");
           }
         );
 
@@ -4065,7 +4065,7 @@
               description: document.getElementById("incident_description").value,
               delayMinutes: delayRaw === "" ? null : Number(delayRaw)
             });
-            toastOk("×ª×§×œ×” × ×©×ž×¨×”");
+            toastOk("תקלה נשמרה");
           }
         );
 
@@ -4084,7 +4084,7 @@
               document.getElementById("dropoff_affected").value = result.metric.affectedPassengers;
             }
             await loadDashboard();
-            toastOk("×—×™×©×•×‘ ×ž×—×“×© ×”×•×©×œ×");
+            toastOk("חישוב מחדש הושלם");
           }
         );
 
@@ -4096,14 +4096,14 @@
             const data = await api("GET", `/incidents?date=${date}&serviceType=${type}`);
             const tbody = document.getElementById("incidentRows");
             tbody.innerHTML = "";
-            const typeLabel = { pickup: "××™×¡×•×£", dropoff: "×¤×™×–×•×¨" };
-            const issueLabel = { delay:"×¢×™×›×•×‘", no_show:"××™ ×”×’×¢×”", vehicle_failure:"×ª×§×œ×ª ×¨×›×‘", over_capacity:"×¢×•×ž×¡ ×™×ª×¨", route_change:"×©×™× ×•×™ ×ž×¡×œ×•×œ", dispatch_error:"×©×’×™××ª ×©×™×’×•×¨", driver_service:"×©×™×¨×•×ª × ×”×’", other:"××—×¨" };
+            const typeLabel = { pickup: "איסוף", dropoff: "פיזור" };
+            const issueLabel = { delay:"עיכוב", no_show:"אי הגעה", vehicle_failure:"תקלת רכב", over_capacity:"עומס יתר", route_change:"שינוי מסלול", dispatch_error:"שגיאת שיגור", driver_service:"שירות נהג", other:"אחר" };
             for (const row of data.incidents) {
               const tr = document.createElement("tr");
               tr.innerHTML = `<td>${row.id}</td><td>${row.serviceDate}</td><td>${typeLabel[row.serviceType]||row.serviceType}</td><td>${row.origin}</td><td>${row.destination}</td><td>${row.passengersCount}</td><td>${issueLabel[row.issueType]||row.issueType}</td>`;
               tbody.appendChild(tr);
             }
-            toastOk(`× ×˜×¢× ×• ${data.incidents.length} ×ª×§×œ×•×ª`);
+            toastOk(`נטענו ${data.incidents.length} תקלות`);
           }
         );
 
@@ -4120,7 +4120,7 @@
             const data = await api("GET", `/kpi/drilldown?${q.toString()}`);
             document.getElementById("drillRowsCount").textContent = String(data.dailyRows.length);
             document.getElementById("drillIncidentsCount").textContent = String(data.incidents.length);
-            toastOk("×¤×™×¨×•×˜ × ×˜×¢×Ÿ");
+            toastOk("פירוט נטען");
           }
         );
 
@@ -4128,7 +4128,7 @@
           document.getElementById("reloadManagedTargets"),
           async () => {
             await loadManagedTargetsTable();
-            toastOk("×™×¢×“×™× ×ž× ×•×”×œ×™× × ×˜×¢× ×•");
+            toastOk("יעדים מנוהלים נטענו");
           }
         );
         document.getElementById("managedTargetsRows").addEventListener("click", async (e) => {
@@ -4146,14 +4146,14 @@
           document.getElementById("reloadContractors"),
           async () => {
             await loadManagementContractors();
-            toastOk("×¨×©×™×ž×ª ×ž×¤×¢×™×œ×™× × ×˜×¢× ×”");
+            toastOk("רשימת מפעילים נטענה");
           }
         );
         document.getElementById("createContractor").onclick = withLoading(
           document.getElementById("createContractor"),
           async () => {
             await createManagementContractor();
-            toastOk("×ž×¤×¢×™×œ × ×•×¡×£ ×‘×”×¦×œ×—×”");
+            toastOk("מפעיל נוסף בהצלחה");
           }
         );
         document.getElementById("contractorsRows").addEventListener("click", async (e) => {
@@ -4163,13 +4163,13 @@
           const contractorId = tr?.dataset.contractorId;
           if (!contractorId) return;
           await saveManagementContractor(contractorId);
-          toastOk("×¤×¨×˜×™ ×ž×¤×¢×™×œ × ×©×ž×¨×•");
+          toastOk("פרטי מפעיל נשמרו");
         });
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // SECTION DATA
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       function getOperationDateByType(type) {
         return type === "pickup" ? pickupDate : dropoffDate;
       }
@@ -4186,7 +4186,7 @@
         const options = contractorOptions
           .map((c) => `<option value="${c.id}"${String(c.id) === String(selectedId) ? " selected" : ""}>${c.name}</option>`)
           .join("");
-        return `<option value="">×‘×—×¨ ×ž×¤×¢×™×œ</option>${options}`;
+        return `<option value="">בחר מפעיל</option>${options}`;
       }
 
       function parseNonNegativeInt(value) {
@@ -4217,7 +4217,7 @@
         if (!tbody) return;
         const rows = contractorRowsState[type] || [];
         if (!contractorOptions.length) {
-          tbody.innerHTML = `<tr><td colspan="10" style="color:#6b7893">×œ× ×§×™×™×ž×™× ×ž×¤×¢×™×œ×™× ×¤×¢×™×œ×™× ××• ×©×”×¤×™×¦'×¨ ×œ× × ×ª×ž×š ×‘×¡×‘×™×‘×ª × ×ª×•× ×™× ×–×•.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="10" style="color:#6b7893">לא קיימים מפעילים פעילים או שהפיצ'ר לא נתמך בסביבת נתונים זו.</td></tr>`;
           updateOperationSummaryLive(type);
           return;
         }
@@ -4232,7 +4232,7 @@
             <td><input class="ctr-taxi-passengers optional-split-field" type="number" min="0" value="${Number(row.taxiPassengers || 0)}" /></td>
             <td><input class="ctr-large optional-split-field" type="number" min="0" value="${Number(row.largeVehicleCount || 0)}" /></td>
             <td><input class="ctr-large-passengers optional-split-field" type="number" min="0" value="${Number(row.largeVehiclePassengers || 0)}" /></td>
-            <td><button type="button" class="danger contractor-remove-row" data-type="${type}" data-row-index="${idx}" style="width:auto;padding:4px 8px">×”×¡×¨</button></td>
+            <td><button type="button" class="danger contractor-remove-row" data-type="${type}" data-row-index="${idx}" style="width:auto;padding:4px 8px">הסר</button></td>
           </tr>
         `).join("");
         updateOperationSummaryLive(type);
@@ -4240,7 +4240,7 @@
 
       function addContractorRow(type, row = null) {
         if (!contractorOptions.length) {
-          toastErr("×œ× × ×™×ª×Ÿ ×œ×”×•×¡×™×£ ×©×•×¨×ª ×ž×¤×¢×™×œ: ××™×Ÿ ×ž×¤×¢×™×œ×™× ×¤×¢×™×œ×™× ×–×ž×™× ×™×");
+          toastErr("לא ניתן להוסיף שורת מפעיל: אין מפעילים פעילים זמינים");
           return;
         }
         contractorRowsState[type].push(row || {
@@ -4298,7 +4298,7 @@
         const matched = Object.values(gaps).every((v) => v === 0);
         box.style.borderColor = matched ? "#86efac" : "#fde68a";
         box.style.background = matched ? "#f0fdf4" : "#fffbeb";
-        box.innerHTML = `×¡×˜×˜×•×¡: <strong>${matched ? "×ª×•××" : "×¤×¢×¨"}</strong> | ×¨××©×™: × ×¡×™×¢×•×ª ${main.ridesCount}, × ×•×¡×¢×™× ${main.registeredPassengers}, ×ª×§×œ×•×ª ${main.issuesCount}, ×ž×•×©×¤×¢×™× ${main.affectedPassengers} | ×ž×˜×¨×™×¦×”: × ×¡×™×¢×•×ª ${matrix.ridesCount}, × ×•×¡×¢×™× ${matrix.registeredPassengers}, ×ª×§×œ×•×ª ${matrix.issuesCount}, ×ž×•×©×¤×¢×™× ${matrix.affectedPassengers} | ×¤×¢×¨: × ×¡×™×¢×•×ª ${gaps.rides}, × ×•×¡×¢×™× ${gaps.registered}, ×ª×§×œ×•×ª ${gaps.issues}, ×ž×•×©×¤×¢×™× ${gaps.affected} | ×¤×™×¦×•×œ ×¨×©×•×ª: ×ž×•× ×™×•×ª (${matrix.taxiCount} × ×¡×™×¢×•×ª, ${matrix.taxiPassengers} × ×•×¡×¢×™×) | ×¨×›×‘ ×’×“×•×œ (${matrix.largeVehicleCount} × ×¡×™×¢×•×ª, ${matrix.largeVehiclePassengers} × ×•×¡×¢×™×)`;
+        box.innerHTML = `סטטוס: <strong>${matched ? "תואם" : "פער"}</strong> | ראשי: נסיעות ${main.ridesCount}, נוסעים ${main.registeredPassengers}, תקלות ${main.issuesCount}, מושפעים ${main.affectedPassengers} | מטריצה: נסיעות ${matrix.ridesCount}, נוסעים ${matrix.registeredPassengers}, תקלות ${matrix.issuesCount}, מושפעים ${matrix.affectedPassengers} | פער: נסיעות ${gaps.rides}, נוסעים ${gaps.registered}, תקלות ${gaps.issues}, מושפעים ${gaps.affected} | פיצול רשות: מוניות (${matrix.taxiCount} נסיעות, ${matrix.taxiPassengers} נוסעים) | רכב גדול (${matrix.largeVehicleCount} נסיעות, ${matrix.largeVehiclePassengers} נוסעים)`;
       }
 
       async function loadContractorsForOperations() {
@@ -4308,7 +4308,7 @@
         } catch (error) {
           contractorOptions = [];
           if (String(error?.code || "") === "FEATURE_UNSUPPORTED" || String(error?.message || "").includes("supported only")) {
-            toastErr("×¤×™×¨×•×˜ ×œ×¤×™ ×ž×¤×¢×™×œ×™× ×–×ž×™×Ÿ ×¨×§ ×¢× DB_PROVIDER=supabase");
+            toastErr("פירוט לפי מפעילים זמין רק עם DB_PROVIDER=supabase");
           }
         }
       }
@@ -4342,9 +4342,9 @@
           const live = contractorRowFromInput(type, idx);
           if (!live) continue;
           const contractorId = String(live.contractorId || "").trim();
-          if (!contractorId) throw new Error(`×™×© ×œ×‘×—×•×¨ ×ž×¤×¢×™×œ ×‘×©×•×¨×ª ×ž×˜×¨×™×¦×” ${idx + 1} (${type === "pickup" ? "××™×¡×•×£" : "×¤×™×–×•×¨"})`);
+          if (!contractorId) throw new Error(`יש לבחור מפעיל בשורת מטריצה ${idx + 1} (${type === "pickup" ? "איסוף" : "פיזור"})`);
           if (chosen.has(contractorId)) {
-            throw new Error(`×”×ž×¤×¢×™×œ × ×‘×—×¨ ×™×•×ª×¨ ×ž×¤×¢× ××—×ª ×‘×©×•×¨×ª ${type === "pickup" ? "××™×¡×•×£" : "×¤×™×–×•×¨"}`);
+            throw new Error(`המפעיל נבחר יותר מפעם אחת בשורת ${type === "pickup" ? "איסוף" : "פיזור"}`);
           }
           chosen.add(contractorId);
           const payload = {
@@ -4358,10 +4358,10 @@
             largeVehiclePassengers: live.largeVehiclePassengers === "" ? 0 : parseNonNegativeInt(live.largeVehiclePassengers)
           };
           for (const [field, val] of Object.entries(payload)) {
-            if (val === null) throw new Error(`×¢×¨×š ×œ× ×ª×§×™×Ÿ ×‘×©×•×¨×ª ×ž×˜×¨×™×¦×” ${idx + 1} ×¢×‘×•×¨ ${field}`);
+            if (val === null) throw new Error(`ערך לא תקין בשורת מטריצה ${idx + 1} עבור ${field}`);
           }
           if (payload.affectedPassengers > payload.registeredPassengers) {
-            throw new Error(`× ×•×¡×¢×™× ×ž×•×©×¤×¢×™× ×œ× ×™×›×•×œ×™× ×œ×¢×œ×•×ª ×¢×œ × ×•×¡×¢×™× ×¨×©×•×ž×™× ×‘×©×•×¨×ª ×ž×˜×¨×™×¦×” ${idx + 1}`);
+            throw new Error(`נוסעים מושפעים לא יכולים לעלות על נוסעים רשומים בשורת מטריצה ${idx + 1}`);
           }
           await api("PUT", `/daily-metrics-contractor/${date}/${type}/${contractorId}`, payload);
         }
@@ -4383,7 +4383,7 @@
           return v === "" || v === null || v === undefined;
         });
         if (missing) {
-          throw new Error(`×™×© ×œ×ž×œ× ××ª ×›×œ ×©×“×•×ª ×”×—×•×‘×” ×‘${prefix === "pickup" ? "××™×¡×•×£" : "×¤×™×–×•×¨"}`);
+          throw new Error(`יש למלא את כל שדות החובה ב${prefix === "pickup" ? "איסוף" : "פיזור"}`);
         }
       }
 
@@ -4424,9 +4424,9 @@
         updateOperationSummaryLive("dropoff");
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // EXPORT
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       async function downloadExport(type) {
         const from = document.getElementById("kpiFrom").value;
         const to = document.getElementById("kpiTo").value;
@@ -4436,7 +4436,7 @@
         const res = await fetch(`${getApiBase()}${path}`, {
           headers: { authorization: `Bearer ${getToken()}` }
         });
-        if (!res.ok) throw new Error(`×™×™×¦×•× × ×›×©×œ: HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`ייצוא נכשל: HTTP ${res.status}`);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -4452,7 +4452,7 @@
         const res = await fetch(`${getApiBase()}/dashboard/export/daily-pdf?serviceDate=${serviceDate}&scope=${scope}`, {
           headers: { authorization: `Bearer ${getToken()}` }
         });
-        if (!res.ok) throw new Error(`×™×™×¦×•× ×“×•×— ×™×•×ž×™ × ×›×©×œ: HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`ייצוא דוח יומי נכשל: HTTP ${res.status}`);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -4462,9 +4462,9 @@
         URL.revokeObjectURL(url);
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // BOOTSTRAP
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       async function bootstrap() {
         initDates();
         wireButtons();
@@ -4504,27 +4504,27 @@
         }
 
         if (hasFailures) {
-          toastErr("×”×”×ª×—×‘×¨×•×ª ×‘×•×¦×¢×”, ××š ×—×œ×§ ×ž×”× ×ª×•× ×™× ×œ× × ×˜×¢× ×•. ××¤×©×¨ ×œ×¨×¢× ×Ÿ ×•×œ× ×¡×•×ª ×©×•×‘.");
+          toastErr("ההתחברות בוצעה, אך חלק מהנתונים לא נטענו. אפשר לרענן ולנסות שוב.");
           return;
         }
 
-        toastOk("×œ×•×— ×”×‘×§×¨×” × ×˜×¢×Ÿ ×‘×”×¦×œ×—×”");
+        toastOk("לוח הבקרה נטען בהצלחה");
       }
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       // INIT
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════
       (async function init() {
         window.addEventListener("error", (event) => {
           reportClientError("window_error", event.error || new Error(event.message || "window error"));
           if (document.getElementById("appScreen")?.style.display !== "none") {
-            showFatalLoginError("××™×¨×¢×” ×©×’×™××” ×‘×œ×ª×™ ×¦×¤×•×™×”. × ×¡×” ×œ×”×™×›× ×¡ ×ž×—×“×©.");
+            showFatalLoginError("אירעה שגיאה בלתי צפויה. נסה להיכנס מחדש.");
           }
         });
         window.addEventListener("unhandledrejection", (event) => {
           reportClientError("unhandled_rejection", event.reason || new Error("unhandled rejection"));
           if (document.getElementById("appScreen")?.style.display !== "none") {
-            showFatalLoginError("××™×¨×¢×” ×©×’×™××” ×‘×œ×ª×™ ×¦×¤×•×™×”. × ×¡×” ×œ×”×™×›× ×¡ ×ž×—×“×©.");
+            showFatalLoginError("אירעה שגיאה בלתי צפויה. נסה להיכנס מחדש.");
           }
         });
 
@@ -4547,4 +4547,3 @@
     </script>
   </body>
 </html>
-
