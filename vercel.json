@@ -26,6 +26,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/management/operators/(.*)", "destination": "/api/management/operators/index.js" },
+    { "source": "/management/operators", "destination": "/api/management/operators/index.js" },
     { "source": "/(.*)", "destination": "/api/index.js" }
   ]
 }
