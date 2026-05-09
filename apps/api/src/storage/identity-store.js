@@ -42,5 +42,13 @@ module.exports = {
   updateContractor: (...args) => backend().updateContractor(...args),
   listDailyMetricsContractor: (...args) => backend().listDailyMetricsContractor(...args),
   upsertDailyMetricContractor: (...args) => backend().upsertDailyMetricContractor(...args),
-  getContractorsComparison: (...args) => backend().getContractorsComparison(...args)
+  getContractorsComparison: (...args) => backend().getContractorsComparison(...args),
+  listOperators: (...args) => backend().listOperators(...args),
+  createOperator: (...args) => backend().createOperator(...args),
+  updateOperator: (...args) => backend().updateOperator(...args),
+  deleteOperator: (...args) => backend().deleteOperator(...args),
+  listOperatorRecipients: (...args) => backend().listOperatorRecipients(...args),
+  createOperatorRecipient: (...args) => backend().createOperatorRecipient(...args),
+  updateOperatorRecipient: (...args) => backend().updateOperatorRecipient(...args),
+  deleteOperatorRecipient: (...args) => backend().deleteOperatorRecipient(...args)
 };
