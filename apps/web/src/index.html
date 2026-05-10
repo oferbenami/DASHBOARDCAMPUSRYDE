@@ -953,6 +953,51 @@
         th, td { font-size: 0.78rem; }
         .row-actions { flex-direction: column; }
       }
+      @media (max-width: 768px) {
+        html,
+        body,
+        #appScreen,
+        .tab-panel,
+        .wrap,
+        .card,
+        .operations-entry-grid {
+          max-width: 100vw;
+          overflow-x: hidden;
+        }
+
+        .wrap {
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+
+        #panel-operations .card,
+        #panel-operations .operations-entry-grid,
+        #panel-operations form,
+        #panel-operations input,
+        #panel-operations select,
+        #panel-operations textarea,
+        #panel-operations button {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        #panel-operations .table-wrap {
+          max-width: 100%;
+          overflow-x: auto;
+        }
+
+        #panel-operations table {
+          min-width: 0;
+          max-width: 100%;
+        }
+
+        #panel-operations th,
+        #panel-operations td {
+          font-size: 0.72rem;
+          padding: 6px 4px;
+          white-space: normal;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1518,7 +1563,8 @@
                   <div><label>תקלות</label><input id="dropoff_issues" type="number" min="0" /></div>
                   <div><label>נוסעים מושפעים</label><input id="dropoff_affected" type="number" min="0" /></div>
                 </div>
-                <div class="card" style="margin-top:10px;padding:10px;background:#f8fbff">
+                <!-- TODO: Move contractor/operator breakdown to a dedicated Activity details screen for mobile. -->
+                <div class="card operations-contractors-breakdown-card" style="margin-top:10px;padding:10px;background:#f8fbff">
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
                     <strong style="font-size:0.85rem">פירוט לפי מפעילים</strong>
                     <button id="addDropoffContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">הוסף שורה</button>
@@ -1548,7 +1594,8 @@
                   <div><label>תקלות</label><input id="pickup_issues" type="number" min="0" /></div>
                   <div><label>נוסעים מושפעים</label><input id="pickup_affected" type="number" min="0" /></div>
                 </div>
-                <div class="card" style="margin-top:10px;padding:10px;background:#f8fbff">
+                <!-- TODO: Move contractor/operator breakdown to a dedicated Activity details screen for mobile. -->
+                <div class="card operations-contractors-breakdown-card" style="margin-top:10px;padding:10px;background:#f8fbff">
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
                     <strong style="font-size:0.85rem">פירוט לפי מפעילים</strong>
                     <button id="addPickupContractorRow" type="button" class="secondary" style="width:auto;padding:4px 10px;font-size:0.78rem">הוסף שורה</button>
