@@ -1962,15 +1962,34 @@
       // ═══════════════════════════════
       const API_BASE_KEY = "dr_api_base";
       const TOKEN_KEY = "dr_session_token";
+      const DEV_LOGIN_OVERRIDE_KEY = "dr_enable_dev_login";
       let GOOGLE_CLIENT_ID = "";
       let GOOGLE_LOGIN_URI = "";
       let AUTH_CONFIG_DEBUG = null;
+      let authUiState = "loading_config";
+      let ACTIVE_API_BASE = "";
 
+      function getStoredApiBase() {
+        return (localStorage.getItem(API_BASE_KEY) || "").trim().replace(/\/$/, "");
+      }
       function getApiBase() {
-        return localStorage.getItem(API_BASE_KEY) || location.origin;
+        return ACTIVE_API_BASE || getStoredApiBase() || location.origin;
       }
       function getToken() {
         return localStorage.getItem(TOKEN_KEY) || "";
+      }
+      function isDevLoginAllowed() {
+        const host = String(location.hostname || "").toLowerCase();
+        return host === "localhost" || host === "127.0.0.1" || localStorage.getItem(DEV_LOGIN_OVERRIDE_KEY) === "1";
+      }
+      function buildApiBaseCandidates() {
+        const storedBase = getStoredApiBase();
+        const isLocalEnv = ["localhost", "127.0.0.1"].includes(String(location.hostname || "").toLowerCase());
+        if (!isLocalEnv && storedBase && storedBase !== location.origin) {
+          // In production, prefer same-origin first to avoid stale dev/preview overrides after deploys.
+          return [...new Set([ACTIVE_API_BASE, location.origin, storedBase].filter(Boolean))];
+        }
+        return [...new Set([ACTIVE_API_BASE, storedBase, location.origin].filter(Boolean))];
       }
 
       function isIOSSafari() {
@@ -2013,26 +2032,65 @@
       async function hasValidSavedSession() {
         const token = getToken();
         if (!token) return false;
-        try {
-          const res = await fetch(`${getApiBase()}/auth/me`, {
-            headers: { authorization: `Bearer ${token}` }
-          });
-          return res.ok;
-        } catch {
-          return false;
+        const candidates = buildApiBaseCandidates();
+        const storedBase = getStoredApiBase();
+        for (const base of candidates) {
+          try {
+            const res = await fetch(`${base}/auth/me`, {
+              headers: { authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+              ACTIVE_API_BASE = base;
+              if (storedBase && storedBase !== base) {
+                localStorage.removeItem(API_BASE_KEY);
+              }
+              return true;
+            }
+          } catch {}
         }
+        return false;
       }
 
-      async function fetchConfig() {
-        try {
-          const res = await fetch(`${getApiBase()}/auth/config`);
-          if (res.ok) {
-            const data = await res.json();
-            GOOGLE_CLIENT_ID = String(data.googleClientId || "").trim();
-            GOOGLE_LOGIN_URI = data.effectiveLoginUri || "";
-            AUTH_CONFIG_DEBUG = data;
+      async function fetchConfigWithRetry() {
+        const delays = [300, 700, 1500];
+        const candidateBases = buildApiBaseCandidates();
+        const storedBase = getStoredApiBase();
+        let lastError = null;
+
+        for (const base of candidateBases) {
+          for (let i = 0; i < delays.length; i++) {
+            try {
+              const res = await fetch(`${base}/auth/config`);
+              if (!res.ok) {
+                throw new Error(`auth config http ${res.status}`);
+              }
+              const data = await res.json();
+              GOOGLE_CLIENT_ID = String(data.googleClientId || "").trim();
+              GOOGLE_LOGIN_URI = data.effectiveLoginUri || "";
+              AUTH_CONFIG_DEBUG = data;
+              ACTIVE_API_BASE = base;
+              if (storedBase && storedBase !== base) {
+                localStorage.removeItem(API_BASE_KEY);
+              }
+              return true;
+            } catch (err) {
+              lastError = err;
+              await reportClientError("auth_config_fetch_retry", err, {
+                attempt: i + 1,
+                maxAttempts: delays.length,
+                apiBase: base
+              });
+              if (i < delays.length - 1) {
+                await new Promise((resolve) => setTimeout(resolve, delays[i]));
+              }
+            }
           }
-        } catch {}
+        }
+        GOOGLE_CLIENT_ID = "";
+        GOOGLE_LOGIN_URI = "";
+        AUTH_CONFIG_DEBUG = null;
+        ACTIVE_API_BASE = "";
+        throw (lastError || new Error("auth config fetch failed"));
       }
 
       // ═══════════════════════════════
@@ -2085,7 +2143,7 @@
             document.getElementById("loginScreen").style.display = "flex";
             document.getElementById("loginError").textContent = "פג תוקף ההתחברות — אנא כנס מחדש.";
             document.getElementById("loginError").style.display = "block";
-            fetchConfig().then(initGoogleLogin);
+            initAuthUI({ forceMessage: true });
             throw new Error("session-expired");
           }
           const msg = payload.message ? `${payload.error || `HTTP ${res.status}`}: ${payload.message}` : (payload.error || `HTTP ${res.status}`);
@@ -2113,9 +2171,10 @@
       function saveDevSettings() {
         const val = document.getElementById("devApiBase").value.trim().replace(/\/$/, "");
         if (val) localStorage.setItem(API_BASE_KEY, val);
+        ACTIVE_API_BASE = val || location.origin;
         document.getElementById("devSettingsBox").style.display = "none";
         // Re-fetch config from new base
-        fetchConfig().then(initGoogleLogin);
+        initAuthUI({ forceMessage: false });
       }
 
       // ═══════════════════════════════
@@ -2125,6 +2184,49 @@
         const el = document.getElementById("loginError");
         el.textContent = msg;
         el.style.display = "block";
+      }
+
+      function renderAuthRetry(message) {
+        const wrap = document.getElementById("googleBtnWrap");
+        if (!wrap) return;
+        wrap.innerHTML = `
+          <div style="display:grid;gap:8px;justify-items:center">
+            <p style="color:#b91c1c;font-size:0.82rem;margin:0;text-align:center">${message}</p>
+            <button id="btnRetryAuthInit" type="button" class="btn-dev-login" style="max-width:280px">נסה שוב</button>
+            <button id="btnResetAuthBase" type="button" class="btn-dev-login" style="max-width:280px">איפוס הגדרות חיבור</button>
+          </div>
+        `;
+        const retryBtn = document.getElementById("btnRetryAuthInit");
+        if (retryBtn) retryBtn.addEventListener("click", () => { initAuthUI({ forceMessage: false }); });
+        const resetBtn = document.getElementById("btnResetAuthBase");
+        if (resetBtn) {
+          resetBtn.addEventListener("click", () => {
+            localStorage.removeItem(API_BASE_KEY);
+            ACTIVE_API_BASE = location.origin;
+            initAuthUI({ forceMessage: false });
+          });
+        }
+      }
+
+      async function initAuthUI(options = {}) {
+        const { forceMessage = false } = options;
+        const wrap = document.getElementById("googleBtnWrap");
+        const loginError = document.getElementById("loginError");
+        if (!wrap) return;
+        if (loginError && !forceMessage) loginError.style.display = "none";
+        authUiState = "loading_config";
+        wrap.innerHTML = `<span class="google-btn-loading">טוען התחברות...</span>`;
+
+        try {
+          await fetchConfigWithRetry();
+        } catch (err) {
+          authUiState = "config_error_transient";
+          await reportClientError("auth_config_failed_after_retry", err);
+          renderAuthRetry("לא ניתן לטעון את הגדרות ההתחברות כרגע. בדוק חיבור ונסה שוב.");
+          return;
+        }
+
+        initGoogleLogin();
       }
 
       async function handleGoogleCredential(response) {
@@ -2169,8 +2271,15 @@
 
       function initGoogleLogin() {
         const wrap = document.getElementById("googleBtnWrap");
+        const allowDevLogin = isDevLoginAllowed();
 
         if (!GOOGLE_CLIENT_ID) {
+          if (!allowDevLogin) {
+            authUiState = "config_error_transient";
+            renderAuthRetry("הגדרות ההתחברות אינן זמינות כרגע. נסה שוב בעוד רגע.");
+            return;
+          }
+          authUiState = "dev_mode_available";
           wrap.innerHTML = `<button class="btn-dev-login" id="btnDevLogin">🔑 כניסה ידנית (מצב פיתוח)</button>`;
           document.getElementById("btnDevLogin").addEventListener("click", () => {
             const token = prompt("הכנס Session Token:");
@@ -2202,6 +2311,7 @@
             locale: "iw",
             width: 280
           });
+          authUiState = "google_ready";
         }
 
         if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
@@ -2218,7 +2328,20 @@
             setupGoogleButton();
           } else if (attempts > 80) {
             clearInterval(poll);
-            wrap.innerHTML = `<p style="color:#b91c1c;font-size:0.82rem;margin:0">לא ניתן לטעון את כפתור Google. בדוק חיבור לאינטרנט.</p>`;
+            authUiState = "google_script_error";
+            if (allowDevLogin) {
+              authUiState = "dev_mode_available";
+              wrap.innerHTML = `<button class="btn-dev-login" id="btnDevLogin">🔑 כניסה ידנית (מצב פיתוח)</button>`;
+              document.getElementById("btnDevLogin").addEventListener("click", () => {
+                const token = prompt("הכנס Session Token:");
+                if (token && token.trim()) {
+                  localStorage.setItem(TOKEN_KEY, token.trim());
+                  enterApp(null);
+                }
+              });
+              return;
+            }
+            renderAuthRetry("לא ניתן לטעון את כפתור Google כרגע. בדוק חיבור לאינטרנט ונסה שוב.");
           }
         }, 100);
       }
@@ -4778,7 +4901,6 @@
         });
 
         initDates();
-        await fetchConfig();
         const savedToken = getToken();
         if (savedToken) {
           const valid = await hasValidSavedSession();
@@ -4787,10 +4909,10 @@
           } else {
             localStorage.removeItem(TOKEN_KEY);
             document.getElementById("loginError").style.display = "none";
-            initGoogleLogin();
+            await initAuthUI({ forceMessage: false });
           }
         } else {
-          initGoogleLogin();
+          await initAuthUI({ forceMessage: false });
         }
       })();
     </script>
