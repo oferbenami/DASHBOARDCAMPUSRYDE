@@ -681,6 +681,7 @@
         border-radius: 8px;
         padding: 7px 10px;
       }
+      #mobileDashboardReportContext { display: none; }
 
       /* ═══════════════════════════════
          MISC
@@ -768,12 +769,28 @@
 
         /* Tile grid replaces desktop dashboard on mobile */
         #panel-dashboard > .wrap { display: none; }
+        #mobileDashboardReportContext {
+          display: block;
+          position: fixed;
+          top: var(--header-h);
+          left: 0;
+          right: 0;
+          z-index: 6;
+          margin: 0;
+          border-radius: 0;
+          border-left: none;
+          border-right: none;
+          background: #f3f7ff;
+          font-size: 0.74rem;
+          padding: 6px 8px;
+          line-height: 1.3;
+        }
         #mobileTileGrid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           grid-template-rows: repeat(3, 1fr);
           position: fixed;
-          top: var(--header-h);
+          top: calc(var(--header-h) + 34px);
           left: 0; right: 0;
           bottom: var(--bottom-nav-h);
           gap: 8px; padding: 8px;
@@ -1154,6 +1171,7 @@
       <div class="tab-panel active" id="panel-dashboard">
 
         <!-- ══ MOBILE TILE GRID (visible only on ≤768px) ══ -->
+        <div id="mobileDashboardReportContext" class="dashboard-report-context">דוח לתאריך — | תקופה: יומי | טווח: — עד —</div>
         <div id="mobileTileGrid">
           <div class="m-tile" data-detail="passengers">
             <div class="m-tile-icon">👥</div>
@@ -2576,9 +2594,11 @@
         const from = document.getElementById("kpiFrom")?.value || "";
         const to = document.getElementById("kpiTo")?.value || "";
         const modeLabel = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
-        const el = document.getElementById("dashboardReportContext");
-        if (!el) return;
-        el.textContent = `דוח לתאריך ${to || "—"} | תקופה: ${modeLabel} | טווח: ${from || "—"} עד ${to || "—"}`;
+        const text = `דוח לתאריך ${to || "—"} | תקופה: ${modeLabel} | טווח: ${from || "—"} עד ${to || "—"}`;
+        const desktopEl = document.getElementById("dashboardReportContext");
+        const mobileEl = document.getElementById("mobileDashboardReportContext");
+        if (desktopEl) desktopEl.textContent = text;
+        if (mobileEl) mobileEl.textContent = text;
       }
 
       async function shiftOperationDates(daysDelta) {
