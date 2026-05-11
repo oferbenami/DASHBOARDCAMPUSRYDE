@@ -824,6 +824,18 @@
           border-top: none;
           padding: 8px;
         }
+        #mobileKpiTo {
+          min-width: 0;
+          font-size: 1rem;
+          font-weight: 700;
+          text-align: center;
+          padding: 7px 4px;
+        }
+        #mobileDashboardControls .date-nav-btn {
+          min-width: 40px;
+          font-size: 1.1rem;
+          padding: 6px 0;
+        }
         #mobileDashboardReportContext {
           display: block;
           position: fixed;
@@ -1235,9 +1247,9 @@
             <button type="button" class="dashboard-mode-btn" data-range-mode="month">חודשי</button>
           </div>
           <div class="dashboard-range-tools" style="margin-top:8px">
-            <button id="mobileKpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
-            <input id="mobileKpiTo" type="date" />
             <button id="mobileKpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">⇨</button>
+            <input id="mobileKpiTo" type="date" />
+            <button id="mobileKpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
           </div>
           <div id="mobileScopeToggle" style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:8px">
             <button type="button" class="scope-btn active" data-scope="total">סה"כ</button>
@@ -1273,7 +1285,7 @@
           </div>
           <div class="m-tile" data-detail="targets">
             <div class="m-tile-icon">🎯</div>
-            <div class="m-tile-label">עמידה ביעדים</div>
+            <div class="m-tile-label">יעילות</div>
             <div class="m-tile-value" id="mTileVal-targets">—</div>
             <div class="m-tile-sub"   id="mTileSub-targets"></div>
           </div>
@@ -1306,9 +1318,9 @@
               <div>
                 <label>תאריך מיקוד KPI</label>
                 <div class="dashboard-range-tools">
-                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
-                  <input id="kpiTo" type="date" />
                   <button id="kpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">⇨</button>
+                  <input id="kpiTo" type="date" />
+                  <button id="kpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
                 </div>
                 <input id="kpiFrom" type="hidden" />
               </div>
@@ -2732,6 +2744,23 @@
         updateDashboardReportContext();
       }
 
+      function countReportingDaysByScope(from, to, trends) {
+        const points = trends?.points || [];
+        let pickupDays = 0;
+        let dropoffDays = 0;
+        for (const p of points) {
+          if (!p?.serviceDate || p.serviceDate < from || p.serviceDate > to) continue;
+          if (Number(p?.pickup?.rides || 0) > 0 || Number(p?.pickup?.passengers || 0) > 0) pickupDays += 1;
+          if (Number(p?.dropoff?.rides || 0) > 0 || Number(p?.dropoff?.passengers || 0) > 0) dropoffDays += 1;
+        }
+        return { pickupDays, dropoffDays, totalDays: pickupDays + dropoffDays };
+      }
+
+      function dailyAvg(value, days) {
+        if (!days) return 0;
+        return Number(value || 0) / days;
+      }
+
       function syncHeaderScopeButtons() {
         const scope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
         document.querySelectorAll(".hdr-dd-scope").forEach((b) =>
@@ -3580,8 +3609,15 @@
 
       function updateMobileTiles(summary, scope, kpiMeta, dashboardTrends, targetsVsActual) {
         const s = summary[scope] || summary.total || {};
-        const pu = summary.pickup || {};
-        const do_ = summary.dropoff || {};
+        const from = document.getElementById("kpiFrom")?.value || "";
+        const to = document.getElementById("kpiTo")?.value || "";
+        const dayCounts = countReportingDaysByScope(from, to, lastDashboardData?.trends || {});
+        const divisor = scope === "pickup" ? dayCounts.pickupDays : scope === "dropoff" ? dayCounts.dropoffDays : dayCounts.totalDays;
+        const avgPassengers = dailyAvg(s.passengers, divisor);
+        const avgRides = dailyAvg(s.rides, divisor);
+        const avgIssues = dailyAvg(s.issues, divisor);
+        const avgAffected = dailyAvg(s.affectedPassengers, divisor);
+        const efficiencyVal = Number(s.rides || 0) > 0 ? Number(s.passengers || 0) / Number(s.rides || 1) : 0;
 
         // helper: get active target value for metric
         const tgtVal = (metricKey) => {
@@ -3594,17 +3630,17 @@
         };
 
         // Tile: passengers
-        const passVal = Number(s.passengers || 0);
+        const passVal = Number(avgPassengers || 0);
         const passTgt = tgtVal("passengers");
         setMobileTile("passengers", fmt(passVal, 0),
-          passTgt ? `יעד: ${fmt(passTgt,0)}` : "",
+          passTgt ? `יעד יומי: ${fmt(passTgt,0)}` : "",
           passTgt ? statusColor("passengers", passVal, passTgt, tgtDir("passengers")) : "");
 
         // Tile: rides
-        const ridesVal = Number(s.rides || 0);
-        const effVal   = Number(s.efficiency || 0);
+        const ridesVal = Number(avgRides || 0);
+        const effVal   = Number(efficiencyVal || 0);
         setMobileTile("rides", fmt(ridesVal, 0),
-          `יעילות: ${fmt(effVal)} נוסע/נסיעה`, "");
+          `יעד יומי: ${fmt(tgtVal("rides") || 0,0)} נסיעות`, "");
 
         // Tile: quality
         const qualVal = Number(s.serviceQuality || 0);
@@ -3614,22 +3650,18 @@
           currentThresholds.serviceQuality ? thresholdColor("serviceQuality", qualVal) : statusColor("serviceQuality", qualVal, qualTgt, tgtDir("serviceQuality")));
 
         // Tile: incidents
-        const issVal  = Number(s.issues || 0);
-        const issRate = Number(s.issuesRate || 0);
+        const issVal  = Number(avgIssues || 0);
+        const issRate = ridesVal > 0 ? (issVal / ridesVal) * 100 : 0;
+        const affectedTgt = tgtVal("affectedPassengers");
         setMobileTile("incidents", fmt(issVal, 0),
-          `${fmt(issRate)}% נסיעות עם תקלה`,
+          `מושפעים ממוצע: ${fmt(avgAffected,0)} | יעד: ${fmt(affectedTgt || 0,0)}`,
           currentThresholds.issuesRate ? thresholdColor("issuesRate", issRate) : "");
 
-        // Tile: targets — count green/yellow/red
-        if (targetsVsActual && targetsVsActual.rows) {
-          const rows = targetsVsActual.rows;
-          const greenCount = rows.filter(r => r.status === "green").length;
-          setMobileTile("targets", `${greenCount}/${rows.length}`,
-            `${Math.round(greenCount/rows.length*100)}% עמידה ביעדים`,
-            greenCount === rows.length ? "tile-green" : greenCount >= rows.length / 2 ? "tile-yellow" : "tile-red");
-        } else {
-          setMobileTile("targets", "—", "אין נתוני יעד", "");
-        }
+        // Tile: efficiency
+        const effTarget = tgtVal("efficiency");
+        setMobileTile("targets", fmt(effVal),
+          effTarget ? `יעד: ${fmt(effTarget)} נוסע/נסיעה` : "",
+          effTarget ? statusColor("efficiency", effVal, effTarget, tgtDir("efficiency")) : "");
 
         // Tile: trend (vs weekly baseline)
         if (dashboardTrends && dashboardTrends.overlays) {
@@ -3678,7 +3710,7 @@
         document.querySelectorAll(".m-detail-section").forEach(s => s.classList.remove("open"));
         const sec = document.getElementById(`mDetail-${topic}`);
         if (!sec) return;
-        const titles = { passengers:"נוסעים", rides:"נסיעות ויעילות", quality:"איכות שירות", incidents:"תקלות", targets:"יעדים מול ביצוע", trend:"מגמה שבועית" };
+        const titles = { passengers:"נוסעים", rides:"נסיעות ממוצע", quality:"איכות שירות", incidents:"תקלות ממוצע", targets:"יעילות", trend:"מגמה שבועית" };
         document.getElementById("mDetailTitle").textContent = titles[topic] || topic;
         const detail = document.getElementById("mobileDetail");
         detail.style.display = "flex";
@@ -4451,23 +4483,35 @@
         const scopedSummary = summary[dashboardScope] || summary.total;
         updateHeadlineDates(to);
         const modeLabel = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
-        const pickupDays = countPickupReportingDays(from, to, trends);
+        const { pickupDays, dropoffDays, totalDays } = countReportingDaysByScope(from, to, trends);
+        const pickupDaysForTitle = countPickupReportingDays(from, to, trends);
+        const divisor = dashboardScope === "pickup" ? pickupDays : dashboardScope === "dropoff" ? dropoffDays : totalDays;
+        const normalizedMetrics = {
+          passengers: dailyAvg(scopedSummary.passengers, divisor),
+          rides: dailyAvg(scopedSummary.rides, divisor),
+          issues: dailyAvg(scopedSummary.issues, divisor),
+          affectedPassengers: dailyAvg(scopedSummary.affectedPassengers, divisor),
+          efficiency: Number(scopedSummary.rides || 0) > 0 ? Number(scopedSummary.passengers || 0) / Number(scopedSummary.rides || 1) : 0,
+          issuesRate: dailyAvg(scopedSummary.rides, divisor) > 0 ? (dailyAvg(scopedSummary.issues, divisor) / dailyAvg(scopedSummary.rides, divisor)) * 100 : 0,
+          serviceQuality: Number(scopedSummary.serviceQuality || 0),
+          affectedRate: Number(scopedSummary.affectedRate || 0)
+        };
         const headlineTitleEl = document.getElementById("headlineDynamicTitle");
         const mobileHeadlineTitleEl = document.getElementById("mobileDashboardDynamicTitle");
         if (headlineTitleEl) {
-          headlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים)`;
+          headlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDaysForTitle} ימי איסוף מדווחים)`;
         }
         if (mobileHeadlineTitleEl) {
-          mobileHeadlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים)`;
+          mobileHeadlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDaysForTitle} ימי איסוף מדווחים)`;
         }
-        const reportContextText = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים) | טווח: ${from || "—"} עד ${to || "—"}`;
+        const reportContextText = `דוח ${modeLabel} | תאריך דוח: ${to || "—"} | טווח: ${from || "—"} עד ${to || "—"}`;
         const desktopContext = document.getElementById("dashboardReportContext");
         const mobileContext = document.getElementById("mobileDashboardReportContext");
         if (desktopContext) desktopContext.textContent = reportContextText;
         if (mobileContext) mobileContext.textContent = reportContextText;
 
         for (const metric of KPI_METRICS) {
-          const actual = Number(scopedSummary[metric.key] || 0);
+          const actual = Number(normalizedMetrics[metric.key] ?? scopedSummary[metric.key] ?? 0);
           const target = resolveActiveTarget(kpiMeta.targets, metric.key, dashboardScope, to);
           const direction = target?.direction || defaultDirection(metric.key);
           const targetValue = target ? Number(target.targetValue) : null;
@@ -4487,6 +4531,14 @@
             applyKpiStatus(metric.cardId, statusFromTarget(actual, targetValue, direction));
           }
         }
+        const issuesAffectedLabel = document.querySelector("#kpiCard-issues .sub-line:nth-child(3) span");
+        const issuesAffectedValue = document.getElementById("kpiDelta-issues");
+        const affectedAvg = Number(normalizedMetrics.affectedPassengers || 0);
+        const affectedTargetObj = resolveActiveTarget(kpiMeta.targets, "affectedPassengers", dashboardScope, to);
+        const affectedTargetValue = affectedTargetObj ? Number(affectedTargetObj.targetValue) : null;
+        const affectedGap = computeGap(affectedAvg, affectedTargetValue, affectedTargetObj?.direction || defaultDirection("affectedPassengers"));
+        if (issuesAffectedLabel) issuesAffectedLabel.textContent = "מושפעים ממוצע מול יעד";
+        if (issuesAffectedValue) issuesAffectedValue.textContent = `${formatMetric("affectedPassengers", affectedAvg)} | יעד ${formatMetric("affectedPassengers", affectedTargetValue)} | פער ${formatMetric("affectedPassengers", affectedGap, true)}`;
         const tbody = document.getElementById("trendRows");
         tbody.innerHTML = "";
         for (const p of (trends.points || [])) {
