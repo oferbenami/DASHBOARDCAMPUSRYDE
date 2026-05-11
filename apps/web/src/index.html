@@ -738,6 +738,7 @@
       #historyPeriodRow {
         display: flex;
         flex-wrap: nowrap;
+        flex-direction: row;
         gap: 8px;
       }
       #historyPeriodRow button {
@@ -747,6 +748,7 @@
       #historyTypeRow {
         display: flex;
         flex-wrap: nowrap;
+        flex-direction: row;
         gap: 8px;
       }
       #historyTypeRow button {
@@ -1090,6 +1092,11 @@
         .chart-wrap { height: 190px; }
         th, td { font-size: 0.78rem; }
         .row-actions { flex-direction: column; }
+        #historyPeriodRow,
+        #historyTypeRow {
+          flex-direction: row;
+          flex-wrap: nowrap;
+        }
       }
       @media (max-width: 768px) {
         html,
