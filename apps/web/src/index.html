@@ -3,7 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DashboardRyde" />
     <title>DashboardRyde</title>
+    <link rel="manifest" href="/manifest.webmanifest?v=20260511" />
+    <link rel="apple-touch-icon" href="/dashboardryde_mobile_home_icon_1024.png?v=20260511" />
+    <link rel="icon" type="image/png" href="/dashboardryde_mobile_home_icon_1024.png?v=20260511" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -157,6 +164,11 @@
         text-decoration: none;
       }
       .header-brand-icon { font-size: 1.4rem; }
+      .header-brand-logo {
+        height: 30px;
+        width: auto;
+        display: block;
+      }
       .header-tabs {
         display: flex;
         gap: 4px;
@@ -743,7 +755,8 @@
         .user-email { display: none; }
         .user-name  { display: none; }
         .header-brand-text { display: none; }
-        .header-brand-icon { display: flex; font-size: 1.4rem; }
+        .header-brand-icon { display: none; }
+        .header-brand-logo { height: 28px; }
         #appHeader { padding: 0 10px; gap: 8px; }
         .btn-logout { padding: 5px 10px; font-size: 0.78rem; width: auto; }
         .chart-grid { grid-template-columns: 1fr; }
@@ -1119,6 +1132,7 @@
       <header id="appHeader">
         <a class="header-brand" href="#" onclick="return false;">
           <span class="header-brand-icon">🚌</span>
+          <img class="header-brand-logo" src="/dashboardryde_header_logo_orange_transparent.png?v=20260511" alt="DashboardRyde">
           <span class="header-brand-text">DashboardRyde</span>
         </a>
 
