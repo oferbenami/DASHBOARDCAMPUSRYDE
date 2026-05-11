@@ -65,10 +65,13 @@ function normalizeIncidentInput(payload) {
         : Number(payload.delayMinutes)
   };
 
-  for (const field of ["origin", "destination", "shiftTime", "issueType"]) {
+  for (const field of ["shiftTime", "issueType"]) {
     if (!normalized[field]) {
       throw new Error(`${field} is required`);
     }
+  }
+  if (!normalized.origin && !normalized.destination) {
+    throw new Error("at least one of origin or destination is required");
   }
 
   if (!isNonNegativeInteger(normalized.passengersCount)) {
