@@ -14,9 +14,12 @@ const {
   listAudit,
   getDailyMetricsByDate,
   upsertDailyMetric,
+  deleteDailyMetric,
   listIncidents,
   createIncident,
   updateIncident,
+  deleteIncident,
+  deleteIncidentsByDateType,
   recalculateIncidents,
   upsertDayType,
   listDayTypes,
@@ -345,6 +348,37 @@ async function handleUpsertDailyMetric(req, res, serviceDate, serviceType) {
   sendJson(res, 200, { metric: saved.metric });
 }
 
+async function handleDeleteDailyMetric(req, res, serviceDate, serviceType) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let normalizedType;
+  try {
+    normalizedType = normalizeServiceType(serviceType);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  const deleted = await deleteDailyMetric(serviceDate, normalizedType);
+  if (!deleted) {
+    sendJson(res, 404, { error: "Daily metric not found" });
+    return;
+  }
+
+  await appendAudit({
+    actorUserId: active.user.id,
+    action: "DAILY_METRIC_DELETED",
+    entityType: "daily_metrics",
+    entityId: deleted.before?.id || `${serviceDate}:${normalizedType}`,
+    beforeData: deleted.before,
+    afterData: null,
+    metadata: { serviceDate, serviceType: normalizedType }
+  });
+
+  sendJson(res, 200, { deleted: true, metric: deleted.before });
+}
+
 async function handleListIncidents(req, res, parsedUrl) {
   const active = await requireAuth(req, res);
   if (!active) {
@@ -435,6 +469,59 @@ async function handleUpdateIncident(req, res, incidentId) {
   });
 
   sendJson(res, 200, { incident: saved.incident });
+}
+
+async function handleDeleteIncident(req, res, incidentId) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  const deleted = await deleteIncident(incidentId);
+  if (!deleted) {
+    sendJson(res, 404, { error: "Incident not found" });
+    return;
+  }
+
+  await appendAudit({
+    actorUserId: active.user.id,
+    action: "INCIDENT_DELETED",
+    entityType: "incidents",
+    entityId: incidentId,
+    beforeData: deleted.before,
+    afterData: null,
+    metadata: { serviceDate: deleted.before?.serviceDate, serviceType: deleted.before?.serviceType }
+  });
+
+  sendJson(res, 200, { deleted: true, incident: deleted.before });
+}
+
+async function handleDeleteIncidentsByDateType(req, res, serviceDate, serviceType) {
+  const active = await requireAuth(req, res);
+  if (!active) return;
+
+  let normalizedType;
+  try {
+    normalizedType = normalizeServiceType(serviceType);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+  if (!isDateString(serviceDate)) {
+    badRequest(res, "serviceDate must be in YYYY-MM-DD format");
+    return;
+  }
+
+  const deleted = await deleteIncidentsByDateType(serviceDate, normalizedType);
+  await appendAudit({
+    actorUserId: active.user.id,
+    action: "INCIDENTS_BULK_DELETED",
+    entityType: "incidents",
+    entityId: `${serviceDate}:${normalizedType}`,
+    beforeData: deleted.rows,
+    afterData: null,
+    metadata: { serviceDate, serviceType: normalizedType, count: deleted.count }
+  });
+
+  sendJson(res, 200, { deleted: true, count: deleted.count });
 }
 
 async function handleRecalculateIncidents(req, res) {
@@ -1871,6 +1958,10 @@ async function handleRequest(req, res) {
       await handleUpsertDailyMetric(req, res, upsertDailyMatch[1], upsertDailyMatch[2]);
       return;
     }
+    if (req.method === "DELETE" && upsertDailyMatch) {
+      await handleDeleteDailyMetric(req, res, upsertDailyMatch[1], upsertDailyMatch[2]);
+      return;
+    }
 
     if (req.method === "GET" && pathname === "/contractors") {
       await handleListContractors(req, res, parsedUrl);
@@ -1918,6 +2009,16 @@ async function handleRequest(req, res) {
     const updateIncidentMatch = pathname.match(/^\/incidents\/([a-zA-Z0-9-]+)$/);
     if (req.method === "PUT" && updateIncidentMatch) {
       await handleUpdateIncident(req, res, updateIncidentMatch[1]);
+      return;
+    }
+    if (req.method === "DELETE" && updateIncidentMatch) {
+      await handleDeleteIncident(req, res, updateIncidentMatch[1]);
+      return;
+    }
+
+    const incidentsBulkDeleteMatch = pathname.match(/^\/incidents\/(\d{4}-\d{2}-\d{2})\/(pickup|dropoff)$/);
+    if (req.method === "DELETE" && incidentsBulkDeleteMatch) {
+      await handleDeleteIncidentsByDateType(req, res, incidentsBulkDeleteMatch[1], incidentsBulkDeleteMatch[2]);
       return;
     }
 

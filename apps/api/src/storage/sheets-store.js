@@ -476,6 +476,18 @@ async function upsertDailyMetric(input) {
   };
 }
 
+async function deleteDailyMetric(serviceDate, serviceType) {
+  const dailyMetrics = await readSheet("daily_metrics");
+  const normalizedType = normalizeServiceType(serviceType);
+  const key = dailyKey(serviceDate, normalizedType);
+  const idx = dailyMetrics.findIndex((row) => row.key === key);
+  if (idx < 0) return null;
+  const before = cleanDailyMetric(dailyMetrics[idx]);
+  dailyMetrics.splice(idx, 1);
+  await writeSheet("daily_metrics", HEADERS.daily_metrics, dailyMetrics);
+  return { before };
+}
+
 async function listIncidents(filters) {
   let rows = await readSheet("incidents");
 
@@ -528,6 +540,26 @@ async function updateIncident(incidentId, input) {
 
   await writeSheet("incidents", HEADERS.incidents, incidents);
   return { before, after: cleanIncident(row), incident: cleanIncident(row) };
+}
+
+async function deleteIncident(incidentId) {
+  const incidents = await readSheet("incidents");
+  const idx = incidents.findIndex((row) => row.id === incidentId);
+  if (idx < 0) return null;
+  const before = cleanIncident(incidents[idx]);
+  incidents.splice(idx, 1);
+  await writeSheet("incidents", HEADERS.incidents, incidents);
+  return { before };
+}
+
+async function deleteIncidentsByDateType(serviceDate, serviceType) {
+  const incidents = await readSheet("incidents");
+  const normalizedType = normalizeServiceType(serviceType);
+  const rows = incidents.filter((row) => row.serviceDate === serviceDate && row.serviceType === normalizedType);
+  if (!rows.length) return { count: 0, rows: [] };
+  const next = incidents.filter((row) => !(row.serviceDate === serviceDate && row.serviceType === normalizedType));
+  await writeSheet("incidents", HEADERS.incidents, next);
+  return { count: rows.length, rows: rows.map(cleanIncident) };
 }
 
 async function recalculateIncidents(serviceDate, serviceType) {
@@ -815,9 +847,12 @@ module.exports = {
   listAudit,
   getDailyMetricsByDate,
   upsertDailyMetric,
+  deleteDailyMetric,
   listIncidents,
   createIncident,
   updateIncident,
+  deleteIncident,
+  deleteIncidentsByDateType,
   recalculateIncidents,
   upsertDayType,
   listDayTypes,

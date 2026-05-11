@@ -30,3 +30,19 @@ API/Mobile build pipelines are not part of the root build at this stage.
 
 Connection and deployment steps are documented in `docs/runbooks/connection-setup.md`.
 Provider and production validation checklist is documented in `apps/api/README.md`.
+
+## Release hard gate (required)
+Use this flow on every release to prevent auth/login regressions:
+
+1. `npm run check`
+2. Preview/UAT target:
+   - `WEB_BASE_URL=<preview-url> npm run smoke:auth`
+   - `API_BASE_URL=<preview-url> SESSION_TOKEN=<uat-token> WEB_BASE_URL=<preview-url> npm run smoke:release`
+3. Deploy to production.
+4. Production target:
+   - `WEB_BASE_URL=https://dashboarscampusryde.vercel.app npm run smoke:auth`
+   - `API_BASE_URL=https://dashboarscampusryde.vercel.app SESSION_TOKEN=<prod-token> WEB_BASE_URL=https://dashboarscampusryde.vercel.app npm run smoke:release`
+
+### Fail policy
+- Any failed smoke command blocks release approval and promotion.
+- Do not close a release cycle until all commands above pass.
