@@ -671,6 +671,16 @@
         margin: 0;
         direction: rtl;
       }
+      .operations-mobile-nav { display: none; }
+      .dashboard-report-context {
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: #4a5a73;
+        background: #f8fbff;
+        border: 1px dashed #c8d2e2;
+        border-radius: 8px;
+        padding: 7px 10px;
+      }
 
       /* ═══════════════════════════════
          MISC
@@ -729,6 +739,32 @@
         .dashboard-range-tools { width: 100%; }
         .dashboard-mode-toggle { flex: 1; }
         .dashboard-mode-btn { flex: 1; text-align: center; }
+        .operations-mobile-nav {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+        .operations-mobile-nav button {
+          width: auto;
+          flex: 1;
+          font-size: 0.8rem;
+          padding: 7px 8px;
+        }
+        #panel-operations[data-mobile-ops-mode="activity"] .operations-contractors-breakdown-card {
+          display: none;
+        }
+        #panel-operations[data-mobile-ops-mode="operators"] .operations-metrics-grid,
+        #panel-operations[data-mobile-ops-mode="operators"] #saveDropoff,
+        #panel-operations[data-mobile-ops-mode="operators"] #savePickup,
+        #panel-operations[data-mobile-ops-mode="operators"] #saveBoth {
+          display: none;
+        }
+        #panel-operations .operations-metrics-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        #panel-operations .operations-metrics-grid label { font-size: 0.76rem; }
+        #panel-operations .operations-metrics-grid input { padding: 6px 8px; font-size: 0.82rem; }
 
         /* Tile grid replaces desktop dashboard on mobile */
         #panel-dashboard > .wrap { display: none; }
@@ -1171,6 +1207,7 @@
                 <span class="headline-chip">מיקוד KPI: <strong id="headlineFocusDate">—</strong></span>
                 <span class="headline-chip">טווח: <strong id="headlineRangeMode">יומי</strong></span>
               </div>
+              <div id="dashboardReportContext" class="dashboard-report-context">דוח לתאריך — | תקופה: יומי | טווח: — עד —</div>
             </div>
 
             <div class="grid cols-4" style="margin-top:12px">
@@ -1550,14 +1587,18 @@
               <button id="btnConfirmUpdate" style="padding:0.25rem 0.75rem;background:#1976d2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">כן, עדכן</button>
               <button id="btnCancelUpdate" style="padding:0.25rem 0.75rem;background:#e0e0e0;color:#333;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem">לא</button>
             </div>
+            <div class="operations-mobile-nav">
+              <button id="btnOperationsActivityMode" class="good" type="button">הזנת פעילות</button>
+              <button id="btnOperationsOperatorsMode" class="secondary" type="button">הזנת מפעילים</button>
+            </div>
             <div class="operations-entry-grid">
-              <div class="card">
+              <div class="card operations-service-card">
                 <div class="date-nav-head">
                   <button id="dropoffDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
                   <h2 id="dropoffTitle" class="date-nav-title">פיזור</h2>
                   <button id="dropoffDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
                 </div>
-                <div class="grid cols-2">
+                <div class="grid cols-2 operations-metrics-grid">
                   <div><label>נסיעות</label><input id="dropoff_rides" type="number" min="0" /></div>
                   <div><label>נוסעים רשומים</label><input id="dropoff_registered" type="number" min="0" /></div>
                   <div><label>תקלות</label><input id="dropoff_issues" type="number" min="0" /></div>
@@ -1582,13 +1623,13 @@
                 <button id="saveDropoff" style="margin-top:10px">שמור פיזור</button>
               </div>
 
-              <div class="card">
+              <div class="card operations-service-card">
                 <div class="date-nav-head">
                   <button id="pickupDateNext" type="button" class="date-nav-btn" title="יום הבא">←</button>
                   <h2 id="pickupTitle" class="date-nav-title">איסוף</h2>
                   <button id="pickupDatePrev" type="button" class="date-nav-btn" title="יום קודם">→</button>
                 </div>
-                <div class="grid cols-2">
+                <div class="grid cols-2 operations-metrics-grid">
                   <div><label>נסיעות</label><input id="pickup_rides" type="number" min="0" /></div>
                   <div><label>נוסעים רשומים</label><input id="pickup_registered" type="number" min="0" /></div>
                   <div><label>תקלות</label><input id="pickup_issues" type="number" min="0" /></div>
@@ -1963,6 +2004,10 @@
       const API_BASE_KEY = "dr_api_base";
       const TOKEN_KEY = "dr_session_token";
       const DEV_LOGIN_OVERRIDE_KEY = "dr_enable_dev_login";
+      const RELEASE_ID =
+        String(window.__DR_RELEASE_ID__ || "").trim() ||
+        String(document.querySelector("meta[name='dr-release-id']")?.getAttribute("content") || "").trim() ||
+        `local-${new Date(document.lastModified || Date.now()).toISOString()}`;
       let GOOGLE_CLIENT_ID = "";
       let GOOGLE_LOGIN_URI = "";
       let AUTH_CONFIG_DEBUG = null;
@@ -2007,6 +2052,7 @@
           userAgent: navigator.userAgent || "",
           path: location.pathname,
           ts: new Date().toISOString(),
+          releaseId: RELEASE_ID,
           extra
         };
         console.warn("[client-error]", payload);
@@ -2397,6 +2443,27 @@
       // ═══════════════════════════════
       let currentTab = "dashboard";
 
+      function isMobileViewport() {
+        return window.matchMedia("(max-width: 768px)").matches;
+      }
+
+      function setOperationsMobileMode(mode) {
+        operationsMobileMode = mode === "operators" ? "operators" : "activity";
+        const panel = document.getElementById("panel-operations");
+        if (!panel) return;
+        panel.setAttribute("data-mobile-ops-mode", isMobileViewport() ? operationsMobileMode : "desktop");
+        const btnActivity = document.getElementById("btnOperationsActivityMode");
+        const btnOperators = document.getElementById("btnOperationsOperatorsMode");
+        if (btnActivity) {
+          btnActivity.classList.toggle("good", operationsMobileMode === "activity");
+          btnActivity.classList.toggle("secondary", operationsMobileMode !== "activity");
+        }
+        if (btnOperators) {
+          btnOperators.classList.toggle("good", operationsMobileMode === "operators");
+          btnOperators.classList.toggle("secondary", operationsMobileMode !== "operators");
+        }
+      }
+
       function showTab(id) {
         closeMobileDetail({ immediate: true });
         closeMobileFabPanel();
@@ -2415,6 +2482,9 @@
           loadHistoryTable().catch((err) => {
             toastErr(err.message || "שגיאה בטעינת היסטוריה");
           });
+        }
+        if (id === "operations") {
+          setOperationsMobileMode("activity");
         }
       }
 
@@ -2453,6 +2523,9 @@
       let historyRangeMode = "30";
       let historyServiceFilter = "both";
       let historyLoadingPromise = null;
+      let historyLoadVersion = 0;
+      let operationsMobileMode = "activity";
+      const historyRowsCache = new Map();
       let contractorOptions = [];
       const contractorRowsState = { pickup: [], dropoff: [] };
       let currentManagementSubtab = "targets";
@@ -2490,12 +2563,22 @@
         document.getElementById("drillTo").value = pickupDate;
         updateHeadlineDates(pickupDate);
         updateDashboardRangeButtons();
+        setOperationsMobileMode("activity");
       }
 
       function syncOperationDateUI() {
         document.getElementById("entryDate").value = pickupDate;
         document.getElementById("pickupTitle").textContent = `איסוף (${pickupDate})`;
         document.getElementById("dropoffTitle").textContent = `פיזור (${dropoffDate})`;
+      }
+
+      function updateDashboardReportContext() {
+        const from = document.getElementById("kpiFrom")?.value || "";
+        const to = document.getElementById("kpiTo")?.value || "";
+        const modeLabel = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
+        const el = document.getElementById("dashboardReportContext");
+        if (!el) return;
+        el.textContent = `דוח לתאריך ${to || "—"} | תקופה: ${modeLabel} | טווח: ${from || "—"} עד ${to || "—"}`;
       }
 
       async function shiftOperationDates(daysDelta) {
@@ -2534,6 +2617,7 @@
         }
         const hDateInput = document.getElementById("hDateInput");
         if (hDateInput) hDateInput.value = to;
+        updateDashboardReportContext();
       }
 
       function syncHeaderScopeButtons() {
@@ -2577,66 +2661,116 @@
         });
       }
 
+      function historyCacheKey() {
+        return `${historyRangeMode}:${historyServiceFilter}`;
+      }
+
+      function historyRowsHtml(rows) {
+        return rows.map((row) => {
+          const dayColor = historyDayColor(row.serviceDate);
+          const dayName = historyDayName(row.serviceDate);
+          const typeLabel = row.serviceType === "pickup" ? "\u05d0\u05d9\u05e1\u05d5\u05e3" : "\u05e4\u05d9\u05d6\u05d5\u05e8";
+          return `<tr class="history-row" data-date="${row.serviceDate}" data-type="${row.serviceType}" style="cursor:pointer">
+            <td>
+              <div>${row.serviceDate}</div>
+              <div style="font-size:0.78rem;color:${dayColor};font-weight:700">${dayName}</div>
+            </td>
+            <td>${typeLabel}</td>
+            <td>${row.ridesCount}</td>
+            <td>${row.registeredPassengers}</td>
+            <td>${row.issuesCount}</td>
+            <td>${row.affectedPassengers}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      function historyRowsFromMetric(dateVal, serviceFilter, data) {
+        const out = [];
+        const pushRow = (type, rowData) => {
+          if (!rowData) return;
+          if (serviceFilter !== "both" && serviceFilter !== type) return;
+          out.push({
+            serviceDate: dateVal,
+            serviceType: type,
+            ridesCount: Number(rowData.ridesCount || 0),
+            registeredPassengers: Number(rowData.registeredPassengers || 0),
+            issuesCount: Number(rowData.issuesCount || 0),
+            affectedPassengers: Number(rowData.affectedPassengers || 0)
+          });
+        };
+        pushRow("pickup", data?.pickup);
+        pushRow("dropoff", data?.dropoff);
+        return out;
+      }
+
       async function loadHistoryTable() {
         if (historyLoadingPromise) return historyLoadingPromise;
         const tbody = document.getElementById("historyRows");
         if (!tbody) return;
+        const requestVersion = ++historyLoadVersion;
         const days = historyRangeDays();
+        const cacheKey = historyCacheKey();
+        const cachedRows = historyRowsCache.get(cacheKey);
+        if (cachedRows?.length) {
+          tbody.innerHTML = historyRowsHtml(cachedRows);
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px">\u05d8\u05d5\u05e2\u05df \u05d4\u05d9\u05e1\u05d8\u05d5\u05e8\u05d9\u05d4...</td></tr>`;
+        }
+
         historyLoadingPromise = (async () => {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px">טוען היסטוריה...</td></tr>`;
+          const startedAt = Date.now();
           const todayVal = toDateVal(new Date());
-          const rows = [];
+          const daysToLoad = [];
           for (let i = 0; i < days; i += 1) {
-            const dateVal = shiftDateVal(todayVal, -i);
-            let data = null;
-            try {
-              data = await api("GET", `/daily-metrics?date=${dateVal}`);
-            } catch {
-              continue;
-            }
-            const pushRow = (type, rowData) => {
-              if (!rowData) return;
-              if (historyServiceFilter !== "both" && historyServiceFilter !== type) return;
-              rows.push({
-                serviceDate: dateVal,
-                serviceType: type,
-                ridesCount: Number(rowData.ridesCount || 0),
-                registeredPassengers: Number(rowData.registeredPassengers || 0),
-                issuesCount: Number(rowData.issuesCount || 0),
-                affectedPassengers: Number(rowData.affectedPassengers || 0)
-              });
-            };
-            pushRow("pickup", data?.pickup);
-            pushRow("dropoff", data?.dropoff);
+            daysToLoad.push(shiftDateVal(todayVal, -i));
           }
+
+          const rows = [];
+          const chunkSize = historyRangeMode === "all" ? 14 : 20;
+          const shouldRenderProgressively = !cachedRows?.length;
+          for (let i = 0; i < daysToLoad.length; i += chunkSize) {
+            if (requestVersion !== historyLoadVersion) return;
+            const chunkDates = daysToLoad.slice(i, i + chunkSize);
+            const chunkResults = await Promise.all(chunkDates.map(async (dateVal) => {
+              try {
+                const data = await api("GET", `/daily-metrics?date=${dateVal}`);
+                return historyRowsFromMetric(dateVal, historyServiceFilter, data);
+              } catch {
+                return [];
+              }
+            }));
+            for (const item of chunkResults) rows.push(...item);
+            if (shouldRenderProgressively && rows.length) {
+              tbody.innerHTML = historyRowsHtml(rows);
+              await new Promise((resolve) => requestAnimationFrame(resolve));
+            }
+          }
+
+          if (requestVersion !== historyLoadVersion) return;
           if (!rows.length) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px">אין נתונים להצגה</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px">\u05d0\u05d9\u05df \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05dc\u05d4\u05e6\u05d2\u05d4</td></tr>`;
             return;
           }
-          tbody.innerHTML = rows.map((row) => {
-            const dayColor = historyDayColor(row.serviceDate);
-            const dayName = historyDayName(row.serviceDate);
-            const typeLabel = row.serviceType === "pickup" ? "איסוף" : "פיזור";
-            return `<tr class="history-row" data-date="${row.serviceDate}" data-type="${row.serviceType}" style="cursor:pointer">
-              <td>
-                <div>${row.serviceDate}</div>
-                <div style="font-size:0.78rem;color:${dayColor};font-weight:700">${dayName}</div>
-              </td>
-              <td>${typeLabel}</td>
-              <td>${row.ridesCount}</td>
-              <td>${row.registeredPassengers}</td>
-              <td>${row.issuesCount}</td>
-              <td>${row.affectedPassengers}</td>
-            </tr>`;
-          }).join("");
+          tbody.innerHTML = historyRowsHtml(rows);
+          historyRowsCache.set(cacheKey, rows);
+
+          const elapsedMs = Date.now() - startedAt;
+          console.info("[history] loaded rows", { rows: rows.length, days, elapsedMs, historyRangeMode, historyServiceFilter });
+          if (elapsedMs > 2500) {
+            await reportClientError(
+              "history_slow_load",
+              new Error("history load exceeded threshold"),
+              { elapsedMs, days, rowsCount: rows.length, historyRangeMode, historyServiceFilter }
+            );
+          }
         })();
+
         try {
           await historyLoadingPromise;
         } finally {
           historyLoadingPromise = null;
         }
       }
-
       async function openOperationsFromHistory(dateVal, serviceType) {
         const d = String(dateVal || "").trim();
         if (!d) return;
@@ -4220,6 +4354,7 @@
           await loadHistoryTable();
         });
         document.getElementById("historyReload").addEventListener("click", async () => {
+          historyRowsCache.clear();
           await loadHistoryTable();
           toastOk("היסטוריה נטענה");
         });
@@ -4237,6 +4372,9 @@
         const topBack = document.getElementById("dashboardMainBackTop");
         if (topBack) topBack.addEventListener("click", goToDashboardMain);
         updateDashboardMainBackVisibility();
+        document.getElementById("btnOperationsActivityMode")?.addEventListener("click", () => setOperationsMobileMode("activity"));
+        document.getElementById("btnOperationsOperatorsMode")?.addEventListener("click", () => setOperationsMobileMode("operators"));
+        window.addEventListener("resize", () => setOperationsMobileMode(operationsMobileMode));
         document.getElementById("loadDashboard").onclick = withLoading(
           document.getElementById("loadDashboard"),
           async () => { await refreshDashboard("manual-load"); toastOk("לוח הבקרה עודכן"); }
@@ -4918,3 +5056,4 @@
     </script>
   </body>
 </html>
+
