@@ -53,8 +53,14 @@
         box-shadow: 0 4px 24px rgba(8,102,198,0.08);
       }
       .login-logo {
-        font-size: 2.4rem;
-        margin-bottom: 4px;
+        margin: 0 auto 8px;
+        width: 170px;
+        max-width: 70%;
+      }
+      .login-logo img {
+        width: 100%;
+        height: auto;
+        display: block;
       }
       .login-title {
         font-size: 1.6rem;
@@ -670,7 +676,16 @@
       .date-nav-title {
         margin: 0;
         direction: rtl;
+        flex: 1;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
+      #pickupTitle { color: #c2410c; }
+      #dropoffTitle { color: #6b7280; }
+      #savePickup { background: #ea580c; border-color: #ea580c; color: #fff; }
+      #saveDropoff { background: #6b7280; border-color: #6b7280; color: #fff; }
       .operations-mobile-nav { display: none; }
       .dashboard-report-context {
         margin-top: 8px;
@@ -766,6 +781,18 @@
         }
         #panel-operations .operations-metrics-grid label { font-size: 0.76rem; }
         #panel-operations .operations-metrics-grid input { padding: 6px 8px; font-size: 0.82rem; }
+        #panel-operations .date-nav-btn {
+          width: 34px;
+          min-width: 34px;
+          padding: 4px 0;
+          font-size: 1rem;
+          flex: 0 0 34px;
+        }
+        #panel-operations .date-nav-title { font-size: 0.92rem; }
+        #panel-incidents .grid.cols-4 {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
 
         /* Tile grid replaces desktop dashboard on mobile */
         #panel-dashboard > .wrap { display: none; }
@@ -1060,7 +1087,7 @@
     ═══════════════════════════════ -->
     <div id="loginScreen">
       <div class="login-card">
-        <div class="login-logo">🚌</div>
+        <div class="login-logo"><img src="/dashboardryde_realistic_logo_orange.png" alt="DashboardRyde"></div>
         <h1 class="login-title">DashboardRyde</h1>
         <p class="login-subtitle">מערכת ניהול נסיעות קמפוס — ניטור KPI, תקלות ופעילות יומית</p>
         <div class="login-badge">Stage 8 · Go-Live</div>
@@ -1219,7 +1246,7 @@
             </div>
             <div class="kpi-headline">
               <div class="headline-row">
-                <span class="headline-title">תמונת מצב תפעולית</span>
+                <span class="headline-title" id="headlineDynamicTitle">תמונת מצב תפעולית</span>
                 <span class="headline-chip">איסוף: <strong id="headlinePickupDate">—</strong></span>
                 <span class="headline-chip">פיזור: <strong id="headlineDropoffDate">—</strong></span>
                 <span class="headline-chip">מיקוד KPI: <strong id="headlineFocusDate">—</strong></span>
@@ -1720,9 +1747,11 @@
               <div><label>דקות איחור</label><input id="incident_delay_minutes" type="number" min="0" /></div>
             </div>
             <div style="margin-top:10px"><label>תיאור</label><textarea id="incident_description"></textarea></div>
+            <div id="incidentExistingCount" class="info-box" style="margin-top:10px">תקלות קיימות ליום/סוג שנבחרו: —</div>
             <div class="row-actions" style="margin-top:12px">
-              <button id="saveIncident">💾 שמור תקלה</button>
-              <button id="recalcIncident" class="good">🔄 עדכן לטבלה הראשית</button>
+              <button id="saveIncidentAdd">💾 שמור והוסף תקלה</button>
+              <button id="finishIncidentFlow" class="good">✅ סיים ומעבר להזנת פעילות</button>
+              <button id="recalcIncident" class="secondary">🔄 עדכן לטבלה הראשית</button>
             </div>
           </div>
 
@@ -1788,15 +1817,17 @@
             <div class="section-header">
               <span class="section-icon">🕘</span>
               <h2 style="margin:0">היסטוריית פעילות</h2>
+              <button id="historyReload" class="secondary" style="margin-right:auto">רענן</button>
             </div>
-            <div class="row-actions" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
+            <div class="row-actions" style="margin-top:10px;display:flex;gap:8px">
               <button id="historyRange30" class="secondary">30 ימים</button>
               <button id="historyRange90" class="secondary">90 ימים</button>
               <button id="historyRangeAll" class="secondary">ללא הגבלה</button>
+            </div>
+            <div class="row-actions" style="margin-top:8px;display:flex;gap:8px">
               <button id="historyTypeBoth" class="secondary">שניהם</button>
               <button id="historyTypePickup" class="secondary">איסוף בלבד</button>
               <button id="historyTypeDropoff" class="secondary">פיזור בלבד</button>
-              <button id="historyReload" class="secondary">רענן</button>
             </div>
             <div class="table-wrap" style="margin-top:12px">
               <table>
@@ -2582,6 +2613,7 @@
         updateHeadlineDates(pickupDate);
         updateDashboardRangeButtons();
         setOperationsMobileMode("activity");
+        refreshIncidentExistingCount();
       }
 
       function syncOperationDateUI() {
@@ -2599,6 +2631,14 @@
         const mobileEl = document.getElementById("mobileDashboardReportContext");
         if (desktopEl) desktopEl.textContent = text;
         if (mobileEl) mobileEl.textContent = text;
+      }
+
+      function countPickupReportingDays(from, to, trends) {
+        const points = trends?.points || [];
+        return points.filter((p) => {
+          if (!p?.serviceDate || p.serviceDate < from || p.serviceDate > to) return false;
+          return Number(p?.pickup?.rides || 0) > 0;
+        }).length;
       }
 
       async function shiftOperationDates(daysDelta) {
@@ -2802,6 +2842,93 @@
         syncOperationDateUI();
         showTab("operations");
         await reloadDailySections();
+      }
+
+      async function countIncidentsByDateType(serviceDate, serviceType) {
+        if (!serviceDate || !serviceType) return 0;
+        const data = await api("GET", `/incidents?date=${serviceDate}&serviceType=${serviceType}`);
+        return Array.isArray(data?.incidents) ? data.incidents.length : 0;
+      }
+
+      async function runHistoryDeleteFlow(serviceDate, serviceType) {
+        const deleteIncidentsFirst = confirm("האם למחוק קודם את כל התקלות של התאריך/הסוג שנבחרו?");
+        if (!deleteIncidentsFirst) {
+          alert("לא ניתן למחוק פעילות כאשר קיימות תקלות. מחק תקלות תחילה.");
+          return;
+        }
+        await api("DELETE", `/incidents/${serviceDate}/${serviceType}`);
+        const deleteActivity = confirm("התקלות נמחקו. למחוק גם את נתוני הפעילות לאותו יום/סוג?");
+        if (deleteActivity) {
+          await api("DELETE", `/daily-metrics/${serviceDate}/${serviceType}`);
+        }
+        historyRowsCache.clear();
+        await loadHistoryTable();
+        await refreshIncidentExistingCount();
+        toastOk("מחיקה בוצעה בהצלחה");
+      }
+
+      function incidentPayloadFromForm() {
+        const delayRaw = document.getElementById("incident_delay_minutes").value;
+        return {
+          serviceDate: document.getElementById("incident_date").value,
+          serviceType: document.getElementById("incident_type").value,
+          origin: document.getElementById("incident_origin").value,
+          destination: document.getElementById("incident_destination").value,
+          shiftTime: document.getElementById("incident_shift").value,
+          passengersCount: Number(document.getElementById("incident_passengers").value || 0),
+          issueType: document.getElementById("incident_issue_type").value,
+          description: document.getElementById("incident_description").value,
+          delayMinutes: delayRaw === "" ? null : Number(delayRaw)
+        };
+      }
+
+      async function refreshIncidentExistingCount() {
+        const date = document.getElementById("incident_date")?.value;
+        const type = document.getElementById("incident_type")?.value;
+        const el = document.getElementById("incidentExistingCount");
+        if (!el || !date || !type) return;
+        try {
+          const count = await countIncidentsByDateType(date, type);
+          el.textContent = `תקלות קיימות ליום/סוג שנבחרו: ${count}`;
+        } catch {
+          el.textContent = "תקלות קיימות ליום/סוג שנבחרו: —";
+        }
+      }
+
+      async function finishIncidentAndGoToOperations() {
+        const payload = incidentPayloadFromForm();
+        if (!payload.serviceDate || !payload.serviceType) throw new Error("יש לבחור תאריך וסוג שירות");
+        await api("POST", "/incidents", payload);
+        const incidentsCount = await countIncidentsByDateType(payload.serviceDate, payload.serviceType);
+        const daily = await api("GET", `/daily-metrics?date=${payload.serviceDate}`);
+        const mainIssues = Number(daily?.[payload.serviceType]?.issuesCount || 0);
+        if (mainIssues !== incidentsCount) {
+          const option = prompt(
+            `נמצא פער: במסך פעילות רשומות ${mainIssues} תקלות, ובפירוט תקלות קיימות ${incidentsCount}.` +
+            `\nהקלד 1 לתיקון אוטומטי, 2 לשמור למרות הפער, 3 להוספת תקלה נוספת.`,
+            "1"
+          );
+          if (option === "1") {
+            const row = daily?.[payload.serviceType] || { ridesCount: 0, registeredPassengers: 0, affectedPassengers: 0 };
+            await api("PUT", `/daily-metrics/${payload.serviceDate}/${payload.serviceType}`, {
+              ridesCount: Number(row.ridesCount || 0),
+              registeredPassengers: Number(row.registeredPassengers || 0),
+              issuesCount: incidentsCount,
+              affectedPassengers: Number(row.affectedPassengers || 0)
+            });
+          } else if (option === "3") {
+            await refreshIncidentExistingCount();
+            toastOk("התקלה נשמרה. ניתן להוסיף תקלה נוספת");
+            return;
+          }
+        }
+        if (payload.serviceType === "pickup") pickupDate = payload.serviceDate;
+        if (payload.serviceType === "dropoff") dropoffDate = payload.serviceDate;
+        syncOperationDateUI();
+        showTab("operations");
+        await reloadDailySections();
+        await refreshIncidentExistingCount();
+        toastOk("התקלה נשמרה והועברת למסך פעילות");
       }
 
       async function refreshDashboard(reason = "manual", options = {}) {
@@ -4235,6 +4362,17 @@
 
         const scopedSummary = summary[dashboardScope] || summary.total;
         updateHeadlineDates(to);
+        const modeLabel = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
+        const pickupDays = countPickupReportingDays(from, to, trends);
+        const headlineTitleEl = document.getElementById("headlineDynamicTitle");
+        if (headlineTitleEl) {
+          headlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים)`;
+        }
+        const reportContextText = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים) | טווח: ${from || "—"} עד ${to || "—"}`;
+        const desktopContext = document.getElementById("dashboardReportContext");
+        const mobileContext = document.getElementById("mobileDashboardReportContext");
+        if (desktopContext) desktopContext.textContent = reportContextText;
+        if (mobileContext) mobileContext.textContent = reportContextText;
 
         for (const metric of KPI_METRICS) {
           const actual = Number(scopedSummary[metric.key] || 0);
@@ -4381,6 +4519,11 @@
         document.getElementById("historyRows").addEventListener("click", async (e) => {
           const tr = e.target.closest(".history-row");
           if (!tr) return;
+          const action = prompt("בחר פעולה לרשומה: 1=עריכה, 2=מחיקה", "1");
+          if (action === "2") {
+            await runHistoryDeleteFlow(tr.dataset.date, tr.dataset.type);
+            return;
+          }
           await openOperationsFromHistory(tr.dataset.date, tr.dataset.type);
         });
       }
@@ -4580,23 +4723,17 @@
           }
         );
 
-        document.getElementById("saveIncident").onclick = withLoading(
-          document.getElementById("saveIncident"),
+        document.getElementById("saveIncidentAdd").onclick = withLoading(
+          document.getElementById("saveIncidentAdd"),
           async () => {
-            const delayRaw = document.getElementById("incident_delay_minutes").value;
-            await api("POST", "/incidents", {
-              serviceDate: document.getElementById("incident_date").value,
-              serviceType: document.getElementById("incident_type").value,
-              origin: document.getElementById("incident_origin").value,
-              destination: document.getElementById("incident_destination").value,
-              shiftTime: document.getElementById("incident_shift").value,
-              passengersCount: Number(document.getElementById("incident_passengers").value || 0),
-              issueType: document.getElementById("incident_issue_type").value,
-              description: document.getElementById("incident_description").value,
-              delayMinutes: delayRaw === "" ? null : Number(delayRaw)
-            });
-            toastOk("תקלה נשמרה");
+            await api("POST", "/incidents", incidentPayloadFromForm());
+            await refreshIncidentExistingCount();
+            toastOk("תקלה נשמרה. ניתן להוסיף תקלה נוספת");
           }
+        );
+        document.getElementById("finishIncidentFlow").onclick = withLoading(
+          document.getElementById("finishIncidentFlow"),
+          async () => { await finishIncidentAndGoToOperations(); }
         );
 
         document.getElementById("recalcIncident").onclick = withLoading(
@@ -4614,9 +4751,16 @@
               document.getElementById("dropoff_affected").value = result.metric.affectedPassengers;
             }
             await loadDashboard();
+            await refreshIncidentExistingCount();
             toastOk("חישוב מחדש הושלם");
           }
         );
+        document.getElementById("incident_date")?.addEventListener("change", async () => {
+          await refreshIncidentExistingCount();
+        });
+        document.getElementById("incident_type")?.addEventListener("change", async () => {
+          await refreshIncidentExistingCount();
+        });
 
         document.getElementById("loadIncidents").onclick = withLoading(
           document.getElementById("loadIncidents"),

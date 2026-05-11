@@ -441,6 +441,21 @@ async function upsertDailyMetric(input) {
   return { before: null, after: metric, metric };
 }
 
+async function deleteDailyMetric(serviceDate, serviceType) {
+  const normalizedType = normalizeServiceType(serviceType);
+  const existingRows = await supabaseRequest(
+    `/rest/v1/daily_metrics?select=*&service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${normalizedType}&limit=1`,
+    { method: "GET" }
+  );
+  if (!existingRows.length) return null;
+  const before = cleanDailyMetric(existingRows[0]);
+  await supabaseRequest(
+    `/rest/v1/daily_metrics?id=eq.${existingRows[0].id}`,
+    { method: "DELETE", prefer: "return=minimal" }
+  );
+  return { before };
+}
+
 async function listIncidents(filters) {
   const params = new URLSearchParams();
   params.set("select", "*");
@@ -506,6 +521,35 @@ async function updateIncident(incidentId, input) {
   );
   const incident = cleanIncident(rows[0]);
   return { before, after: incident, incident };
+}
+
+async function deleteIncident(incidentId) {
+  const existing = await supabaseRequest(
+    `/rest/v1/incidents?select=*&id=eq.${encodeURIComponent(incidentId)}&limit=1`,
+    { method: "GET" }
+  );
+  if (!existing.length) return null;
+  const before = cleanIncident(existing[0]);
+  await supabaseRequest(
+    `/rest/v1/incidents?id=eq.${encodeURIComponent(incidentId)}`,
+    { method: "DELETE", prefer: "return=minimal" }
+  );
+  return { before };
+}
+
+async function deleteIncidentsByDateType(serviceDate, serviceType) {
+  const normalizedType = normalizeServiceType(serviceType);
+  const existing = await supabaseRequest(
+    `/rest/v1/incidents?select=*&service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${normalizedType}`,
+    { method: "GET" }
+  );
+  if (!existing.length) return { count: 0, rows: [] };
+  const rows = existing.map(cleanIncident);
+  await supabaseRequest(
+    `/rest/v1/incidents?service_date=eq.${encodeURIComponent(serviceDate)}&service_type=eq.${normalizedType}`,
+    { method: "DELETE", prefer: "return=minimal" }
+  );
+  return { count: rows.length, rows };
 }
 
 async function recalculateIncidents(serviceDate, serviceType) {
@@ -1011,9 +1055,12 @@ module.exports = {
   listAudit,
   getDailyMetricsByDate,
   upsertDailyMetric,
+  deleteDailyMetric,
   listIncidents,
   createIncident,
   updateIncident,
+  deleteIncident,
+  deleteIncidentsByDateType,
   recalculateIncidents,
   upsertDayType,
   listDayTypes,

@@ -322,6 +322,18 @@ async function upsertDailyMetric(input) {
   };
 }
 
+async function deleteDailyMetric(serviceDate, serviceType) {
+  const state = loadWorkbookState();
+  const normalizedType = normalizeServiceType(serviceType);
+  const key = dailyKey(serviceDate, normalizedType);
+  const idx = state.dailyMetrics.findIndex((row) => row.key === key);
+  if (idx < 0) return null;
+  const before = cleanDailyMetric(state.dailyMetrics[idx]);
+  state.dailyMetrics.splice(idx, 1);
+  saveWorkbookState(state);
+  return { before };
+}
+
 async function listIncidents(filters) {
   const state = loadWorkbookState();
   let rows = [...state.incidents];
@@ -383,6 +395,26 @@ async function updateIncident(incidentId, input) {
 
   saveWorkbookState(state);
   return { before, after: cleanIncident(row), incident: cleanIncident(row) };
+}
+
+async function deleteIncident(incidentId) {
+  const state = loadWorkbookState();
+  const idx = state.incidents.findIndex((row) => row.id === incidentId);
+  if (idx < 0) return null;
+  const before = cleanIncident(state.incidents[idx]);
+  state.incidents.splice(idx, 1);
+  saveWorkbookState(state);
+  return { before };
+}
+
+async function deleteIncidentsByDateType(serviceDate, serviceType) {
+  const state = loadWorkbookState();
+  const normalizedType = normalizeServiceType(serviceType);
+  const rows = state.incidents.filter((row) => row.serviceDate === serviceDate && row.serviceType === normalizedType);
+  if (!rows.length) return { count: 0, rows: [] };
+  state.incidents = state.incidents.filter((row) => !(row.serviceDate === serviceDate && row.serviceType === normalizedType));
+  saveWorkbookState(state);
+  return { count: rows.length, rows: rows.map(cleanIncident) };
 }
 
 async function recalculateIncidents(serviceDate, serviceType) {
@@ -770,9 +802,12 @@ module.exports = {
   listAudit,
   getDailyMetricsByDate,
   upsertDailyMetric,
+  deleteDailyMetric,
   listIncidents,
   createIncident,
   updateIncident,
+  deleteIncident,
+  deleteIncidentsByDateType,
   recalculateIncidents,
   upsertDayType,
   listDayTypes,
