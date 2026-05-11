@@ -735,6 +735,24 @@
       }
       .row-actions { display: flex; gap: 8px; }
       .row-actions button { width: auto; padding: 7px 14px; }
+      #historyPeriodRow {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+      #historyPeriodRow button {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+      #historyTypeRow {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+      #historyTypeRow button {
+        flex: 1 1 0;
+        min-width: 0;
+      }
       .divider { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
 
       /* ═══════════════════════════════
@@ -1878,12 +1896,12 @@
               <h2 style="margin:0">היסטוריית פעילות</h2>
               <button id="historyReload" class="secondary" style="margin-right:auto">רענן</button>
             </div>
-            <div class="row-actions" style="margin-top:10px;display:flex;gap:8px">
+            <div id="historyPeriodRow" class="row-actions" style="margin-top:10px">
               <button id="historyRange30" class="secondary">30 ימים</button>
               <button id="historyRange90" class="secondary">90 ימים</button>
               <button id="historyRangeAll" class="secondary">ללא הגבלה</button>
             </div>
-            <div class="row-actions" style="margin-top:8px;display:flex;gap:8px">
+            <div id="historyTypeRow" class="row-actions" style="margin-top:8px">
               <button id="historyTypeBoth" class="secondary">שניהם</button>
               <button id="historyTypePickup" class="secondary">איסוף בלבד</button>
               <button id="historyTypeDropoff" class="secondary">פיזור בלבד</button>
@@ -1898,6 +1916,7 @@
                     <th>נוסעים</th>
                     <th>תקלות</th>
                     <th>נוסעים מושפעים</th>
+                    <th>פעולות</th>
                   </tr>
                 </thead>
                 <tbody id="historyRows"></tbody>
@@ -2837,6 +2856,10 @@
             <td>${row.registeredPassengers}</td>
             <td>${row.issuesCount}</td>
             <td>${row.affectedPassengers}</td>
+            <td style="white-space:nowrap">
+              <button type="button" class="secondary history-edit-btn" title="עריכה" style="width:auto;padding:4px 8px;margin-left:6px">✏️</button>
+              <button type="button" class="danger history-delete-btn" title="מחיקה" style="width:auto;padding:4px 8px">🗑️</button>
+            </td>
           </tr>`;
         }).join("");
       }
@@ -4685,9 +4708,12 @@
         document.getElementById("historyRows").addEventListener("click", async (e) => {
           const tr = e.target.closest(".history-row");
           if (!tr) return;
-          const action = prompt("בחר פעולה לרשומה: 1=עריכה, 2=מחיקה", "1");
-          if (action === "2") {
+          if (e.target.closest(".history-delete-btn")) {
             await runHistoryDeleteFlow(tr.dataset.date, tr.dataset.type);
+            return;
+          }
+          if (e.target.closest(".history-edit-btn")) {
+            await openOperationsFromHistory(tr.dataset.date, tr.dataset.type);
             return;
           }
           await openOperationsFromHistory(tr.dataset.date, tr.dataset.type);
