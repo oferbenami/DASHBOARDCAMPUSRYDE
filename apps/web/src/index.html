@@ -709,6 +709,7 @@
         padding: 7px 10px;
       }
       #mobileDashboardReportContext { display: none; }
+      #mobileDashboardControls { display: none; }
 
       /* ═══════════════════════════════
          MISC
@@ -809,10 +810,24 @@
 
         /* Tile grid replaces desktop dashboard on mobile */
         #panel-dashboard > .wrap { display: none; }
-        #mobileDashboardReportContext {
+        #mobileDashboardControls {
           display: block;
           position: fixed;
           top: var(--header-h);
+          left: 0;
+          right: 0;
+          z-index: 7;
+          margin: 0;
+          border-radius: 0;
+          border-left: none;
+          border-right: none;
+          border-top: none;
+          padding: 8px;
+        }
+        #mobileDashboardReportContext {
+          display: block;
+          position: fixed;
+          top: calc(var(--header-h) + 132px);
           left: 0;
           right: 0;
           z-index: 6;
@@ -830,7 +845,7 @@
           grid-template-columns: 1fr 1fr;
           grid-template-rows: repeat(3, 1fr);
           position: fixed;
-          top: calc(var(--header-h) + 34px);
+          top: calc(var(--header-h) + 166px);
           left: 0; right: 0;
           bottom: var(--bottom-nav-h);
           gap: 8px; padding: 8px;
@@ -1212,6 +1227,24 @@
       <div class="tab-panel active" id="panel-dashboard">
 
         <!-- ══ MOBILE TILE GRID (visible only on ≤768px) ══ -->
+        <div id="mobileDashboardControls" class="card">
+          <div id="mobileDashboardDynamicTitle" style="font-weight:700;font-size:0.9rem;margin-bottom:6px">דוח יומי</div>
+          <div class="dashboard-mode-toggle" id="mobileRangeModeToggle">
+            <button type="button" class="dashboard-mode-btn" data-range-mode="day">יומי</button>
+            <button type="button" class="dashboard-mode-btn" data-range-mode="week">שבועי</button>
+            <button type="button" class="dashboard-mode-btn" data-range-mode="month">חודשי</button>
+          </div>
+          <div class="dashboard-range-tools" style="margin-top:8px">
+            <button id="mobileKpiDateNext" type="button" class="date-nav-btn" title="יום הבא">⇦</button>
+            <input id="mobileKpiTo" type="date" />
+            <button id="mobileKpiDatePrev" type="button" class="date-nav-btn" title="יום קודם">⇨</button>
+          </div>
+          <div id="mobileScopeToggle" style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:8px">
+            <button type="button" class="scope-btn active" data-scope="total">סה"כ</button>
+            <button type="button" class="scope-btn" data-scope="pickup">איסוף</button>
+            <button type="button" class="scope-btn" data-scope="dropoff">פיזור</button>
+          </div>
+        </div>
         <div id="mobileDashboardReportContext" class="dashboard-report-context">דוח לתאריך — | תקופה: יומי | טווח: — עד —</div>
         <div id="mobileTileGrid">
           <div class="m-tile" data-detail="passengers">
@@ -2691,12 +2724,20 @@
         }
         const hDateInput = document.getElementById("hDateInput");
         if (hDateInput) hDateInput.value = to;
+        const mobileKpiTo = document.getElementById("mobileKpiTo");
+        if (mobileKpiTo) mobileKpiTo.value = to;
+        document.querySelectorAll("#mobileRangeModeToggle .dashboard-mode-btn").forEach((btn) =>
+          btn.classList.toggle("active", btn.dataset.rangeMode === dashboardRangeMode)
+        );
         updateDashboardReportContext();
       }
 
       function syncHeaderScopeButtons() {
         const scope = document.querySelector("#dashboardScopeToggle .scope-btn.active")?.dataset.scope || "total";
         document.querySelectorAll(".hdr-dd-scope").forEach((b) =>
+          b.classList.toggle("active", b.dataset.scope === scope)
+        );
+        document.querySelectorAll("#mobileScopeToggle .scope-btn").forEach((b) =>
           b.classList.toggle("active", b.dataset.scope === scope)
         );
       }
@@ -3837,6 +3878,39 @@
         document.getElementById("hExportPdf").addEventListener("click",   () => { closeHdrPanels(); document.getElementById("exportPdf").click(); });
         document.getElementById("hExportExcel").addEventListener("click", () => { closeHdrPanels(); document.getElementById("exportExcel").click(); });
 
+        document.querySelectorAll("#mobileRangeModeToggle .dashboard-mode-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const nextMode = btn.dataset.rangeMode;
+            if (!nextMode || dashboardRangeMode === nextMode) return;
+            dashboardRangeMode = nextMode;
+            applyRangeModeFromFocusDate();
+            updateDashboardRangeButtons();
+            try { await refreshDashboard("mobile-range-mode-change", { silent: true }); } catch {}
+          });
+        });
+        document.getElementById("mobileKpiDatePrev")?.addEventListener("click", async () => {
+          await shiftDashboardFocusDate(-1);
+        });
+        document.getElementById("mobileKpiDateNext")?.addEventListener("click", async () => {
+          await shiftDashboardFocusDate(1);
+        });
+        document.getElementById("mobileKpiTo")?.addEventListener("change", async (e) => {
+          const val = e.target.value;
+          if (!val) return;
+          const kpiTo = document.getElementById("kpiTo");
+          if (!kpiTo) return;
+          kpiTo.value = val;
+          applyRangeModeFromFocusDate();
+          updateDashboardRangeButtons();
+          try { await refreshDashboard("mobile-focus-date-change", { silent: true }); } catch {}
+        });
+        document.querySelectorAll("#mobileScopeToggle .scope-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const scopeBtn = document.querySelector(`#dashboardScopeToggle .scope-btn[data-scope="${btn.dataset.scope}"]`);
+            if (scopeBtn) scopeBtn.click();
+          });
+        });
+
         document.addEventListener("click", () => closeHdrPanels());
         document.querySelectorAll(".bottom-tab").forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -4379,8 +4453,12 @@
         const modeLabel = dashboardRangeMode === "week" ? "שבועי" : dashboardRangeMode === "month" ? "חודשי" : "יומי";
         const pickupDays = countPickupReportingDays(from, to, trends);
         const headlineTitleEl = document.getElementById("headlineDynamicTitle");
+        const mobileHeadlineTitleEl = document.getElementById("mobileDashboardDynamicTitle");
         if (headlineTitleEl) {
           headlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים)`;
+        }
+        if (mobileHeadlineTitleEl) {
+          mobileHeadlineTitleEl.textContent = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים)`;
         }
         const reportContextText = `דוח ${modeLabel} (${pickupDays} ימי איסוף מדווחים) | טווח: ${from || "—"} עד ${to || "—"}`;
         const desktopContext = document.getElementById("dashboardReportContext");
