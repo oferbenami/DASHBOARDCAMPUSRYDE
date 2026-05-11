@@ -2821,6 +2821,14 @@
         return d.toLocaleDateString("he-IL", { weekday: "long" });
       }
 
+      function historyDateShort(dateVal) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yy = String(d.getFullYear()).slice(-2);
+        return `${dd}/${mm}/${yy}`;
+      }
+
       function historyDayColor(dateVal) {
         const d = new Date(`${dateVal}T12:00:00`);
         const wd = d.getDay();
@@ -2852,11 +2860,12 @@
         return rows.map((row) => {
           const dayColor = historyDayColor(row.serviceDate);
           const dayName = historyDayName(row.serviceDate);
+          const shortDate = historyDateShort(row.serviceDate);
           const typeLabel = row.serviceType === "pickup" ? "\u05d0\u05d9\u05e1\u05d5\u05e3" : "\u05e4\u05d9\u05d6\u05d5\u05e8";
           return `<tr class="history-row" data-date="${row.serviceDate}" data-type="${row.serviceType}" style="cursor:pointer">
             <td>
-              <div>${row.serviceDate}</div>
-              <div style="font-size:0.78rem;color:${dayColor};font-weight:700">${dayName}</div>
+              <div style="font-size:0.82rem;font-weight:700">${shortDate}</div>
+              <div style="font-size:0.68rem;color:${dayColor};font-weight:700">${dayName}</div>
             </td>
             <td>${typeLabel}</td>
             <td>${row.ridesCount}</td>
@@ -2864,8 +2873,8 @@
             <td>${row.issuesCount}</td>
             <td>${row.affectedPassengers}</td>
             <td style="white-space:nowrap">
-              <button type="button" class="secondary history-edit-btn" title="עריכה" style="width:auto;padding:4px 8px;margin-left:6px">✏️</button>
-              <button type="button" class="danger history-delete-btn" title="מחיקה" style="width:auto;padding:4px 8px">🗑️</button>
+              <button type="button" class="secondary history-edit-btn" title="עריכה" style="width:auto;padding:2px 6px;margin-left:4px;font-size:0.78rem;line-height:1">✏️</button>
+              <button type="button" class="danger history-delete-btn" title="מחיקה" style="width:auto;padding:2px 6px;font-size:0.78rem;line-height:1">🗑️</button>
             </td>
           </tr>`;
         }).join("");
