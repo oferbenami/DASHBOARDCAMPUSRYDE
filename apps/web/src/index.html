@@ -2620,6 +2620,19 @@
         return toDateVal(d);
       }
 
+      function endOfWeekSaturday(dateVal) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        const day = d.getDay();
+        d.setDate(d.getDate() + (6 - day));
+        return toDateVal(d);
+      }
+
+      function endOfMonth(dateVal) {
+        const d = new Date(`${dateVal}T12:00:00`);
+        d.setMonth(d.getMonth() + 1, 0);
+        return toDateVal(d);
+      }
+
       let pickupDate = toDateVal(today);
       let dropoffDate = toDateVal(yesterday);
       let dashboardScope = "total";
@@ -3047,12 +3060,12 @@
           dashboardRangeMode = "week";
           const ref = toInput.value || todayVal;
           fromInput.value = startOfWeekSunday(ref);
-          toInput.value = ref;
+          toInput.value = endOfWeekSaturday(ref);
         } else if (mode === "month") {
           dashboardRangeMode = "month";
           const ref = toInput.value || todayVal;
           fromInput.value = `${ref.slice(0, 8)}01`;
-          toInput.value = ref;
+          toInput.value = endOfMonth(ref);
         }
 
         updateDashboardRangeButtons();
@@ -3078,7 +3091,16 @@
         const toInput = document.getElementById("kpiTo");
         const fromInput = document.getElementById("kpiFrom");
         if (!toInput?.value || !fromInput) return;
-        const shifted = shiftDateVal(toInput.value, daysDelta);
+        let shifted = toInput.value;
+        if (dashboardRangeMode === "week") {
+          shifted = shiftDateVal(toInput.value, daysDelta * 7);
+        } else if (dashboardRangeMode === "month") {
+          const d = new Date(`${toInput.value}T12:00:00`);
+          d.setMonth(d.getMonth() + daysDelta);
+          shifted = toDateVal(d);
+        } else {
+          shifted = shiftDateVal(toInput.value, daysDelta);
+        }
         toInput.value = shifted;
         applyRangeModeFromFocusDate();
         const hDateInput = document.getElementById("hDateInput");
