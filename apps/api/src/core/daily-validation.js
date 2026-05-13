@@ -14,6 +14,33 @@ function normalizeServiceType(value) {
   return normalized;
 }
 
+function normalizeMetricKey(value) {
+  const normalized = String(value || "").trim();
+  const compact = normalized.toLowerCase().replace(/[\s_-]+/g, "");
+  const aliases = {
+    rides: "rides",
+    ride: "rides",
+    ridescount: "rides",
+    trip: "rides",
+    trips: "rides",
+    tripscount: "rides",
+    passengers: "passengers",
+    registeredpassengers: "passengers",
+    registeredpassengerscount: "passengers",
+    efficiency: "efficiency",
+    servicequality: "serviceQuality",
+    quality: "serviceQuality",
+    issues: "issues",
+    issuescount: "issues",
+    issuesrate: "issuesRate",
+    affectedrate: "affectedRate",
+    affectedpassengers: "affectedPassengers",
+    affectedpassengerscount: "affectedPassengers"
+  };
+
+  return aliases[compact] || normalized;
+}
+
 function normalizeDailyMetricInput(payload, serviceDate, serviceType) {
   if (!isDateString(serviceDate)) {
     throw new Error("serviceDate must be in YYYY-MM-DD format");
@@ -111,7 +138,7 @@ function normalizeDayTypeInput(payload, serviceDate) {
 }
 
 function normalizeTargetInput(payload) {
-  const metricKey = String(payload.metricKey || "").trim();
+  const metricKey = normalizeMetricKey(payload.metricKey);
   const scopeKey = String(payload.scopeKey || "").trim();
   const direction = String(payload.direction || "").trim();
   const effectiveFrom = String(payload.effectiveFrom || "").trim();
@@ -172,6 +199,7 @@ module.exports = {
   normalizeIncidentInput,
   normalizeDayTypeInput,
   normalizeServiceType,
+  normalizeMetricKey,
   normalizeTargetInput,
   normalizeThresholdInput
 };
