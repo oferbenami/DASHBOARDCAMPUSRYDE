@@ -41,6 +41,13 @@ function normalizeMetricKey(value) {
   return aliases[compact] || normalized;
 }
 
+function normalizeTargetDirection(metricKey, direction) {
+  if (metricKey === "rides") {
+    return "at_most";
+  }
+  return direction;
+}
+
 function normalizeDailyMetricInput(payload, serviceDate, serviceType) {
   if (!isDateString(serviceDate)) {
     throw new Error("serviceDate must be in YYYY-MM-DD format");
@@ -140,7 +147,7 @@ function normalizeDayTypeInput(payload, serviceDate) {
 function normalizeTargetInput(payload) {
   const metricKey = normalizeMetricKey(payload.metricKey);
   const scopeKey = String(payload.scopeKey || "").trim();
-  const direction = String(payload.direction || "").trim();
+  const direction = normalizeTargetDirection(metricKey, String(payload.direction || "").trim());
   const effectiveFrom = String(payload.effectiveFrom || "").trim();
   const effectiveTo = payload.effectiveTo ? String(payload.effectiveTo).trim() : null;
   const targetValue = Number(payload.targetValue);
@@ -200,6 +207,7 @@ module.exports = {
   normalizeDayTypeInput,
   normalizeServiceType,
   normalizeMetricKey,
+  normalizeTargetDirection,
   normalizeTargetInput,
   normalizeThresholdInput
 };
