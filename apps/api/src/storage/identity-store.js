@@ -1,4 +1,4 @@
-﻿const supabaseStore = require("./supabase-store");
+const supabaseStore = require("./supabase-store");
 
 function selectedProvider() {
   const provider = (process.env.DB_PROVIDER || "supabase").toLowerCase();
@@ -11,6 +11,16 @@ function selectedProvider() {
 function backend() {
   selectedProvider();
   return supabaseStore;
+}
+
+function normalizeReadTarget(target) {
+  if (!target || target.metricKey !== "rides") return target;
+  return { ...target, direction: "at_most" };
+}
+
+async function listTargetsNormalized(...args) {
+  const rows = await backend().listTargets(...args);
+  return rows.map(normalizeReadTarget);
 }
 
 module.exports = {
@@ -35,7 +45,7 @@ module.exports = {
   getKpiSummary: (...args) => backend().getKpiSummary(...args),
   getKpiTrends: (...args) => backend().getKpiTrends(...args),
   getKpiDrilldown: (...args) => backend().getKpiDrilldown(...args),
-  listTargets: (...args) => backend().listTargets(...args),
+  listTargets: (...args) => listTargetsNormalized(...args),
   createTarget: (...args) => backend().createTarget(...args),
   listThresholds: (...args) => backend().listThresholds(...args),
   upsertThreshold: (...args) => backend().upsertThreshold(...args),
