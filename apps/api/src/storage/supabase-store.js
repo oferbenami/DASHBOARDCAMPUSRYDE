@@ -803,6 +803,59 @@ async function createTarget(input) {
   return { before: null, after: { ...target }, target };
 }
 
+async function updateTarget(targetId, input) {
+  const existingRows = await supabaseRequest(
+    `/rest/v1/targets_history?select=*&id=eq.${encodeURIComponent(targetId)}&limit=1`,
+    { method: "GET" }
+  );
+  if (!existingRows.length) {
+    const err = new Error("target not found");
+    err.statusCode = 404;
+    throw err;
+  }
+  const existing = existingRows[0];
+  const before = {
+    id: existing.id,
+    metricKey: existing.metric_key,
+    scopeKey: existing.scope_key,
+    direction: existing.direction,
+    targetValue: Number(existing.target_value),
+    effectiveFrom: existing.effective_from,
+    effectiveTo: existing.effective_to || null,
+    updatedAt: existing.updated_at
+  };
+
+  const updatedRows = await supabaseRequest(
+    `/rest/v1/targets_history?id=eq.${encodeURIComponent(targetId)}&select=*`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: {
+        metric_key: input.metricKey,
+        scope_key: input.scopeKey,
+        direction: input.direction,
+        target_value: input.targetValue,
+        effective_from: input.effectiveFrom,
+        effective_to: input.effectiveTo || null,
+        updated_at: nowIso()
+      }
+    }
+  );
+  const row = updatedRows[0];
+  const target = {
+    id: row.id,
+    metricKey: row.metric_key,
+    scopeKey: row.scope_key,
+    direction: row.direction,
+    targetValue: Number(row.target_value),
+    effectiveFrom: row.effective_from,
+    effectiveTo: row.effective_to || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+  return { before, after: { ...target }, target };
+}
+
 async function listThresholds(filters) {
   const params = new URLSearchParams();
   params.set("select", "*");
@@ -1069,6 +1122,7 @@ module.exports = {
   getKpiDrilldown,
   listTargets,
   createTarget,
+  updateTarget,
   listThresholds,
   upsertThreshold,
   getExportBundle,

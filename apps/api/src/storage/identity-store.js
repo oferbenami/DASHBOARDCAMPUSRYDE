@@ -13,16 +13,6 @@ function backend() {
   return supabaseStore;
 }
 
-function normalizeReadTarget(target) {
-  if (!target || target.metricKey !== "rides") return target;
-  return { ...target, direction: "at_most" };
-}
-
-async function listTargetsNormalized(...args) {
-  const rows = await backend().listTargets(...args);
-  return rows.map(normalizeReadTarget);
-}
-
 module.exports = {
   providerName: () => selectedProvider(),
   upsertUser: (...args) => backend().upsertUser(...args),
@@ -45,8 +35,9 @@ module.exports = {
   getKpiSummary: (...args) => backend().getKpiSummary(...args),
   getKpiTrends: (...args) => backend().getKpiTrends(...args),
   getKpiDrilldown: (...args) => backend().getKpiDrilldown(...args),
-  listTargets: (...args) => listTargetsNormalized(...args),
+  listTargets: (...args) => backend().listTargets(...args),
   createTarget: (...args) => backend().createTarget(...args),
+  updateTarget: (...args) => backend().updateTarget(...args),
   listThresholds: (...args) => backend().listThresholds(...args),
   upsertThreshold: (...args) => backend().upsertThreshold(...args),
   getExportBundle: (...args) => backend().getExportBundle(...args),

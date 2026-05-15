@@ -42,9 +42,6 @@ function normalizeMetricKey(value) {
 }
 
 function normalizeTargetDirection(metricKey, direction) {
-  if (metricKey === "rides") {
-    return "at_most";
-  }
   return direction;
 }
 

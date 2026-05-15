@@ -3656,6 +3656,42 @@
         document.getElementById("managedTargetsCount").textContent = `יעדים מנוהלים: ${MANAGED_KPI_CATALOG.length}`;
       }
 
+      function validateManagedThresholdsWithTarget({ metricKey, direction, targetValue, threshold }) {
+        const issues = [];
+        const vals = {
+          greenMin: Number(threshold.greenMin),
+          greenMax: Number(threshold.greenMax),
+          yellowMin: Number(threshold.yellowMin),
+          yellowMax: Number(threshold.yellowMax),
+          redMin: Number(threshold.redMin),
+          redMax: Number(threshold.redMax)
+        };
+        for (const [k, v] of Object.entries(vals)) {
+          if (!Number.isFinite(v)) issues.push(`${k} must be a number`);
+        }
+        if (issues.length) return issues;
+        if (vals.greenMin > vals.greenMax) issues.push("Green range is invalid (min > max)");
+        if (vals.yellowMin > vals.yellowMax) issues.push("Yellow range is invalid (min > max)");
+        if (vals.redMin > vals.redMax) issues.push("Red range is invalid (min > max)");
+
+        if (direction === "at_least") {
+          if (!(vals.redMax <= vals.yellowMin && vals.yellowMax <= vals.greenMin)) {
+            issues.push("For at_least, thresholds must be ordered red -> yellow -> green");
+          }
+          if (targetValue < vals.yellowMin) {
+            issues.push(`${metricLabel(metricKey)} target is below yellow/green bands`);
+          }
+        } else if (direction === "at_most") {
+          if (!(vals.greenMax <= vals.yellowMin && vals.yellowMax <= vals.redMin)) {
+            issues.push("For at_most, thresholds must be ordered green -> yellow -> red");
+          }
+          if (targetValue > vals.yellowMax) {
+            issues.push(`${metricLabel(metricKey)} target is above green/yellow bands`);
+          }
+        }
+        return issues;
+      }
+
       async function saveManagedRow(metricKey) {
         const row = managedRowsByMetric.get(metricKey);
         if (!row) return;
@@ -3666,35 +3702,64 @@
         try {
           const targetValueRaw = row.querySelector(".managed-target-value").value;
           const targetFrom = row.querySelector(".managed-target-from").value;
-          if (!targetFrom) throw new Error("יש לבחור תאריך תחולה");
-          if (targetValueRaw === "") throw new Error("יש להזין יעד מספרי");
+          const targetTo = row.querySelector(".managed-target-to").value || null;
+          const direction = row.querySelector(".managed-target-direction").value;
+          if (!targetFrom) throw new Error("effectiveFrom date is required");
+          if (targetValueRaw === "") throw new Error("target value is required");
+          const targetValue = Number(targetValueRaw);
 
-          await api("POST", "/management/targets", {
-            metricKey,
-            scopeKey: "total",
-            direction: row.querySelector(".managed-target-direction").value,
-            targetValue: Number(targetValueRaw),
-            effectiveFrom: targetFrom,
-            effectiveTo: row.querySelector(".managed-target-to").value || null
-          });
-          await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, {
+          const thresholdPayload = {
             greenMin: Number(row.querySelector(".managed-th-green-min").value || 0),
             greenMax: Number(row.querySelector(".managed-th-green-max").value || 0),
             yellowMin: Number(row.querySelector(".managed-th-yellow-min").value || 0),
             yellowMax: Number(row.querySelector(".managed-th-yellow-max").value || 0),
             redMin: Number(row.querySelector(".managed-th-red-min").value || 0),
             redMax: Number(row.querySelector(".managed-th-red-max").value || 0)
+          };
+          const validationIssues = validateManagedThresholdsWithTarget({
+            metricKey,
+            direction,
+            targetValue,
+            threshold: thresholdPayload
           });
+          if (validationIssues.length) {
+            const msg = `Found threshold/target inconsistencies before save:\n- ${validationIssues.join("\n- ")}\n\nContinue and save anyway?`;
+            if (!confirm(msg)) {
+              toastErr("Save canceled by user");
+              return;
+            }
+          }
+
+          const targetsRes = await api("GET", `/management/targets?metricKey=${encodeURIComponent(metricKey)}&scopeKey=total`);
+          const existing = (targetsRes.targets || []).find((t) => t.scopeKey === "total" && t.effectiveFrom === targetFrom);
+          const targetPayload = {
+            metricKey,
+            scopeKey: "total",
+            direction,
+            targetValue,
+            effectiveFrom: targetFrom,
+            effectiveTo: targetTo
+          };
+
+          let targetAction = "created";
+          if (existing?.id) {
+            await api("PUT", `/management/targets/${encodeURIComponent(existing.id)}`, targetPayload);
+            targetAction = "updated";
+          } else {
+            await api("POST", "/management/targets", targetPayload);
+          }
+
+          await api("PUT", `/management/thresholds/${encodeURIComponent(metricKey)}`, thresholdPayload);
+          await loadManagedTargetsTable();
           await loadThresholdsForKPI();
-          toastOk(`נשמר בהצלחה: ${metricLabel(metricKey)}`);
+          toastOk(`${metricLabel(metricKey)}: target ${targetAction} and thresholds saved`);
         } catch (err) {
-          toastErr(err.message || `שמירה נכשלה עבור ${metricLabel(metricKey)}`);
+          toastErr(err.message || `Save failed for ${metricLabel(metricKey)}`);
         } finally {
           btn.disabled = false;
           btn.textContent = orig;
         }
       }
-
       function dayTypeLabel(dayType) {
         const labels = {
           weekday: "א–ה",

@@ -28,6 +28,7 @@ const {
   getKpiDrilldown,
   listTargets,
   createTarget,
+  updateTarget,
   listThresholds,
   upsertThreshold,
   getExportBundle,
@@ -1528,6 +1529,44 @@ async function handleCreateTarget(req, res) {
   sendJson(res, 201, { target: saved.target });
 }
 
+async function handleUpdateTarget(req, res, targetId) {
+  const active = await requireAuth(req, res);
+  if (!active) {
+    return;
+  }
+
+  const body = await readJsonBody(req);
+  let normalized;
+  try {
+    normalized = normalizeTargetInput(body);
+  } catch (error) {
+    badRequest(res, error.message);
+    return;
+  }
+
+  let saved;
+  try {
+    saved = await updateTarget(targetId, normalized);
+  } catch (error) {
+    if (error?.statusCode === 404) {
+      sendJson(res, 404, { error: "Target not found" });
+      return;
+    }
+    throw error;
+  }
+
+  await appendAudit({
+    actorUserId: active.user.id,
+    action: "TARGET_UPDATED",
+    entityType: "targets_history",
+    entityId: saved.target.id,
+    beforeData: saved.before,
+    afterData: saved.after,
+    metadata: { metricKey: normalized.metricKey, scopeKey: normalized.scopeKey }
+  });
+  sendJson(res, 200, { target: saved.target });
+}
+
 async function handleListThresholds(req, res, parsedUrl) {
   const active = await requireAuth(req, res);
   if (!active) {
@@ -2115,6 +2154,12 @@ async function handleRequest(req, res) {
 
     if (req.method === "POST" && pathname === "/management/targets") {
       await handleCreateTarget(req, res);
+      return;
+    }
+
+    const targetMatch = pathname.match(/^\/management\/targets\/([a-zA-Z0-9_.-]+)$/);
+    if (req.method === "PUT" && targetMatch) {
+      await handleUpdateTarget(req, res, targetMatch[1]);
       return;
     }
 
