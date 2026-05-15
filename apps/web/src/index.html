@@ -334,6 +334,9 @@
       }
       .kpi .sub-line strong { font-size: 0.8rem; color: #1e2a3d; }
       .kpi .sub-line .muted { color: #8a97ad; }
+      .kpi .sub-line strong.gap-green { color: #15803d; }
+      .kpi .sub-line strong.gap-yellow { color: #92400e; }
+      .kpi .sub-line strong.gap-red { color: var(--danger); }
       .kpi-headline {
         margin-top: 12px;
         padding: 10px 12px;
@@ -924,6 +927,9 @@
         .m-tile-label { font-size: .68rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
         .m-tile-value { font-size: 1.8rem; font-weight: 800; color: #1a2840; line-height: 1.1; margin: 4px 0 0; }
         .m-tile-sub   { font-size: .68rem; color: #6b7a99; margin-top: 2px; }
+        .m-tile-sub.gap-green { color: #15803d; }
+        .m-tile-sub.gap-yellow { color: #92400e; }
+        .m-tile-sub.gap-red { color: #b91c1c; }
         .m-tile.tile-green { border-color: #22c55e50; background: linear-gradient(145deg,#fff,#f0fdf4); }
         .m-tile.tile-yellow{ border-color: #eab30850; background: linear-gradient(145deg,#fff,#fffbeb); }
         .m-tile.tile-red   { border-color: #ef444450; background: linear-gradient(145deg,#fff,#fef2f2); }
@@ -938,6 +944,7 @@
           position: fixed;
           inset: 0;
           background: var(--bg);
+          overflow-x: hidden;
           z-index: 50;
           pointer-events: none;
           visibility: hidden;
@@ -961,12 +968,12 @@
           cursor: pointer; color: var(--accent); padding: 4px 8px; line-height: 1;
         }
         #mDetailTitle { font-weight: 700; font-size: .95rem; flex: 1; text-align: center; }
-        #mDetailBody  { flex: 1; overflow: hidden; position: relative; }
-        .m-detail-section { display: none; flex-direction: column; height: 100%; padding: 8px; gap: 8px; }
+        #mDetailBody  { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
+        .m-detail-section { display: none; flex-direction: column; height: 100%; padding: 8px; gap: 8px; min-width: 0; overflow-x: hidden; }
         .m-detail-section.open { display: flex; }
-        .m-kpi-row { display: flex; gap: 6px; flex-shrink: 0; }
+        .m-kpi-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; flex-shrink: 0; min-width: 0; }
         .m-kpi-cell {
-          flex: 1; background: var(--card); border-radius: 10px;
+          min-width: 0; background: var(--card); border-radius: 10px;
           padding: 8px 4px; text-align: center;
         }
         .m-kpi-label { font-size: .65rem; color: #6b7a99; }
@@ -975,11 +982,11 @@
           flex: 1; background: var(--card); border-radius: 10px;
           padding: 8px; min-height: 0; position: relative;
         }
-        .m-chart-box canvas { position: absolute; inset: 8px; }
+        .m-chart-box canvas { position: absolute; inset: 8px; max-width: 100%; }
         .m-section-title { font-size: .7rem; font-weight: 700; color: #6b7a99; text-transform: uppercase; letter-spacing: .04em; flex-shrink: 0; padding: 0 2px; }
-        .m-targets-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+        .m-targets-table { width: 100%; border-collapse: collapse; font-size: .78rem; table-layout: fixed; }
         .m-targets-table th { font-weight: 700; color: #6b7a99; padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; }
-        .m-targets-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
+        .m-targets-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); word-break: break-word; overflow-wrap: anywhere; }
         .m-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
         .m-status-dot.green  { background: #22c55e; }
         .m-status-dot.yellow { background: #eab308; }
@@ -988,6 +995,20 @@
         .m-benchmark-row:last-child { border: none; }
         .m-benchmark-label { flex: 1; font-weight: 600; }
         .m-benchmark-val   { min-width: 44px; text-align: left; }
+        .m-empty-note {
+          display: none;
+          background: #fff7ed;
+          border: 1px solid #fdba74;
+          color: #9a3412;
+          border-radius: 10px;
+          padding: 8px 10px;
+          font-size: 0.78rem;
+          line-height: 1.35;
+        }
+        .m-empty-note.show { display: block; }
+        @media (max-width: 360px) {
+          .m-kpi-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        }
 
         /* FAB */
         #mobileFab {
@@ -2080,10 +2101,9 @@
               <div class="m-kpi-cell"><div class="m-kpi-label">נסיעות</div><div class="m-kpi-val" id="mKpi-pass-rides">—</div></div>
               <div class="m-kpi-cell"><div class="m-kpi-label">יעילות</div><div class="m-kpi-val" id="mKpi-pass-eff">—</div></div>
             </div>
+            <div class="m-empty-note" id="mEmpty-passengers">אין נתונים זמינים לחקירת KPI בטווח שנבחר.</div>
             <div class="m-section-title">מגמת נוסעים</div>
             <div class="m-chart-box"><canvas id="mChart-passengers"></canvas></div>
-            <div class="m-section-title">איסוף מול פיזור</div>
-            <div class="m-chart-box"><canvas id="mChart-pickdrop"></canvas></div>
           </div>
 
           <!-- Detail: Rides + Efficiency -->
@@ -2093,6 +2113,7 @@
               <div class="m-kpi-cell"><div class="m-kpi-label">יעילות</div><div class="m-kpi-val" id="mKpi-rides-eff">—</div></div>
               <div class="m-kpi-cell"><div class="m-kpi-label">נוסעים</div><div class="m-kpi-val" id="mKpi-rides-pass">—</div></div>
             </div>
+            <div class="m-empty-note" id="mEmpty-rides">אין נתונים זמינים לחקירת KPI בטווח שנבחר.</div>
             <div class="m-section-title">מגמת יעילות</div>
             <div class="m-chart-box" style="flex:2"><canvas id="mChart-efficiency"></canvas></div>
           </div>
@@ -2104,6 +2125,7 @@
               <div class="m-kpi-cell"><div class="m-kpi-label">% תקלות</div><div class="m-kpi-val" id="mKpi-qual-issues">—</div></div>
               <div class="m-kpi-cell"><div class="m-kpi-label">% נפגעו</div><div class="m-kpi-val" id="mKpi-qual-affected">—</div></div>
             </div>
+            <div class="m-empty-note" id="mEmpty-quality">אין נתונים זמינים לחקירת KPI בטווח שנבחר.</div>
             <div class="m-section-title">מגמת איכות שירות</div>
             <div class="m-chart-box" style="flex:2"><canvas id="mChart-quality"></canvas></div>
           </div>
@@ -2115,6 +2137,7 @@
               <div class="m-kpi-cell"><div class="m-kpi-label">% נסיעות</div><div class="m-kpi-val" id="mKpi-inc-rate">—</div></div>
               <div class="m-kpi-cell"><div class="m-kpi-label">ממוצע איחור</div><div class="m-kpi-val" id="mKpi-inc-delay">—</div></div>
             </div>
+            <div class="m-empty-note" id="mEmpty-incidents">אין נתונים זמינים לחקירת KPI בטווח שנבחר.</div>
             <div class="m-section-title">התפלגות לפי סוג</div>
             <div class="m-chart-box" style="flex:2"><canvas id="mChart-incidentsPie"></canvas></div>
           </div>
@@ -2126,6 +2149,7 @@
               <div class="m-kpi-cell"><div class="m-kpi-label">ירוק</div><div class="m-kpi-val" id="mKpi-tgt-green">—</div></div>
               <div class="m-kpi-cell"><div class="m-kpi-label">אדום</div><div class="m-kpi-val" id="mKpi-tgt-red">—</div></div>
             </div>
+            <div class="m-empty-note" id="mEmpty-targets">אין נתונים זמינים לחקירת KPI בטווח שנבחר.</div>
             <div class="m-section-title">יעד מול ביצוע</div>
             <div style="flex:1;overflow-y:auto;border-radius:10px;background:var(--card);padding:4px">
               <table class="m-targets-table" id="mTargetsTable">
@@ -2142,6 +2166,7 @@
               <div class="m-kpi-cell"><div class="m-kpi-label">ממוצע שבועי</div><div class="m-kpi-val" id="mKpi-trnd-baseline">—</div></div>
               <div class="m-kpi-cell"><div class="m-kpi-label">יעד</div><div class="m-kpi-val" id="mKpi-trnd-target">—</div></div>
             </div>
+            <div class="m-empty-note" id="mEmpty-trend">אין נתונים זמינים לחקירת KPI בטווח שנבחר.</div>
             <div class="m-section-title">השוואה מול ממוצע</div>
             <div class="m-chart-box"><canvas id="mChart-benchmark"></canvas></div>
             <div class="m-section-title">לפי סוג יום</div>
@@ -3752,6 +3777,35 @@
         return "red";
       }
 
+      function statusFromThreshold(metricKey, value) {
+        const t = currentThresholds[metricKey];
+        if (!t) return null;
+        const v = Number(value);
+        if (v >= Number(t.greenMin) && v <= Number(t.greenMax)) return "green";
+        if (v >= Number(t.yellowMin) && v <= Number(t.yellowMax)) return "yellow";
+        if (v >= Number(t.redMin) && v <= Number(t.redMax)) return "red";
+        return "red";
+      }
+
+      function resolveMetricStatus(metricKey, actual, targetValue, direction, preferThresholds = false) {
+        if (preferThresholds) {
+          const thresholdStatus = statusFromThreshold(metricKey, actual);
+          if (thresholdStatus) return thresholdStatus;
+        }
+        return statusFromTarget(actual, targetValue, direction);
+      }
+
+      function applyGapStatus(elOrId, status) {
+        const el = typeof elOrId === "string" ? document.getElementById(elOrId) : elOrId;
+        if (!el) return;
+        el.classList.remove("gap-green", "gap-yellow", "gap-red", "muted");
+        if (!status) {
+          el.classList.add("muted");
+          return;
+        }
+        el.classList.add(`gap-${status}`);
+      }
+
       function applyKpiStatus(cardId, status) {
         const card = document.getElementById(cardId);
         if (!card) return;
@@ -3832,6 +3886,7 @@
             targetEl.textContent = "—";
             gapEl.textContent = "—";
             deltaEl.textContent = "—";
+            applyGapStatus(gapEl, null);
           }
         });
         ["kpiCard-passengers","kpiCard-rides","kpiCard-efficiency","kpiCard-issues","kpiCard-issuesRate","kpiCard-quality","kpiCard-affectedRate","kpiCard-affectedPassengers"]
@@ -3908,6 +3963,19 @@
 
       const M_LABELS = { passengers:"נוסעים", rides:"נסיעות", efficiency:"יעילות", serviceQuality:"איכות", issues:"תקלות", issuesRate:"% תקלות", affectedRate:"% נפגעו" };
       const M_STATUS_COLOR = { green:"#22c55e", yellow:"#eab308", red:"#ef4444" };
+      let currentMobileDetailTopic = null;
+
+      function setMobileDetailEmpty(topic, show) {
+        const el = document.getElementById(`mEmpty-${topic}`);
+        if (!el) return;
+        el.classList.toggle("show", Boolean(show));
+      }
+
+      function refreshOpenMobileDetail() {
+        const detail = document.getElementById("mobileDetail");
+        if (!detail || !detail.classList.contains("open") || !currentMobileDetailTopic) return;
+        openMobileDetail(currentMobileDetailTopic);
+      }
 
       function updateMobileTiles(summary, scope, kpiMeta, dashboardTrends, targetsVsActual) {
         const s = summary[scope] || summary.total || {};
@@ -3934,9 +4002,14 @@
         // Tile: passengers
         const passVal = Number(avgPassengers || 0);
         const passTgt = tgtVal("passengers");
+        const hasPassTarget = passTgt !== null && passTgt !== undefined;
+        const passDir = tgtDir("passengers");
+        const passGap = hasPassTarget ? computeGap(passVal, passTgt, passDir) : null;
+        const passStatus = resolveMetricStatus("passengers", passVal, passTgt, passDir, true);
         setMobileTile("passengers", fmt(passVal, 0),
-          passTgt ? `יעד יומי: ${fmt(passTgt,0)}` : "",
-          passTgt ? statusColor("passengers", passVal, passTgt, tgtDir("passengers")) : "");
+          hasPassTarget ? `יעד יומי: ${fmt(passTgt,0)} | פער: ${formatMetric("passengers", passGap, true)}` : "",
+          passStatus ? `tile-${passStatus}` : "",
+          passStatus ? `gap-${passStatus}` : "");
 
         // Tile: rides
         const ridesVal = Number(avgRides || 0);
@@ -3979,12 +4052,16 @@
         }
       }
 
-      function setMobileTile(key, value, sub, colorClass) {
+      function setMobileTile(key, value, sub, colorClass, subClass = "") {
         const valEl = document.getElementById(`mTileVal-${key}`);
         const subEl = document.getElementById(`mTileSub-${key}`);
         const tile  = document.querySelector(`.m-tile[data-detail="${key}"]`);
         if (valEl) valEl.textContent = value;
-        if (subEl) subEl.textContent = sub;
+        if (subEl) {
+          subEl.textContent = sub;
+          subEl.classList.remove("gap-green", "gap-yellow", "gap-red");
+          if (subClass) subEl.classList.add(subClass);
+        }
         if (tile) {
           tile.classList.remove("tile-green", "tile-yellow", "tile-red");
           if (colorClass) tile.classList.add(colorClass);
@@ -3992,23 +4069,19 @@
       }
 
       function thresholdColor(metricKey, value) {
-        const th = currentThresholds[metricKey];
-        if (!th) return "";
-        const v = Number(value);
-        if (v >= Number(th.greenMin || 0) && v <= Number(th.greenMax || Infinity)) return "tile-green";
-        if (v >= Number(th.yellowMin || 0) && v <= Number(th.yellowMax || Infinity)) return "tile-yellow";
-        return "tile-red";
+        const status = statusFromThreshold(metricKey, value);
+        if (!status) return "";
+        return `tile-${status}`;
       }
 
       function statusColor(metricKey, actual, target, direction) {
-        if (target === null || target === undefined) return "";
-        const gap = computeGap(actual, target, direction);
-        if (gap >= 0) return "tile-green";
-        if (gap >= -5) return "tile-yellow";
-        return "tile-red";
+        const status = statusFromTarget(actual, target, direction);
+        if (!status) return "";
+        return `tile-${status}`;
       }
 
       function openMobileDetail(topic) {
+        currentMobileDetailTopic = topic;
         document.querySelectorAll(".m-detail-section").forEach(s => s.classList.remove("open"));
         const sec = document.getElementById(`mDetail-${topic}`);
         if (!sec) return;
@@ -4023,32 +4096,36 @@
         const ldd = lastDashboardData || {};
         const lad = lastAdvancedData  || {};
         const s   = (ldd.summary || {})[ldd.scope || "total"] || (ldd.summary || {}).total || {};
-        const pu  = (ldd.summary || {}).pickup  || {};
-        const do_ = (ldd.summary || {}).dropoff || {};
-
         destroyAllMobileCharts();
+        ["passengers","rides","quality","incidents","targets","trend"].forEach((k) => setMobileDetailEmpty(k, false));
 
         if (topic === "passengers" && lad.dashboardTrends) {
           const pts = lad.dashboardTrends.points || [];
+          if (!pts.length) setMobileDetailEmpty("passengers", true);
           const labels = pts.map(p => p.serviceDate.slice(5));
           document.getElementById("mKpi-pass-total").textContent = fmt(s.passengers, 0);
           document.getElementById("mKpi-pass-rides").textContent = fmt(s.rides, 0);
           document.getElementById("mKpi-pass-eff").textContent   = fmt(s.efficiency);
           upsertMobileChart("mChart-passengers", { type:"line", data:{ labels, datasets:[{ label:"נוסעים", data:pts.map(p=>p.passengers), borderColor:"#1976d2", backgroundColor:"#1976d220", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
-          upsertMobileChart("mChart-pickdrop", { type:"bar", data:{ labels:["נוסעים","נסיעות","יעילות"], datasets:[ { label:"איסוף", data:[pu.passengers,pu.rides,pu.efficiency], backgroundColor:"#42a5f5" }, { label:"פיזור", data:[do_.passengers,do_.rides,do_.efficiency], backgroundColor:"#ef9a9a" } ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+        } else if (topic === "passengers") {
+          setMobileDetailEmpty("passengers", true);
         }
 
         if (topic === "rides" && lad.dashboardTrends) {
           const pts = lad.dashboardTrends.points || [];
+          if (!pts.length) setMobileDetailEmpty("rides", true);
           const labels = pts.map(p => p.serviceDate.slice(5));
           document.getElementById("mKpi-rides-total").textContent = fmt(s.rides, 0);
           document.getElementById("mKpi-rides-eff").textContent   = fmt(s.efficiency);
           document.getElementById("mKpi-rides-pass").textContent  = fmt(s.passengers, 0);
           upsertMobileChart("mChart-efficiency", { type:"line", data:{ labels, datasets:[{ label:"יעילות", data:pts.map(p=>p.efficiency), borderColor:"#7c3aed", backgroundColor:"#7c3aed15", tension:.3, fill:true, pointRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+        } else if (topic === "rides") {
+          setMobileDetailEmpty("rides", true);
         }
 
         if (topic === "quality" && lad.dashboardTrends) {
           const pts = lad.dashboardTrends.points || [];
+          if (!pts.length) setMobileDetailEmpty("quality", true);
           const labels = pts.map(p => p.serviceDate.slice(5));
           document.getElementById("mKpi-qual-score").textContent    = `${fmt(s.serviceQuality)}%`;
           document.getElementById("mKpi-qual-issues").textContent   = `${fmt(s.issuesRate)}%`;
@@ -4057,19 +4134,25 @@
           const datasets = [{ label:"איכות", data:pts.map(p=>p.serviceQuality), borderColor:"#16a34a", backgroundColor:"#16a34a15", tension:.3, fill:true, pointRadius:2 }];
           if (tgt) datasets.push({ label:"יעד", data:pts.map(()=>Number(tgt)), borderColor:"#dc2626", borderDash:[4,4], pointRadius:0, borderWidth:1.5 });
           upsertMobileChart("mChart-quality", { type:"line", data:{ labels, datasets }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } } });
+        } else if (topic === "quality") {
+          setMobileDetailEmpty("quality", true);
         }
 
         if (topic === "incidents" && lad.incidentsAnalysis) {
           const ia = lad.incidentsAnalysis;
+          if (!(ia.byType || []).length) setMobileDetailEmpty("incidents", true);
           document.getElementById("mKpi-inc-total").textContent = fmt(s.issues, 0);
           document.getElementById("mKpi-inc-rate").textContent  = `${fmt(s.issuesRate)}%`;
           document.getElementById("mKpi-inc-delay").textContent = ia.avgDelayMinutes != null ? `${fmt(ia.avgDelayMinutes)} דק׳` : "—";
           const byType = (ia.byType || []).slice(0, 6);
           upsertMobileChart("mChart-incidentsPie", { type:"doughnut", data:{ labels:byType.map(t=>t.issueType), datasets:[{ data:byType.map(t=>t.count), backgroundColor:["#1976d2","#7c3aed","#ef4444","#eab308","#22c55e","#f97316"] }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{font:{size:9},boxWidth:10}}} } });
+        } else if (topic === "incidents") {
+          setMobileDetailEmpty("incidents", true);
         }
 
         if (topic === "targets" && lad.targetsVsActual) {
           const rows = lad.targetsVsActual.rows || [];
+          if (!rows.length) setMobileDetailEmpty("targets", true);
           const green = rows.filter(r => r.status === "green").length;
           document.getElementById("mKpi-tgt-score").textContent = `${green}/${rows.length}`;
           document.getElementById("mKpi-tgt-green").textContent = green;
@@ -4081,6 +4164,8 @@
               return `<tr><td>${M_LABELS[r.metricKey] || r.metricKey}</td><td>${formatMetric(r.metricKey, r.actual)}</td><td>${formatMetric(r.metricKey, r.target)}</td><td><span class="m-status-dot" style="background:${color}"></span></td></tr>`;
             }).join("");
           }
+        } else if (topic === "targets") {
+          setMobileDetailEmpty("targets", true);
         }
 
         if (topic === "trend" && lad.benchmark) {
@@ -4093,9 +4178,12 @@
           document.getElementById("mKpi-trnd-target").textContent   = tgt ? `${fmt(tgt)}%` : "—";
           upsertMobileChart("mChart-benchmark", { type:"bar", data:{ labels:["בפועל","ממוצע שבועי","יעד"], datasets:[{ data:[cur, base, tgt || null], backgroundColor:["#1976d2","#7c3aed","#22c55e"], borderRadius:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}},suggestedMin:0,suggestedMax:100} } } });
           const dayTypes = bm.byDayType || [];
+          if (!dayTypes.length) setMobileDetailEmpty("trend", true);
           const dayLabels = { weekday:"א-ה", friday:"שישי", holiday_eve:"ערב חג", exception:"חריג" };
           const bmDiv = document.getElementById("mBenchmarkByDayType");
           if (bmDiv) bmDiv.innerHTML = dayTypes.map(d => `<div class="m-benchmark-row"><span class="m-benchmark-label">${dayLabels[d.dayType]||d.dayType}</span><span class="m-benchmark-val">${fmt(d.serviceQuality)}%</span><span class="m-benchmark-val" style="color:#6b7a99">${fmt(d.passengers,0)} נוסע</span></div>`).join("");
+        } else if (topic === "trend") {
+          setMobileDetailEmpty("trend", true);
         }
       }
 
@@ -4108,12 +4196,14 @@
         detail.style.visibility = "hidden";
         if (immediate) {
           detail.style.display = "none";
+          currentMobileDetailTopic = null;
           destroyAllMobileCharts();
           return;
         }
         setTimeout(() => {
           if (!detail.classList.contains("open")) {
             detail.style.display = "none";
+            currentMobileDetailTopic = null;
             destroyAllMobileCharts();
           }
         }, 260);
@@ -4826,12 +4916,9 @@
           document.getElementById(metric.gapId).textContent = formatMetric(metric.key, gap, true);
           document.getElementById(metric.deltaId).textContent = formatMetric(metric.key, deltaVsBaseline, true);
 
-          const thresholdExists = Boolean(currentThresholds[metric.key]);
-          if (thresholdExists) {
-            colorKpiCard(metric.cardId, actual, metric.key);
-          } else {
-            applyKpiStatus(metric.cardId, statusFromTarget(actual, targetValue, direction));
-          }
+          const status = resolveMetricStatus(metric.key, actual, targetValue, direction, true);
+          applyKpiStatus(metric.cardId, status);
+          applyGapStatus(metric.gapId, status);
         }
         const issuesAffectedLabel = document.querySelector("#kpiCard-issues .sub-line:nth-child(3) span");
         const issuesAffectedValue = document.getElementById("kpiDelta-issues");
@@ -4854,6 +4941,7 @@
         lastAdvancedData = { dashboardTrends, benchmark, alerts, incidentsAnalysis, operationsDaily, targetsVsActual, loadEfficiency, pickupVsDropoff };
         updateTiles(summary, dashboardScope, kpiMeta);
         updateMobileTiles(summary, dashboardScope, kpiMeta, dashboardTrends, targetsVsActual);
+        refreshOpenMobileDetail();
         renderDrilldownReport(selectedDashboardReport);
         if (dashboardTrends) renderTrendCharts(dashboardTrends);
         if (benchmark) renderBenchmark(benchmark);
